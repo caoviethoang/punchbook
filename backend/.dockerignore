@@ -1,0 +1,7 @@
+.git
+log/
+tmp/
+.env
+.bundle
+*.md
+spec/
