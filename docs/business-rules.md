@@ -1,6 +1,6 @@
 # Product Requirements Document (PRD)
 
-Product: Sổ Khách
+Product: PunchBook
 
 Document Version: 1.0
 
@@ -14,9 +14,9 @@ Last Updated: 2026-07-27
 
 # 1. Purpose
 
-Tài liệu này mô tả đầy đủ yêu cầu chức năng của sản phẩm Sổ Khách.
+This document describes the full functional requirements of PunchBook.
 
-Đây là tài liệu nguồn (Source of Truth) cho:
+It is the source of truth for:
 
 - Product
 - Design
@@ -25,23 +25,23 @@ Tài liệu này mô tả đầy đủ yêu cầu chức năng của sản phẩ
 - QA
 - AI Coding Agent
 
-Nếu có mâu thuẫn giữa các tài liệu khác, PRD được ưu tiên.
+If other documents conflict, the PRD takes precedence.
 
 ---
 
 # 2. Product Summary
 
-Sổ Khách là ứng dụng quản lý hội viên dành cho spa, nail, gym và phòng khám nhỏ.
+PunchBook is a membership management app for small spas, nail salons, gyms, and clinics.
 
-Ứng dụng tập trung vào:
+The app focuses on:
 
-- quản lý khách
-- quản lý gói
+- customer management
+- package management
 - check-in
-- gia hạn
-- thanh toán
+- renewal
+- payment
 
-Ứng dụng KHÔNG hướng tới CRM hay ERP.
+The app does NOT target CRM or ERP.
 
 ---
 
@@ -49,19 +49,19 @@ Sổ Khách là ứng dụng quản lý hội viên dành cho spa, nail, gym và
 
 ## Business Goals
 
-Trong 90 ngày.
+Within 90 days.
 
-- 5 khách hàng trả phí
-- MRR > 300.000 VNĐ
-- 80% khách pilot tiếp tục sử dụng
+- 5 paying customers
+- MRR > 300,000 VND
+- 80% of pilot customers continue using the product
 
 ---
 
 ## Product Goals
 
-- Thay thế hoàn toàn sổ giấy.
-- Check-in dưới 5 giây.
-- Không cần đào tạo nhân viên.
+- Fully replace paper notebooks.
+- Check-in under 5 seconds.
+- No staff training required.
 
 ---
 
@@ -69,20 +69,20 @@ Trong 90 ngày.
 
 Owner:
 
-- Biết hôm nay thu bao nhiêu.
-- Biết khách nào sắp hết.
-- Không phải ghi sổ.
+- Know today's revenue.
+- Know which customers are about to expire.
+- Stop writing in notebooks.
 
 Staff:
 
-- Check-in nhanh.
-- Không phải nhớ khách còn bao nhiêu buổi.
+- Check in quickly.
+- Not have to remember how many sessions a customer has left.
 
 ---
 
 # 4. Non Goals
 
-Không xây:
+We will not build:
 
 - CRM
 - ERP
@@ -109,41 +109,41 @@ Founder
 
 ## Owner
 
-Có toàn quyền.
+Full access.
 
-Có thể
+Can
 
-- tạo shop
-- tạo nhân viên
-- tạo gói
-- tạo khách
-- check-in
-- thanh toán
-- xem dashboard
+- create shop
+- create staff
+- create packages
+- create customers
+- check in
+- process payments
+- view dashboard
 - export
 
 ---
 
 ## Staff
 
-Có thể
+Can
 
-- check-in
-- tìm khách
-- tạo khách
-- gia hạn
+- check in
+- find customers
+- create customers
+- renew
 
-Không được
+Cannot
 
-- xoá dữ liệu
+- delete data
 - export
-- cấu hình shop
+- configure shop
 
 ---
 
 # 7. Product Modules
 
-MVP bao gồm.
+MVP includes.
 
 1 Dashboard
 
@@ -169,11 +169,11 @@ As an Owner
 
 I want
 
-xem doanh thu hôm nay
+to see today's revenue
 
 So that
 
-biết tình hình cửa hàng.
+I know how the shop is doing.
 
 ---
 
@@ -181,11 +181,11 @@ As an Owner
 
 I want
 
-xem khách sắp hết hạn
+to see customers about to expire
 
 So that
 
-chủ động nhắc gia hạn.
+I can proactively remind them to renew.
 
 ---
 
@@ -195,11 +195,11 @@ As Staff
 
 I want
 
-tìm khách bằng tên hoặc số điện thoại
+to find customers by name or phone number
 
 So that
 
-check-in nhanh.
+I can check in quickly.
 
 ---
 
@@ -207,11 +207,11 @@ As Staff
 
 I want
 
-xem lịch sử khách
+to view customer history
 
 So that
 
-không tranh cãi.
+there are no disputes.
 
 ---
 
@@ -221,11 +221,11 @@ As Owner
 
 I want
 
-tạo gói
+to create packages
 
 So that
 
-bán cho khách.
+I can sell them to customers.
 
 ---
 
@@ -235,11 +235,11 @@ As Staff
 
 I want
 
-xem số buổi còn lại
+to see remaining session count
 
 So that
 
-biết có thể check-in hay không.
+I know whether check-in is allowed.
 
 ---
 
@@ -249,11 +249,11 @@ As Staff
 
 I want
 
-check-in bằng một nút
+to check in with one button
 
 So that
 
-không phải thao tác nhiều.
+I do not need many steps.
 
 ---
 
@@ -263,11 +263,11 @@ As Staff
 
 I want
 
-gia hạn ngay khi hết buổi
+to renew immediately when sessions run out
 
 So that
 
-không gián đoạn.
+service is not interrupted.
 
 ---
 
@@ -275,88 +275,88 @@ không gián đoạn.
 
 FR-001
 
-Hệ thống phải cho phép tạo khách.
+The system must allow creating customers.
 
 ---
 
 FR-002
 
-Khách phải có số điện thoại duy nhất trong một shop.
+Each customer must have a unique phone number within a shop.
 
 ---
 
 FR-003
 
-Hệ thống phải cho phép tìm khách.
+The system must allow searching customers.
 
 ---
 
 FR-004
 
-Tìm kiếm theo
+Search by
 
-- tên
-- số điện thoại
+- name
+- phone number
 
 ---
 
 FR-005
 
-Check-in phải tự động
+Check-in must automatically
 
-- tạo CheckIn
-- trừ buổi
-- cập nhật Membership
+- create CheckIn
+- deduct sessions
+- update Membership
 
 ---
 
 FR-006
 
-Nếu hết buổi.
+If out of sessions.
 
-Không cho check-in.
+Check-in is not allowed.
 
 ---
 
 FR-007
 
-Nếu hết hạn.
+If expired.
 
-Không cho check-in.
+Check-in is not allowed.
 
 ---
 
 FR-008
 
-Gia hạn phải tạo Payment.
+Renewal must create Payment.
 
 ---
 
 FR-009
 
-Thanh toán thành công.
+On successful payment.
 
-Membership được kích hoạt.
+Membership is activated.
 
 ---
 
 FR-010
 
-Mọi thao tác phải lưu Audit Log.
+Every action must be recorded in Audit Log.
 
 ---
 
 # 10. UX Principles
 
-Mỗi màn hình chỉ có một mục tiêu.
+Each screen has one goal only.
 
-Ví dụ
+Example
 
 Dashboard
 
 ↓
 
-Xem.
+View.
 
 ---
 
@@ -368,7 +368,7 @@ Check-in.
 
 ---
 
-Không trộn nhiều nghiệp vụ.
+Do not mix multiple workflows on one screen.
 
 ---
 
@@ -400,9 +400,9 @@ Crash Free
 
 # 12. Assumptions
 
-- Chủ tiệm có smartphone.
-- Có Internet.
-- Nhân viên biết sử dụng trình duyệt.
+- Shop owner has a smartphone.
+- Internet is available.
+- Staff know how to use a browser.
 
 ---
 
@@ -414,7 +414,7 @@ Web App
 
 PWA
 
-Không native app.
+No native app.
 
 ---
 
@@ -438,27 +438,27 @@ Cloudflare R2
 
 # 15. Risks
 
-Logic Membership sai.
+Incorrect Membership logic.
 
-Webhook payOS gửi nhiều lần.
+payOS webhook sent multiple times.
 
-Network mất giữa lúc thanh toán.
+Network lost during payment.
 
-Double click check-in.
+Double click on check-in.
 
-Hai nhân viên check-in cùng lúc.
+Two staff check in at the same time.
 
 ---
 
 # 16. Open Questions
 
-Có cần hỗ trợ nhiều gói cùng lúc?
+Do we need to support multiple packages at once?
 
-Có cho phép check-in offline?
+Allow offline check-in?
 
-Có cần QR Membership?
+Need QR Membership?
 
-Có cần import Excel ngay MVP?
+Need Excel import in MVP?
 
 ---
 
@@ -500,21 +500,21 @@ Audit
 
 # 18. Acceptance Criteria
 
-Một spa mới.
+A new spa.
 
-Trong vòng
+Within
 
-10 phút.
+10 minutes.
 
-Có thể
+Can
 
-- tạo shop
-- tạo gói
-- tạo khách
-- check-in
-- gia hạn
+- create shop
+- create package
+- create customer
+- check in
+- renew
 
-mà không cần đọc tài liệu.
+without reading documentation.
 
 ---
 

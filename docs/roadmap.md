@@ -1,6 +1,6 @@
 # 06 - Wireframes
 
-Product: Sổ Khách
+Product: PunchBook
 
 Version: 2.0
 
@@ -18,28 +18,28 @@ Related Documents
 
 # 1. Purpose
 
-Tài liệu này mô tả cấu trúc của từng màn hình ở mức Low Fidelity.
+This document describes each screen structure at low fidelity.
 
-Wireframe KHÔNG mô tả màu sắc.
+Wireframes do NOT describe color.
 
-KHÔNG mô tả typography.
+Do NOT describe typography.
 
-KHÔNG mô tả icon.
+Do NOT describe icons.
 
-Chỉ mô tả:
+They only describe:
 
-- bố cục
-- thứ tự thông tin
-- hành động
-- luồng chuyển màn hình
+- layout
+- information order
+- actions
+- screen flow
 
-Đây là tài liệu đầu vào để tạo Figma.
+This is input for creating Figma designs.
 
 ---
 
 # 2. UX Philosophy
 
-Có hai trải nghiệm độc lập.
+There are two independent experiences.
 
 ## Staff Portal
 
@@ -65,9 +65,9 @@ Information First.
 
 # 3. Check-in Home
 
-Đây là màn hình quan trọng nhất của toàn bộ sản phẩm.
+This is the most important screen in the entire product.
 
-95% thao tác xảy ra tại đây.
+95% of actions happen here.
 
 ```
 +------------------------------------------------------+
@@ -76,7 +76,7 @@ Information First.
 
         ___________________________
 
-        Lan Nguyễn
+        Lan Nguyen
 
 -------------------------------------------------------
 
@@ -136,15 +136,15 @@ Customer Summary
 ```
 +--------------------------------------+
 
-Lan Nguyễn
+Lan Nguyen
 
 090xxxxxxx
 
 Massage VIP
 
-Còn 3 buổi
+3 sessions left
 
-Hết hạn 20/09/2026
+Expires 20/09/2026
 
 ----------------------------------------
 
@@ -185,17 +185,17 @@ Open Detail
 
           ✔
 
-Đã Check-in
+Checked in
 
 --------------------------------------
 
-Lan Nguyễn
+Lan Nguyen
 
 Massage VIP
 
-Còn
+Remaining
 
-2 buổi
+2 sessions
 
 --------------------------------------
 
@@ -203,7 +203,7 @@ Còn
 
 ```
 
-Hiển thị khoảng 2 giây rồi tự quay về Search.
+Display for about 2 seconds then return to Search automatically.
 
 ---
 
@@ -212,17 +212,17 @@ Hiển thị khoảng 2 giây rồi tự quay về Search.
 ```
 +--------------------------------------+
 
-⚠ Membership hết hạn
+⚠ Membership expired
 
 --------------------------------------
 
-Lan Nguyễn
+Lan Nguyen
 
 Massage VIP
 
 --------------------------------------
 
-[ Gia hạn ]
+[ Renew ]
 
 ```
 
@@ -233,23 +233,23 @@ Massage VIP
 ```
 +--------------------------------------+
 
-Chọn gói
+Select package
 
-( ) 10 buổi
+( ) 10 sessions
 
-( ) 20 buổi
+( ) 20 sessions
 
 ( ) Unlimited
 
 --------------------------------------
 
-Tiền
+Amount
 
-500.000
+500,000
 
 --------------------------------------
 
-[ Thanh toán ]
+[ Pay ]
 
 ```
 
@@ -260,19 +260,19 @@ Tiền
 ```
 ✔
 
-Thanh toán thành công
+Payment successful
 
 Membership Active
 
-Check-in thành công
+Check-in successful
 
 ```
 
-Sau 2 giây.
+After 2 seconds.
 
 ↓
 
-Quay lại Search.
+Return to Search.
 
 ---
 
@@ -289,7 +289,7 @@ Quay lại Search.
 
 Revenue Today
 
-12.500.000
+12,500,000
 
 ----------------------------------------
 
@@ -309,9 +309,9 @@ Recent Payments
 
 ```
 
-Không có nút lớn.
+No large buttons.
 
-Dashboard chỉ để xem.
+Dashboard is view-only.
 
 ---
 
@@ -343,7 +343,7 @@ Customer Detail.
 # 11. Customer Detail
 
 ```
-Lan Nguyễn
+Lan Nguyen
 
 ------------------------------------
 
@@ -376,9 +376,9 @@ Payment History
 ```
 Massage VIP
 
-10 Buổi
+10 Sessions
 
-500.000
+500,000
 
 ------------------------------------
 
@@ -403,9 +403,9 @@ Check-ins
 
 ```
 
-Chỉ có Filter.
+Filter only.
 
-Không có CRUD.
+No CRUD.
 
 ---
 
@@ -444,27 +444,27 @@ Sidebar Collapse
 
 Mobile
 
-Không hỗ trợ ở MVP.
+Not supported in MVP.
 
 ---
 
 # 16. Interaction Rules
 
-Search luôn autofocus.
+Search always autofocus.
 
 Enter = Search.
 
 ESC = Clear.
 
-Sau Check-in.
+After Check-in.
 
-Quay về Search.
+Return to Search.
 
-Sau Payment.
+After Payment.
 
-Quay về Search.
+Return to Search.
 
-Không mở Dashboard.
+Do not open Dashboard.
 
 ---
 
@@ -472,45 +472,45 @@ Không mở Dashboard.
 
 Customer
 
-Không có khách.
+No customers.
 
 ↓
 
-Hiển thị
+Show
 
-"Tạo khách mới"
+"Create customer"
 
 ---
 
 Package
 
-Không có gói.
+No packages.
 
 ↓
 
-"Tạo gói"
+"Create package"
 
 ---
 
 History
 
-Không có.
+Empty.
 
 ↓
 
-"Chưa có dữ liệu"
+"No data yet"
 
 ---
 
 # 18. Loading States
 
-Skeleton cho:
+Skeleton for:
 
 - Dashboard
 - Customer
 - Payment
 
-Spinner chỉ dùng khi submit.
+Spinner only on submit.
 
 ---
 

@@ -1,4 +1,4 @@
-# Sổ Khách
+# PunchBook
 
 > Digital Membership Management for Small Businesses
 
@@ -6,15 +6,15 @@
 
 ## Overview
 
-Sổ Khách là ứng dụng giúp các cửa hàng dịch vụ như Spa, Nail, Gym và Clinic quản lý khách hàng và gói dịch vụ thay cho sổ giấy.
+PunchBook is an app that helps service businesses such as spas, nail salons, gyms, and clinics manage customers and service packages instead of paper notebooks.
 
-Mục tiêu của sản phẩm là giúp nhân viên có thể check-in khách trong vài giây và giúp chủ cửa hàng theo dõi hoạt động kinh doanh một cách đơn giản.
+The product goal is to let staff check in customers in seconds and help shop owners track business activity simply.
 
-Sổ Khách **không phải CRM**, **không phải ERP**, cũng **không phải POS**.
+PunchBook is **not a CRM**, **not an ERP**, and **not a POS**.
 
-Sản phẩm chỉ tập trung giải quyết một vấn đề:
+The product focuses on solving one problem:
 
-> Quản lý khách và gói dịch vụ một cách nhanh, đơn giản và chính xác.
+> Manage customers and service packages quickly, simply, and accurately.
 
 ---
 
@@ -28,11 +28,11 @@ Sản phẩm chỉ tập trung giải quyết một vấn đề:
 - Massage
 - Clinic
 
-Quy mô:
+Scale:
 
-- 1 cửa hàng
-- 2–10 nhân viên
-- 100–1000 khách hàng
+- 1 shop
+- 2–10 staff
+- 100–1000 customers
 
 ---
 
@@ -40,29 +40,29 @@ Quy mô:
 
 ### Owner
 
-Sử dụng để:
+Uses the app to:
 
-- Xem doanh thu
-- Quản lý khách
-- Quản lý gói
-- Theo dõi hoạt động
+- View revenue
+- Manage customers
+- Manage packages
+- Monitor activity
 
 ---
 
 ### Staff
 
-Sử dụng để:
+Uses the app to:
 
-- Tìm khách
-- Check-in
-- Gia hạn gói
-- Thanh toán
+- Find customers
+- Check in
+- Renew packages
+- Process payments
 
 ---
 
 # MVP Scope
 
-Phiên bản đầu tiên chỉ bao gồm:
+The first version includes only:
 
 - Authentication
 - Customer Management
@@ -72,7 +72,7 @@ Phiên bản đầu tiên chỉ bao gồm:
 - Payment
 - Dashboard
 
-Không bao gồm:
+Does not include:
 
 - Booking
 - CRM
@@ -88,49 +88,49 @@ Không bao gồm:
 
 ## 1. Speed First
 
-Mọi thao tác phải nhanh.
+Every action must be fast.
 
-Một thao tác 1 click luôn tốt hơn 3 click.
+One click is always better than three clicks.
 
 ---
 
 ## 2. Simplicity
 
-Một màn hình chỉ giải quyết một công việc.
+One screen solves one job.
 
-Không nhồi nhiều chức năng.
+Do not cram multiple features together.
 
 ---
 
 ## 3. Staff First
 
-95% thao tác đến từ Staff.
+95% of actions come from Staff.
 
-Toàn bộ UX sẽ được tối ưu cho Staff trước.
+All UX is optimized for Staff first.
 
 ---
 
 ## 4. Owner Needs Information
 
-Owner không thao tác nhiều.
+Owners do not act often.
 
-Owner cần biết:
+Owners need to know:
 
-- Hôm nay bán được bao nhiêu
-- Có bao nhiêu khách
-- Ai sắp hết gói
+- How much was sold today
+- How many customers there are
+- Who is about to run out of package
 
 ---
 
 # Architecture
 
-Ứng dụng được chia thành hai trải nghiệm.
+The application is split into two experiences.
 
 ## Staff Portal
 
-Mục tiêu:
+Goal:
 
-Check-in nhanh nhất có thể.
+Check in as fast as possible.
 
 Flow:
 
@@ -148,9 +148,9 @@ Done
 
 ## Owner Portal
 
-Mục tiêu:
+Goal:
 
-Quản trị.
+Administration.
 
 Flow:
 
@@ -213,7 +213,7 @@ Settings
 
 Frontend
 
-- Cloudflare Pages (hoặc Vercel)
+- Cloudflare Pages (or Vercel)
 
 Backend
 
@@ -242,22 +242,22 @@ Database
 
 | File | Description |
 |------|-------------|
-| product.md | Mô tả sản phẩm |
-| business-rules.md | Logic nghiệp vụ |
-| database.md | Thiết kế Database |
+| product.md | Product description |
+| business-rules.md | Business logic |
+| database.md | Database design |
 | api.md | GraphQL API |
-| ui-ux.md | Wireframe + UI |
-| roadmap.md | Kế hoạch phát triển |
+| ui-ux.md | Wireframes + UI |
+| roadmap.md | Development roadmap |
 
 ---
 
 # Development Strategy
 
-Không phát triển theo module.
+Do not develop by module.
 
-Phát triển theo Vertical Slice.
+Develop by vertical slice.
 
-Ví dụ:
+Example:
 
 Sprint 1
 
@@ -291,14 +291,14 @@ Dashboard
 
 # Definition of Done
 
-Một tính năng được coi là hoàn thành khi:
+A feature is considered complete when:
 
-- Business Rule đã được áp dụng
-- Database đã cập nhật
-- API hoàn thành
-- Frontend hoàn thành
-- Có test
-- Deploy thành công
+- Business rules are applied
+- Database is updated
+- API is complete
+- Frontend is complete
+- Tests exist
+- Deploy succeeds
 
 ---
 
@@ -315,17 +315,17 @@ Một tính năng được coi là hoàn thành khi:
 
 # Design Goals
 
-Một nhân viên mới có thể:
+A new staff member can:
 
-- Học sử dụng trong dưới 5 phút
-- Check-in trong dưới 5 giây
-- Không cần đọc tài liệu hướng dẫn
+- Learn to use the app in under 5 minutes
+- Check in in under 5 seconds
+- Use it without reading documentation
 
 ---
 
 # Future Roadmap
 
-Sau khi MVP ổn định sẽ phát triển:
+After MVP is stable, develop:
 
 - QR Check-in
 - Mobile App

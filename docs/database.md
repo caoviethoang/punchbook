@@ -1,6 +1,6 @@
 # 03 - User Personas
 
-Product: Sổ Khách
+Product: PunchBook
 
 Version: 1.0
 
@@ -18,31 +18,31 @@ Related Documents
 
 # 1. Purpose
 
-Tài liệu này mô tả những nhóm người dùng chính của Sổ Khách.
+This document describes the main user groups of PunchBook.
 
-Mục tiêu là giúp toàn bộ team hiểu:
+The goal is to help the whole team understand:
 
-- Ai là người sử dụng?
-- Họ gặp vấn đề gì?
-- Họ nghĩ gì?
-- Họ thao tác như thế nào?
-- Điều gì quan trọng với họ?
+- Who uses the product?
+- What problems do they face?
+- What do they think?
+- How do they operate?
+- What matters to them?
 
-Mọi quyết định về UX phải được đưa ra dựa trên Persona.
+Every UX decision must be based on personas.
 
-Không dựa trên ý kiến của developer.
+Not on developer opinion.
 
 ---
 
 # 2. Primary Personas
 
-Sổ Khách có hai nhóm người dùng chính.
+PunchBook has two main user groups.
 
-1. Owner (Chủ tiệm)
+1. Owner (Shop owner)
 
-2. Staff (Nhân viên)
+2. Staff
 
-Khách hàng (Customer) KHÔNG trực tiếp sử dụng hệ thống.
+Customers do NOT use the system directly.
 
 ---
 
@@ -50,139 +50,139 @@ Khách hàng (Customer) KHÔNG trực tiếp sử dụng hệ thống.
 
 ## Profile
 
-Tên giả định
+Fictional name
 
-Chị Lan
+Ms. Lan
 
 ---
 
-Tuổi
+Age
 
 35–50
 
 ---
 
-Nghề nghiệp
+Occupation
 
-Chủ Spa
+Spa owner
 
-Chủ Nail
+Nail salon owner
 
-Chủ Gym nhỏ
-
----
-
-Quy mô
-
-1 cửa hàng
-
-3–10 nhân viên
-
-100–500 khách
+Small gym owner
 
 ---
 
-Thu nhập
+Scale
 
-30–100 triệu/tháng
+1 shop
+
+3–10 staff
+
+100–500 customers
 
 ---
 
-Trình độ công nghệ
+Income
 
-Trung bình
+30–100 million VND/month
 
-Biết:
+---
+
+Tech level
+
+Average
+
+Knows:
 
 - Facebook
 - Zalo
 - YouTube
 
-Không thích:
+Does not like:
 
-- cài phần mềm
-- đọc hướng dẫn
-- cấu hình phức tạp
+- installing software
+- reading manuals
+- complex configuration
 
 ---
 
 # Goals
 
-Muốn biết
+Wants to know
 
-- hôm nay thu bao nhiêu
-- khách nào sắp hết hạn
-- nhân viên có check-in đầy đủ không
+- today's revenue
+- which customers are about to expire
+- whether staff are checking in properly
 
-Không muốn
+Does not want
 
-- ghi sổ
-- tính toán bằng tay
-- gọi điện từng khách
+- paper notebooks
+- manual calculations
+- calling each customer
 
 ---
 
 # Pain Points
 
-## Quản lý bằng sổ
+## Managing with notebooks
 
-Dễ mất.
+Easy to lose.
 
-Khó tìm.
+Hard to find.
 
-Không có lịch sử.
+No history.
 
 ---
 
 ## Excel
 
-Khó sử dụng trên điện thoại.
+Hard to use on phone.
 
-Nhân viên chỉnh nhầm.
+Staff edit by mistake.
 
-Không biết ai sửa.
-
----
-
-## Quên gia hạn
-
-Khách hết buổi.
-
-Không ai nhắc.
-
-Mất doanh thu.
+No record of who changed what.
 
 ---
 
-## Không kiểm soát được nhân viên
+## Forgetting renewals
 
-Không biết
+Customer runs out of sessions.
 
-- khách đã tới chưa
-- đã ghi chưa
-- ghi đúng chưa
+Nobody reminds them.
+
+Lost revenue.
+
+---
+
+## No control over staff
+
+Does not know
+
+- whether customer arrived
+- whether it was recorded
+- whether it was recorded correctly
 
 ---
 
 # Success Criteria
 
-Owner mở app mỗi sáng.
+Owner opens the app each morning.
 
-Trong vòng
+Within
 
-30 giây
+30 seconds
 
-biết được:
+knows:
 
-✔ Hôm nay thu bao nhiêu.
+✔ Today's revenue.
 
-✔ Ai sắp hết hạn.
+✔ Who is about to expire.
 
-✔ Có việc gì cần xử lý.
+✔ What needs attention.
 
-Nếu đạt được điều này.
+If this is achieved.
 
-Dashboard thành công.
+Dashboard is successful.
 
 ---
 
@@ -190,81 +190,81 @@ Dashboard thành công.
 
 ## Profile
 
-Tên giả định
+Fictional name
 
 Mai
 
 ---
 
-Tuổi
+Age
 
 18–30
 
 ---
 
-Nghề nghiệp
+Occupation
 
-Lễ tân
+Receptionist
 
-Kỹ thuật viên
+Technician
 
-Thu ngân
-
----
-
-Trình độ
-
-Biết dùng smartphone.
-
-Không rành máy tính.
+Cashier
 
 ---
 
-Thiết bị
+Skill level
+
+Comfortable with smartphone.
+
+Not comfortable with computers.
+
+---
+
+Devices
 
 Tablet
 
 Laptop
 
-Máy tính bàn
+Desktop PC
 
 ---
 
 # Goals
 
-Tiếp khách nhanh.
+Serve customers quickly.
 
-Không bị khách phàn nàn.
+Avoid customer complaints.
 
-Không phải nhớ khách còn bao nhiêu buổi.
+Not have to remember how many sessions each customer has left.
 
 ---
 
 # Pain Points
 
-Có rất nhiều khách.
+Many customers.
 
-Không nhớ tên.
+Cannot remember names.
 
-Không nhớ số buổi.
+Cannot remember session counts.
 
-Khách đứng chờ.
+Customers waiting.
 
-Áp lực.
+Pressure.
 
 ---
 
 # Daily Workflow
 
-Khách bước vào.
+Customer walks in.
 
 ↓
 
-Chào khách.
+Greet customer.
 
 ↓
 
-Tìm tên.
+Search by name.
 
 ↓
 
@@ -272,83 +272,83 @@ Check-in.
 
 ↓
 
-Hoàn thành.
+Done.
 
 ---
 
-Nếu hết buổi.
+If out of sessions.
 
 ↓
 
-Gia hạn.
+Renew.
 
 ↓
 
-Thanh toán.
+Payment.
 
 ↓
 
-Hoàn thành.
+Done.
 
 ---
 
 # Success Criteria
 
-Một lần check-in.
+One check-in.
 
-Không quá
+No more than
 
-5 giây.
+5 seconds.
 
-Không quá
+No more than
 
-3 lần click.
+3 clicks.
 
-Không phải mở nhiều màn hình.
+No need to open many screens.
 
 ---
 
 # Persona 3 — Customer (Indirect)
 
-Khách hàng KHÔNG sử dụng hệ thống.
+Customers do NOT use the system.
 
-Nhưng chịu ảnh hưởng trực tiếp.
+But they are directly affected.
 
 ---
 
 # Goals
 
-Được phục vụ nhanh.
+Served quickly.
 
-Không phải tranh cãi.
+No disputes.
 
-Biết mình còn bao nhiêu buổi.
+Know how many sessions remain.
 
-Gia hạn dễ dàng.
+Easy renewal.
 
 ---
 
 # Pain Points
 
-Đợi lâu.
+Long wait.
 
-Nhân viên tìm sổ.
+Staff searching notebooks.
 
-Nhân viên đếm buổi.
+Staff counting sessions.
 
-Nhân viên ghi nhầm.
+Staff recording wrong.
 
 ---
 
 # Success Criteria
 
-Đứng tại quầy.
+Standing at the counter.
 
-Trong vòng
+Within
 
-30 giây.
+30 seconds.
 
-Hoàn tất check-in.
+Check-in complete.
 
 ---
 
@@ -356,43 +356,43 @@ Hoàn tất check-in.
 
 ## Owner
 
-Thời điểm
+When
 
-Buổi sáng
+Morning
 
-Buổi tối
+Evening
 
 ---
 
-Thiết bị
+Devices
 
 Laptop
 
-Điện thoại
+Phone
 
 ---
 
-Thời gian sử dụng
+Session length
 
-5–15 phút/lần
+5–15 minutes per visit
 
 ---
 
 Internet
 
-Có WiFi.
+WiFi available.
 
 ---
 
 ## Staff
 
-Thời điểm
+When
 
-Cả ngày.
+All day.
 
 ---
 
-Thiết bị
+Devices
 
 Tablet.
 
@@ -402,13 +402,13 @@ PC.
 
 ---
 
-Thời gian
+Duration
 
-5 giây/lần.
+5 seconds per action.
 
-Có thể
+Possibly
 
-100–200 lần/ngày.
+100–200 times per day.
 
 ---
 
@@ -416,69 +416,69 @@ Có thể
 
 Owner
 
-Ít sử dụng.
+Uses infrequently.
 
-Nhưng xem nhiều thông tin.
+But views a lot of information.
 
 ---
 
 Staff
 
-Sử dụng liên tục.
+Uses continuously.
 
-Ít đọc.
+Reads little.
 
-Chỉ bấm.
+Mostly taps.
 
 ---
 
-Kết luận
+Conclusion
 
-UX phải tối ưu cho Staff.
+UX must be optimized for Staff.
 
-Không phải Owner.
+Not Owner.
 
 ---
 
 # 5. Design Principles Derived
 
-Từ Persona.
+From personas.
 
-Chúng ta rút ra các nguyên tắc.
+We derive these principles.
 
 ---
 
 ## Principle 1
 
-Check-in luôn là màn hình nhanh nhất.
+Check-in is always the fastest screen.
 
 ---
 
 ## Principle 2
 
-Tìm kiếm luôn nằm trên cùng.
+Search is always at the top.
 
 ---
 
 ## Principle 3
 
-Không yêu cầu nhập nhiều thông tin.
+Do not require entering lots of information.
 
 ---
 
 ## Principle 4
 
-Luôn hiển thị số buổi còn lại.
+Always show remaining session count.
 
 ---
 
 ## Principle 5
 
-Không dùng thuật ngữ kỹ thuật.
+Do not use technical jargon.
 
-Ví dụ.
+Example.
 
-Không dùng
+Do not use
 
 Membership
 
@@ -486,79 +486,79 @@ Invoice
 
 Subscription
 
-Sử dụng
+Use
 
-Khách
+Customer
 
-Gói
+Package
 
-Thanh toán
+Payment
 
-Buổi còn
+Sessions left
 
 ---
 
 # 6. Anti Personas
 
-Đây KHÔNG phải khách hàng mục tiêu.
+These are NOT target customers.
 
 ---
 
-Chuỗi Spa
+Spa chain
 
-50 nhân viên.
+50 staff.
 
-Nhiều chi nhánh.
+Many branches.
 
 ERP.
 
 ---
 
-Bệnh viện.
+Hospital.
 
 ---
 
-Phòng khám lớn.
+Large clinic.
 
 ---
 
-Doanh nghiệp cần CRM.
+Business needing CRM.
 
 ---
 
-POS bán lẻ.
+Retail POS.
 
 ---
 
 # 7. UX Implications
 
-Do Staff thao tác nhiều nhất.
+Because Staff act most often.
 
-Nên
+Therefore
 
-Dashboard KHÔNG phải màn hình chính.
+Dashboard is NOT the main screen.
 
-Check-in mới là màn hình quan trọng nhất.
+Check-in is the most important screen.
 
 ---
 
-Owner xem Dashboard.
+Owner views Dashboard.
 
-Staff mở Check-in.
+Staff open Check-in.
 
-Đây là hai trải nghiệm hoàn toàn khác nhau.
+These are two completely different experiences.
 
 ---
 
 # 8. Open Questions
 
-Có nên cho Owner tự chọn màn hình mặc định?
+Should Owner choose the default home screen?
 
-Có cần chế độ Kiosk?
+Need a Kiosk mode?
 
-Có cần Tablet Mode riêng?
+Need a dedicated Tablet Mode?
 
-Có cần Offline Mode?
+Need Offline Mode?
 
 ---
 

@@ -3,24 +3,24 @@
 require 'rails_helper'
 
 RSpec.describe CheckInMembership do
-  let(:shop) { Shop.create!(name: 'Spa Lan', phone: '0901000000') }
+  let(:shop) { Shop.create!(name: 'Lan Spa', phone: '0901000000') }
   let(:staff) { Staff.create!(shop: shop, name: 'Mai', role: 'staff') }
 
-  describe 'gói theo buổi' do
+  describe 'session-based package' do
     let(:package) do
-      Package.create!(shop: shop, name: '10 buổi massage', sessions_count: 10, price: 1_000_000)
+      Package.create!(shop: shop, name: '10-session massage', sessions_count: 10, price: 1_000_000)
     end
     let(:membership) do
       Membership.create!(
         shop: shop,
         package: package,
-        customer_name: 'Chị Hoa',
+        customer_name: 'Hoa Nguyen',
         phone: '0902000000',
         sessions_left: 3
       )
     end
 
-    it 'check-in thành công khi còn buổi, trừ 1 sessions_left và tạo CheckIn' do
+    it 'checks in successfully when sessions remain, decrements sessions_left, and creates a CheckIn' do
       check_in = described_class.call(membership: membership, staff: staff)
 
       expect(check_in).to have_attributes(membership:, staff:)
@@ -28,17 +28,17 @@ RSpec.describe CheckInMembership do
       expect(membership.reload.sessions_left).to eq(2)
     end
 
-    it 'check-in thất bại khi hết buổi, không trừ âm và không tạo CheckIn' do
+    it 'fails when out of sessions, does not go negative, and does not create a CheckIn' do
       membership.update!(sessions_left: 0)
 
       expect { described_class.call(membership: membership, staff: staff) }
-        .to raise_error(CheckInMembership::InsufficientSessionsError, 'Hội viên đã hết buổi')
+        .to raise_error(CheckInMembership::InsufficientSessionsError, 'Membership has no sessions left')
 
       expect(membership.reload.sessions_left).to eq(0)
       expect(CheckIn.count).to eq(0)
     end
 
-    it 'không cho sessions_left âm khi đã hết buổi' do
+    it 'does not allow sessions_left to go negative when already depleted' do
       membership.update!(sessions_left: 0)
 
       expect { described_class.call(membership: membership, staff: staff) }
@@ -48,46 +48,46 @@ RSpec.describe CheckInMembership do
     end
   end
 
-  describe 'gói theo ngày' do
+  describe 'day-based package' do
     let(:package) do
-      Package.create!(shop: shop, name: 'Tháng gym', duration_days: 30, price: 500_000)
+      Package.create!(shop: shop, name: 'Monthly gym', duration_days: 30, price: 500_000)
     end
     let(:membership) do
       Membership.create!(
         shop: shop,
         package: package,
-        customer_name: 'Anh Tuấn',
+        customer_name: 'Tuan Pham',
         phone: '0903000000',
         sessions_left: nil,
         expires_at: Date.current + 10.days
       )
     end
 
-    it 'check-in thành công khi còn hạn và không thay đổi sessions_left' do
+    it 'checks in successfully when still valid and does not change sessions_left' do
       check_in = described_class.call(membership: membership, staff: staff)
 
       expect(check_in).to have_attributes(membership:)
       expect(membership.reload).to have_attributes(sessions_left: nil, expires_at: Date.current + 10.days)
     end
 
-    it 'check-in thành công đúng ngày hết hạn (expires_at = hôm nay)' do
+    it 'checks in successfully on the expiry date (expires_at = today)' do
       membership.update!(expires_at: Date.current)
 
       expect { described_class.call(membership: membership, staff: staff) }
         .to change(CheckIn, :count).by(1)
     end
 
-    it 'check-in thất bại khi hết hạn, không tạo CheckIn' do
+    it 'fails when expired and does not create a CheckIn' do
       membership.update!(expires_at: Date.current - 1.day)
 
       expect { described_class.call(membership: membership, staff: staff) }
-        .to raise_error(CheckInMembership::MembershipExpiredError, 'Hội viên đã hết hạn')
+        .to raise_error(CheckInMembership::MembershipExpiredError, 'Membership has expired')
 
       expect(CheckIn.count).to eq(0)
       expect(membership.reload.sessions_left).to be_nil
     end
 
-    it 'check-in thất bại khi không có expires_at' do
+    it 'fails when expires_at is missing' do
       membership.update!(expires_at: nil)
 
       expect { described_class.call(membership: membership, staff: staff) }
@@ -95,20 +95,20 @@ RSpec.describe CheckInMembership do
     end
   end
 
-  describe 'check-in đồng thời' do
-    # Transactional fixtures ẩn data với thread khác — tắt để test race condition thật
+  describe 'concurrent check-in' do
+    # Transactional fixtures hide data from other threads — disable for a real race test
     self.use_transactional_tests = false
 
-    let!(:shop) { Shop.create!(name: 'Gym Race', phone: '0904000000') }
+    let!(:shop) { Shop.create!(name: 'Race Gym', phone: '0904000000') }
     let!(:staff) { Staff.create!(shop: shop, name: 'Lan', role: 'staff') }
     let!(:package) do
-      Package.create!(shop: shop, name: '5 buổi', sessions_count: 5, price: 500_000)
+      Package.create!(shop: shop, name: '5 sessions', sessions_count: 5, price: 500_000)
     end
     let!(:membership) do
       Membership.create!(
         shop: shop,
         package: package,
-        customer_name: 'Khách Race',
+        customer_name: 'Race Customer',
         phone: '0905000000',
         sessions_left: 1
       )
@@ -122,7 +122,7 @@ RSpec.describe CheckInMembership do
       Shop.delete_all
     end
 
-    it '2 request cùng lúc chỉ trừ đúng 1 buổi, không trừ âm' do
+    it 'allows only one of two concurrent requests to consume the last session' do
       results, errors = run_concurrent_check_ins(membership_id: membership.id, staff_id: staff.id)
 
       expect(results.size).to eq(1)

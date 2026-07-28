@@ -26,7 +26,7 @@ function App() {
           PunchBook
         </h1>
         <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
-          Sổ Khách - Digital Membership Management
+          Digital Membership Management
         </p>
 
         <div className="flex h-24 items-center justify-center rounded-xl bg-slate-100 p-4 text-center font-semibold dark:bg-slate-800">

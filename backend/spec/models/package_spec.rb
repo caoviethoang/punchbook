@@ -3,13 +3,13 @@
 require 'rails_helper'
 
 RSpec.describe Package, type: :model do
-  let(:shop) { Shop.create!(name: 'Spa Lan', phone: '0901000000') }
+  let(:shop) { Shop.create!(name: 'Lan Spa', phone: '0901000000') }
 
   describe 'duration_days / sessions_count' do
     it 'allows session-based package with sessions_count only' do
       package = described_class.create!(
         shop: shop,
-        name: '10 buổi massage',
+        name: '10-session massage',
         sessions_count: 10,
         price: 1_000_000
       )
@@ -22,7 +22,7 @@ RSpec.describe Package, type: :model do
     it 'allows day-based package with duration_days only' do
       package = described_class.create!(
         shop: shop,
-        name: 'Tháng gym',
+        name: 'Monthly gym',
         duration_days: 30,
         price: 500_000
       )
@@ -43,7 +43,7 @@ RSpec.describe Package, type: :model do
 
       expect(package).not_to be_valid
       expect(package.errors[:base]).to include(
-        'Phải chọn đúng một: số buổi (sessions_count) hoặc số ngày (duration_days)'
+        'Must set exactly one of sessions_count or duration_days'
       )
     end
 

@@ -1,69 +1,69 @@
-# PunchBook — Docs prompt cho AI build app
+# PunchBook — Docs prompts for AI app build
 
-Tài liệu này chứa toàn bộ ngữ cảnh sản phẩm + các prompt theo từng giai đoạn để đưa cho AI coding tool (Claude Code, Cursor...) build lần lượt. Dán nguyên phần "Ngữ cảnh dự án" vào đầu mỗi phiên làm việc mới, sau đó dùng từng prompt giai đoạn theo thứ tự.
-
----
-
-## Ngữ cảnh dự án (dán vào đầu mỗi phiên AI mới)
-
-```
-Tôi đang build "PunchBook" — web app quản lý gói hội viên cho spa/nail/gym/phòng
-khám nhỏ tại Việt Nam. Đối tượng dùng: chủ tiệm không rành công nghệ, đang quản
-lý hội viên bằng Excel/sổ tay.
-
-Stack: Ruby on Rails (backend + render view), React (qua Vite Ruby hoặc
-react-rails) cho các màn hình tương tác, PostgreSQL, Sidekiq cho background
-job, Devise cho auth, RSpec cho test.
-
-Nguyên tắc bắt buộc:
-- Mọi logic liên quan tiền bạc/số buổi phải có test tự động đi kèm, không
-  merge nếu chưa có test case cho các trường hợp biên.
-- Toàn bộ webhook nhận từ bên thứ 3 (payOS) phải xác thực chữ ký/signature
-  trước khi xử lý, không tin dữ liệu request mù quáng.
-- UI phải tối giản tối đa — người dùng cuối là nhân viên tiệm không rành
-  công nghệ, thao tác chính (check-in) phải làm được trong 1-2 lần bấm.
-- Không thêm thư viện/dependency ngoài phạm vi cần thiết cho từng giai đoạn.
-```
+This document contains the full product context plus phase-by-phase prompts to give to an AI coding tool (Claude Code, Cursor, etc.) to build incrementally. Paste the entire "Project context" section at the start of each new AI session, then use each phase prompt in order.
 
 ---
 
-## Data model (ERD tóm tắt)
+## Project context (paste at the start of each new AI session)
 
 ```
-Shop (tiệm)
- └─ Staff        (nhân viên, thuộc 1 shop)
- └─ Package      (gói dịch vụ: tên, số buổi/ngày, giá)
- └─ Membership   (hội viên: tên, sđt, package_id, số buổi/ngày còn lại, hạn dùng)
-      └─ CheckIn (mỗi lượt đến: membership_id, staff_id, thời gian)
-      └─ Invoice (công nợ/thanh toán: membership_id, số tiền, trạng thái, mã giao dịch payOS)
-```
+I am building "PunchBook" — a web app for managing membership packages for small
+spa/nail/gym/clinic businesses in Vietnam. Target users: shop owners who are not
+tech-savvy and currently manage members with Excel/paper notebooks.
 
-Quan hệ: Shop 1-n Staff, Shop 1-n Package, Shop 1-n Membership, Package 1-n Membership, Membership 1-n CheckIn, Staff 1-n CheckIn, Membership 1-n Invoice.
+Stack: Ruby on Rails (backend + view rendering), React (via Vite Ruby or
+react-rails) for interactive screens, PostgreSQL, Sidekiq for background
+jobs, Devise for auth, RSpec for tests.
+
+Mandatory principles:
+- All logic related to money/session counts must have automated tests; do not
+  merge without test cases for edge cases.
+- All webhooks from third parties (payOS) must verify signature before processing;
+  never trust request data blindly.
+- UI must be as minimal as possible — end users are shop staff who are not
+  tech-savvy; the main action (check-in) must be doable in 1–2 clicks.
+- Do not add libraries/dependencies beyond what is needed for each phase.
+```
 
 ---
 
-## Danh sách tính năng theo giai đoạn
+## Data model (ERD summary)
 
-| Giai đoạn | Tính năng |
+```
+Shop
+ └─ Staff        (staff member, belongs to one shop)
+ └─ Package      (service package: name, session/day count, price)
+ └─ Membership   (member: name, phone, package_id, sessions/days remaining, expiry)
+      └─ CheckIn (each visit: membership_id, staff_id, timestamp)
+      └─ Invoice (balance/payment: membership_id, amount, status, payOS transaction id)
+```
+
+Relationships: Shop 1-n Staff, Shop 1-n Package, Shop 1-n Membership, Package 1-n Membership, Membership 1-n CheckIn, Staff 1-n CheckIn, Membership 1-n Invoice.
+
+---
+
+## Feature list by phase
+
+| Phase | Features |
 |---|---|
-| MVP (free) | Tạo gói, thêm hội viên, check-in, trừ buổi tự động, cảnh báo sắp hết hạn trên dashboard |
-| Trả phí (~50-70k/tháng) | Không giới hạn hội viên, nhắc tự động qua Zalo ZBS, nhiều tài khoản nhân viên, xuất báo cáo Excel |
+| MVP (free) | Create packages, add members, check-in, auto deduct sessions, expiry warnings on dashboard |
+| Paid (~50–70k VND/month) | Unlimited members, automated reminders via Zalo ZBS, multiple staff accounts, Excel report export |
 
 ---
 
-## Giai đoạn 1 — Khởi tạo project & data model
+## Phase 1 — Project setup & data model
 
 ```
-Khởi tạo Rails app mới tên "PunchBook" dùng PostgreSQL, kèm RSpec cho test,
-Devise cho authentication.
+Initialize a new Rails app named "PunchBook" using PostgreSQL, with RSpec for tests
+and Devise for authentication.
 
-Tạo migration + model cho các bảng sau, đúng theo association mô tả:
+Create migrations + models for the following tables, matching the described associations:
 
 - Shop: name (string), phone (string), plan (string, default "free")
 - Staff: shop (references), name (string), role (string)
 - Package: shop (references), name (string), sessions_count (integer,
-  nullable — null nghĩa là gói theo ngày không theo buổi), duration_days
-  (integer, nullable), price (integer, đơn vị VNĐ)
+  nullable — null means day-based package, not session-based), duration_days
+  (integer, nullable), price (integer, unit VND)
 - Membership: shop (references), package (references), customer_name
   (string), phone (string), sessions_left (integer), expires_at (date,
   nullable)
@@ -72,172 +72,169 @@ Tạo migration + model cho các bảng sau, đúng theo association mô tả:
 - Invoice: membership (references), amount (integer), status (string,
   default "pending"), payos_transaction_id (string, nullable)
 
-Thêm associations has_many/belongs_to đầy đủ ở từng model theo đúng ERD.
-Thêm validates cơ bản: presence cho các trường bắt buộc, numericality
+Add full has_many/belongs_to associations on each model per the ERD.
+Add basic validations: presence for required fields, numericality
 sessions_left >= 0.
 
-Setup Devise cho model Shop để chủ tiệm đăng nhập được.
+Set up Devise on the Shop model so shop owners can log in.
 
-Sau khi xong, chạy migration và xác nhận db:schema.rb đúng như mô tả.
+After finishing, run migrations and confirm db:schema.rb matches the description.
 ```
 
 ---
 
-## Giai đoạn 2 — Logic nghiệp vụ cốt lõi + test
+## Phase 2 — Core business logic + tests
 
 ```
-Viết service object CheckInMembership xử lý logic check-in:
+Write a CheckInMembership service object to handle check-in logic:
 - Input: membership, staff
-- Nếu package tính theo buổi: kiểm tra sessions_left > 0, nếu không raise
-  lỗi rõ ràng (ví dụ InsufficientSessionsError), nếu có thì trừ 1 trong
-  transaction và tạo CheckIn record
-- Nếu package tính theo ngày: kiểm tra expires_at >= Date.current, nếu hết
-  hạn thì raise lỗi, nếu còn hạn thì chỉ tạo CheckIn record (không trừ gì)
-- Toàn bộ thao tác phải nằm trong 1 database transaction để tránh race
-  condition khi 2 request check-in cùng lúc cho cùng 1 membership (dùng
-  pessimistic locking with_lock hoặc optimistic locking)
+- If package is session-based: check sessions_left > 0; if not, raise a clear
+  error (e.g. InsufficientSessionsError); if yes, deduct 1 within a
+  transaction and create a CheckIn record
+- If package is day-based: check expires_at >= Date.current; if expired raise
+  an error; if still valid, only create a CheckIn record (do not deduct anything)
+- The entire operation must be in one database transaction to avoid race
+  conditions when 2 check-in requests hit the same membership at once (use
+  pessimistic locking with_lock or optimistic locking)
 
-Viết RSpec test đầy đủ cho service này, bắt buộc cover các case:
-- Check-in thành công khi còn buổi/ngày
-- Check-in thất bại khi hết buổi/ngày, không được trừ âm
-- Check-in đồng thời (2 thread/request cùng lúc) không được trừ sai số buổi
-- Check-in cho gói theo ngày không làm thay đổi sessions_left
+Write full RSpec tests for this service, must cover:
+- Successful check-in when sessions/days remain
+- Failed check-in when out of sessions/expired; must not go negative
+- Concurrent check-in (2 threads/requests at once) must not deduct wrong session count
+- Check-in for day-based package must not change sessions_left
 
-Không viết thêm controller/route ở bước này, chỉ tập trung service + test.
+Do not write controller/routes at this step; focus only on service + tests.
 ```
 
 ---
 
-## Giai đoạn 3 — API/controller cho check-in & danh sách hội viên
+## Phase 3 — API/controller for check-in & member list
 
 ```
-Tạo controller MembershipsController và endpoint:
-- GET /memberships?query=... — tìm kiếm hội viên theo tên (dùng cho màn
-  hình check-in), chỉ trả về hội viên thuộc shop đang đăng nhập
-- POST /memberships/:id/check_in — gọi CheckInMembership, trả về JSON
-  gồm trạng thái mới của membership (sessions_left hoặc expires_at) hoặc
-  lỗi rõ ràng nếu thất bại
+Create MembershipsController and endpoints:
+- GET /memberships?query=... — search members by name (for check-in screen),
+  return only members belonging to the logged-in shop
+- POST /memberships/:id/check_in — call CheckInMembership, return JSON
+  with updated membership state (sessions_left or expires_at) or a clear
+  error if it fails
 
-Đảm bảo cả 2 endpoint đều scope theo current_shop (Devise), không cho phép
-shop A thao tác lên dữ liệu của shop B (viết test kiểm tra riêng cho việc
-này — đây là lỗ hổng bảo mật phổ biến nhất trong app đa tenant).
+Ensure both endpoints are scoped to current_shop (Devise); do not allow
+shop A to operate on shop B's data (write a dedicated test for this — the
+most common security hole in multi-tenant apps).
 
-Viết request spec (RSpec) cho cả 2 endpoint, bao gồm case cố tình gọi API
-với membership_id thuộc shop khác để xác nhận bị chặn (403 hoặc 404).
-```
-
----
-
-## Giai đoạn 4 — Giao diện check-in (React)
-
-```
-Setup Vite Ruby (hoặc react-rails nếu đã quen hơn) để nhúng React vào
-trang check-in.
-
-Build component CheckInScreen với:
-- Ô tìm kiếm hội viên theo tên, debounce 300ms, gọi API GET /memberships
-- Danh sách kết quả hiển thị tên, tên gói, số buổi/ngày còn lại
-- Nút "Check-in" cho từng hội viên — disable nếu đã hết buổi/hạn, hiển thị
-  "Đã hết" thay vì cho bấm
-- Khi bấm check-in: gọi POST /memberships/:id/check_in, cập nhật ngay số
-  buổi còn lại trên UI (optimistic update), rollback nếu API báo lỗi và
-  hiển thị thông báo lỗi rõ ràng
-
-Ưu tiên UI tối giản, chữ to, thao tác rõ ràng — người dùng là nhân viên
-tiệm không rành công nghệ. Không cần responsive phức tạp, chỉ cần chạy tốt
-trên tablet/laptop cỡ màn hình 10-15 inch.
+Write request specs (RSpec) for both endpoints, including deliberately calling
+the API with a membership_id from another shop and confirming it is blocked (403 or 404).
 ```
 
 ---
 
-## Giai đoạn 5 — Dashboard cho chủ tiệm
+## Phase 4 — Check-in UI (React)
 
 ```
-Build trang dashboard (React hoặc Rails view tuỳ bạn quyết định ở bước
-trước) hiển thị:
-- 3 số liệu: doanh thu tháng hiện tại (tổng amount của Invoice status=paid
-  trong tháng), số membership đang active, số membership sắp hết hạn
-  trong 7 ngày tới
-- Bảng danh sách hội viên: tên, gói, số buổi/ngày còn lại, trạng thái
-  (còn hạn / sắp hết / đã hết — tính dựa trên sessions_left hoặc
+Set up Vite Ruby (or react-rails if you prefer) to embed React on the
+check-in page.
+
+Build a CheckInScreen component with:
+- Member search by name, 300ms debounce, calls GET /memberships API
+- Result list showing name, package name, sessions/days remaining
+- "Check-in" button per member — disabled if out of sessions/expired, show
+  "Expired" instead of allowing click
+- On check-in click: call POST /memberships/:id/check_in, immediately update
+  remaining sessions on UI (optimistic update), rollback if API errors and
+  show a clear error message
+
+Prioritize minimal UI, large text, clear actions — users are shop staff who
+are not tech-savvy. No complex responsive design needed; just run well on
+10–15 inch tablet/laptop screens.
+```
+
+---
+
+## Phase 5 — Owner dashboard
+
+```
+Build a dashboard page (React or Rails view — your choice from earlier
+steps) showing:
+- 3 metrics: current month revenue (sum of Invoice amount where status=paid
+  in the month), active membership count, memberships expiring within
+  7 days
+- Member table: name, package, sessions/days remaining, status
+  (active / expiring soon / expired — computed from sessions_left or
   expires_at)
 
-Viết endpoint GET /dashboard trả về đủ dữ liệu trên trong 1 response,
-tránh N+1 query (dùng includes/eager load cho Package trong Membership).
+Write GET /dashboard endpoint returning all of the above in one response;
+avoid N+1 queries (use includes/eager load for Package on Membership).
 ```
 
 ---
 
-## Giai đoạn 6 — Tạo gói dịch vụ & thêm hội viên
+## Phase 6 — Create service packages & add members
 
 ```
-Build màn hình + endpoint cho phép chủ tiệm:
-- Tạo gói dịch vụ mới (PackagesController#create): tên, số buổi hoặc số
-  ngày, giá
-- Thêm hội viên mới (MembershipsController#create): tên, sđt, chọn gói có
-  sẵn — khi tạo thì sessions_left = package.sessions_count hoặc
+Build screens + endpoints allowing the shop owner to:
+- Create a new service package (PackagesController#create): name, session count
+  or day count, price
+- Add a new member (MembershipsController#create): name, phone, select existing
+  package — on create set sessions_left = package.sessions_count or
   expires_at = Date.current + package.duration_days
 
-Thêm validation: nếu shop đang ở plan "free" thì không cho tạo hội viên
-thứ 16 trở đi (raise lỗi rõ ràng, gợi ý nâng cấp gói trả phí).
+Add validation: if shop is on "free" plan, do not allow creating the
+16th member onward (raise a clear error, suggest upgrading to paid plan).
 ```
 
 ---
 
-## Giai đoạn 7 — Tích hợp payOS (thanh toán)
+## Phase 7 — payOS integration (payments)
 
 ```
-Tích hợp payOS để tạo link thanh toán QR khi hội viên cần gia hạn:
-- Endpoint POST /memberships/:id/invoices — tạo Invoice status=pending,
-  gọi payOS API tạo payment link, trả về QR code URL cho frontend hiển thị
-- Endpoint POST /webhooks/payos — nhận webhook xác nhận thanh toán từ
-  payOS. QUAN TRỌNG: phải xác thực chữ ký webhook theo tài liệu chính thức
-  của payOS trước khi xử lý, từ chối request không hợp lệ. Sau khi xác
-  thực thành công: cập nhật Invoice status=paid, cập nhật lại
-  sessions_left/expires_at của Membership tương ứng theo gói đã mua
+Integrate payOS to create QR payment links when a member needs renewal:
+- POST /memberships/:id/invoices — create Invoice status=pending,
+  call payOS API to create payment link, return QR code URL for frontend display
+- POST /webhooks/payos — receive payment confirmation webhook from
+  payOS. IMPORTANT: verify webhook signature per official payOS docs
+  before processing; reject invalid requests. After successful verification:
+  update Invoice status=paid, refresh sessions_left/expires_at on the
+  corresponding Membership per the purchased package
 
-Viết test riêng cho việc xác thực webhook: request có chữ ký hợp lệ được
-xử lý, request có chữ ký sai hoặc thiếu bị từ chối và không tạo thay đổi
-gì trong DB.
+Write dedicated tests for webhook verification: valid signature is processed,
+invalid or missing signature is rejected and makes no DB changes.
 
-Đọc kỹ tài liệu payOS thực tế (https://payos.vn) trước khi code phần này —
-không tự suy đoán tên field hoặc cấu trúc webhook.
-```
-
----
-
-## Giai đoạn 8 — Nhắc tự động qua Zalo (chỉ áp dụng plan trả phí)
-
-```
-Viết Sidekiq job chạy hàng ngày (schedule qua sidekiq-cron hoặc whenever):
-- Quét toàn bộ Membership thuộc shop có plan="paid", có sessions_left <= 3
-  hoặc expires_at trong vòng 7 ngày tới
-- Với mỗi membership tìm được, gọi Zalo ZBS API gửi tin nhắc kèm link
-  thanh toán (tái sử dụng endpoint tạo invoice ở giai đoạn 7)
-- Log lại việc đã gửi để tránh gửi trùng nhiều lần trong cùng 1 ngày cho
-  cùng 1 hội viên
-
-Đọc kỹ tài liệu Zalo ZBS thực tế trước khi code — API này ít phổ biến,
-không tự suy đoán cấu trúc request.
+Read the actual payOS docs (https://payos.vn) before coding this part —
+do not guess field names or webhook structure.
 ```
 
 ---
 
-## Giai đoạn 9 — PWA
+## Phase 8 — Automated Zalo reminders (paid plan only)
 
 ```
-Thêm manifest.json và service worker cơ bản để app có thể "cài đặt" như
-app desktop từ trình duyệt Chrome/Edge. Cache các asset tĩnh (JS/CSS) để
-tải nhanh hơn ở lần mở sau, không cần cache dữ liệu động (API response).
+Write a Sidekiq job running daily (schedule via sidekiq-cron or whenever):
+- Scan all Memberships for shops with plan="paid", where sessions_left <= 3
+  or expires_at within the next 7 days
+- For each membership found, call Zalo ZBS API to send a reminder with payment
+  link (reuse invoice creation endpoint from phase 7)
+- Log sends to avoid duplicate messages the same day for the same member
+
+Read the actual Zalo ZBS docs before coding — this API is uncommon;
+do not guess request structure.
 ```
 
 ---
 
-## Checklist review trước khi coi 1 giai đoạn là "xong"
+## Phase 9 — PWA
 
-- [ ] Có test tự động cho logic nghiệp vụ, không chỉ test bằng tay
-- [ ] Mọi endpoint có scope đúng theo shop hiện tại (không rò rỉ dữ liệu
-      chéo giữa các shop)
-- [ ] Webhook/API bên thứ 3 có xác thực chữ ký, không tin dữ liệu mù quáng
-- [ ] UI đã thử trên dữ liệu seed thật, không chỉ trên happy path
-- [ ] Không còn TODO/code tạm bợ nào ảnh hưởng tới tính đúng của số buổi/tiền
+```
+Add manifest.json and a basic service worker so the app can be "installed" as a
+desktop app from Chrome/Edge. Cache static assets (JS/CSS) for faster load on
+subsequent opens; do not cache dynamic data (API responses).
+```
+
+---
+
+## Review checklist before considering a phase "done"
+
+- [ ] Automated tests exist for business logic, not just manual testing
+- [ ] Every endpoint is scoped to the current shop (no cross-shop data leaks)
+- [ ] Third-party webhooks/APIs verify signatures; never trust data blindly
+- [ ] UI tested with realistic seed data, not only happy path
+- [ ] No remaining TODO/temporary code affecting session count or money correctness

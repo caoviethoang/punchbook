@@ -1,6 +1,6 @@
 # 05 - Information Architecture
 
-Product: Sổ Khách
+Product: PunchBook
 
 Version: 2.0
 
@@ -18,49 +18,49 @@ Related Documents
 
 # 1. Purpose
 
-Tài liệu này định nghĩa cấu trúc thông tin của toàn bộ sản phẩm.
+This document defines the information architecture of the entire product.
 
-Mục tiêu của Information Architecture (IA) là:
+Goals of Information Architecture (IA):
 
-- Xác định các module của hệ thống.
-- Xác định mối quan hệ giữa các màn hình.
-- Định nghĩa navigation.
-- Giảm số lần chuyển màn hình.
-- Giúp mọi người cùng nhìn thấy một kiến trúc thống nhất trước khi thiết kế UI.
+- Define system modules.
+- Define relationships between screens.
+- Define navigation.
+- Reduce screen transitions.
+- Give everyone a unified architecture view before UI design.
 
-IA không mô tả giao diện.
+IA does not describe the interface.
 
-IA chỉ mô tả cách tổ chức thông tin.
+IA only describes how information is organized.
 
 ---
 
 # 2. Design Principles
 
-Sổ Khách được chia thành hai ứng dụng logic.
+PunchBook is split into two logical applications.
 
 ## Front Desk
 
-Dành cho Staff.
+For Staff.
 
-Tập trung vào:
+Focused on:
 
-- tốc độ
-- ít thao tác
-- ít menu
+- speed
+- few actions
+- minimal menu
 
 ---
 
 ## Back Office
 
-Dành cho Owner.
+For Owner.
 
-Tập trung vào:
+Focused on:
 
-- quản trị
-- báo cáo
-- cấu hình
+- administration
+- reports
+- configuration
 
-Hai ứng dụng sử dụng chung database nhưng có navigation khác nhau.
+Both applications share one database but have different navigation.
 
 ---
 
@@ -68,7 +68,7 @@ Hai ứng dụng sử dụng chung database nhưng có navigation khác nhau.
 
 ```
 
-Sổ Khách
+PunchBook
 
 ├── Owner Portal
 
@@ -152,11 +152,11 @@ Check-in Home
 
 ```
 
-Không có Dashboard.
+No Dashboard.
 
-Không có Report.
+No Report.
 
-Không có Sidebar.
+No Sidebar.
 
 ---
 
@@ -164,7 +164,7 @@ Không có Sidebar.
 
 ## Owner
 
-Sidebar bên trái.
+Left sidebar.
 
 Desktop-first.
 
@@ -172,11 +172,11 @@ Desktop-first.
 
 ## Staff
 
-Một màn hình duy nhất.
+Single screen.
 
-Không dùng Sidebar.
+No Sidebar.
 
-Toàn bộ thao tác diễn ra trong một flow.
+All actions happen in one flow.
 
 ---
 
@@ -256,14 +256,14 @@ Success
 
 # 8. Search Strategy
 
-Search là trung tâm của Staff Portal.
+Search is the center of the Staff Portal.
 
-Hỗ trợ:
+Supports:
 
-- Tên
-- Số điện thoại
+- Name
+- Phone number
 
-Trong tương lai:
+In the future:
 
 - QR
 - Membership ID
@@ -274,21 +274,21 @@ Trong tương lai:
 
 ## Dashboard
 
-Mật độ cao.
+High density.
 
-Nhiều thông tin.
+Lots of information.
 
-Ít thao tác.
+Few actions.
 
 ---
 
 ## Check-in
 
-Mật độ thấp.
+Low density.
 
-Ít thông tin.
+Little information.
 
-Một hành động.
+One action.
 
 ---
 
@@ -316,25 +316,25 @@ Check-in
 
 Payment
 
-Thông tin được tổ chức theo hành trình của khách hàng, không phải theo bảng dữ liệu.
+Information is organized by customer journey, not by database tables.
 
-Ví dụ:
+Example:
 
-Tại màn Customer Detail có thể xem:
+On Customer Detail you can view:
 
-- Gói hiện tại
-- Lịch sử check-in
-- Lịch sử thanh toán
+- Current package
+- Check-in history
+- Payment history
 
-Người dùng không cần biết các bảng Membership hay Payment tồn tại.
+Users do not need to know Membership or Payment tables exist.
 
 ---
 
 # 11. Navigation Rules
 
-Không quá 3 cấp màn hình.
+No more than 3 screen levels deep.
 
-Ví dụ:
+Example:
 
 Dashboard
 
@@ -346,27 +346,27 @@ Customer List
 
 Customer Detail
 
-Đây là độ sâu tối đa.
+This is the maximum depth.
 
 ---
 
 # 12. Future Expansion
 
-Kiến trúc phải hỗ trợ:
+Architecture must support:
 
 - Multiple Branch
 - Mobile App
 - Tablet Mode
 - QR Check-in
-- API Public
+- Public API
 
-Mà không cần thay đổi navigation chính.
+Without changing core navigation.
 
 ---
 
 # 13. Out of Scope
 
-Không thiết kế riêng:
+Not designed separately:
 
 - POS
 - CRM

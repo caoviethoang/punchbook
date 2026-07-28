@@ -8,118 +8,118 @@ Owner: Louis Cao
 
 ---
 
-# Sổ Khách
+# PunchBook
 
-> Thay cuốn sổ khách bằng một cú chạm.
+> Replace the customer notebook with one tap.
 
 ---
 
 # 1. Vision
 
-Sổ Khách là một ứng dụng giúp các spa, nail, gym và phòng khám nhỏ quản lý hội viên bằng cách thay thế hoàn toàn cuốn sổ giấy truyền thống.
+PunchBook is an app that helps small spas, nail salons, gyms, and clinics manage members by fully replacing the traditional paper notebook.
 
-Mục tiêu của sản phẩm không phải là xây dựng một CRM, ERP hay hệ thống quản trị doanh nghiệp.
+The product goal is not to build a CRM, ERP, or enterprise management system.
 
-Mục tiêu duy nhất là giúp nhân viên lễ tân có thể xử lý khách nhanh hơn, chính xác hơn và không còn phải ghi chép thủ công.
+The sole goal is to help front-desk staff serve customers faster, more accurately, and without manual record-keeping.
 
-Nếu ngày mai một tiệm có thể vứt bỏ cuốn sổ khách thì Sổ Khách đã hoàn thành sứ mệnh.
+If tomorrow a shop can throw away its customer notebook, PunchBook has fulfilled its mission.
 
 ---
 
 # 2. Mission
 
-Giúp các cửa hàng nhỏ chuyển đổi số bằng phần mềm đơn giản nhất có thể.
+Help small shops go digital with the simplest software possible.
 
-Một nhân viên mới có thể học sử dụng trong vòng 30 giây.
+A new staff member can learn to use it in 30 seconds.
 
-Một chủ tiệm không cần đọc hướng dẫn vẫn có thể sử dụng được.
+A shop owner can use it without reading a manual.
 
 ---
 
 # 3. Problem Statement
 
-Đa số spa nhỏ tại Việt Nam hiện quản lý khách bằng:
+Most small spas in Vietnam currently manage customers with:
 
-- sổ tay
+- paper notebooks
 - Excel
-- Google Sheet
-- ghi nhớ
+- Google Sheets
+- memory
 
-Điều này tạo ra rất nhiều vấn đề.
+This creates many problems.
 
-## Không biết khách còn bao nhiêu buổi
+## Not knowing how many sessions a customer has left
 
-Ví dụ
+Example
 
 Lan
 
 Massage VIP
 
-10 buổi
+10 sessions
 
 ...
 
-Không ai nhớ đã sử dụng bao nhiêu.
+Nobody remembers how many were used.
 
-Nhân viên phải lật sổ.
+Staff flip through the notebook.
 
-Đếm.
+Count.
 
-Dễ sai.
-
----
-
-## Quên nhắc gia hạn
-
-Khách chỉ còn
-
-1 buổi.
-
-Nhân viên không nhớ.
-
-Khách đi về.
-
-Không quay lại.
+Easy to get wrong.
 
 ---
 
-## Tranh cãi
+## Forgetting renewal reminders
 
-Khách nói:
+Customer has only
 
-> Em còn 3 buổi.
+1 session left.
 
-Nhân viên nói:
+Staff forget.
 
-> Chị chỉ còn 2.
+Customer leaves.
 
-Không có lịch sử rõ ràng.
-
----
-
-## Không biết hôm nay thu bao nhiêu
-
-Cuối ngày.
-
-Chủ tiệm phải cộng tiền bằng tay.
+Does not return.
 
 ---
 
-## Không kiểm soát được nhân viên
+## Disputes
 
-Nhân viên ghi thiếu.
+Customer says:
 
-Quên ghi.
+> I still have 3 sessions.
 
-Ghi nhầm.
+Staff says:
 
-Không ai biết.
+> You only have 2 left.
+
+No clear history.
+
+---
+
+## Not knowing today's revenue
+
+End of day.
+
+Shop owner adds up cash by hand.
+
+---
+
+## No control over staff
+
+Staff under-record.
+
+Forget to record.
+
+Record incorrectly.
+
+Nobody knows.
 
 ---
 
 # 4. Product Philosophy
 
-Sổ Khách được xây dựng dựa trên 5 nguyên tắc.
+PunchBook is built on 5 principles.
 
 ---
 
@@ -127,17 +127,17 @@ Sổ Khách được xây dựng dựa trên 5 nguyên tắc.
 
 ### Speed over Features
 
-Nhanh quan trọng hơn nhiều tính năng.
+Speed matters more than many features.
 
-Nếu phải chọn giữa
+If you must choose between
 
-- thêm tính năng
+- adding a feature
 
-hoặc
+or
 
-- giảm 2 lần click
+- removing 2 clicks
 
-thì luôn giảm click.
+always remove clicks.
 
 ---
 
@@ -145,21 +145,21 @@ thì luôn giảm click.
 
 ### One Screen One Job
 
-Mỗi màn hình chỉ giải quyết một việc.
+Each screen solves one task only.
 
-Ví dụ
+Example
 
 Dashboard
 
 ↓
 
-chỉ xem tình hình.
+view status only.
 
-Không tạo khách.
+Do not create customers.
 
-Không check-in.
+Do not check in.
 
-Không thanh toán.
+Do not take payment.
 
 ---
 
@@ -167,11 +167,11 @@ Check-in
 
 ↓
 
-chỉ check-in.
+check in only.
 
-Không chỉnh sửa gói.
+Do not edit packages.
 
-Không xem báo cáo.
+Do not view reports.
 
 ---
 
@@ -179,11 +179,11 @@ Không xem báo cáo.
 
 ### Everything starts from Check-in
 
-Toàn bộ hệ thống xoay quanh thao tác Check-in.
+The whole system revolves around Check-in.
 
-Đây là thao tác được sử dụng nhiều nhất.
+This is the most-used action.
 
-Mọi quyết định UX đều phải tối ưu cho màn hình này.
+Every UX decision must optimize this screen.
 
 ---
 
@@ -191,13 +191,13 @@ Mọi quyết định UX đều phải tối ưu cho màn hình này.
 
 ### No Training Required
 
-Một nhân viên mới.
+A new staff member.
 
-Lần đầu nhìn thấy app.
+Sees the app for the first time.
 
-Có thể tự sử dụng.
+Can use it on their own.
 
-Không cần đọc hướng dẫn.
+No manual required.
 
 ---
 
@@ -205,7 +205,7 @@ Không cần đọc hướng dẫn.
 
 ### Replace Paper
 
-Nếu một tính năng không giúp thay thế cuốn sổ giấy thì không nên đưa vào MVP.
+If a feature does not help replace the paper notebook, it should not go into the MVP.
 
 ---
 
@@ -213,23 +213,23 @@ Nếu một tính năng không giúp thay thế cuốn sổ giấy thì không n
 
 ## Primary
 
-Spa nhỏ
+Small spa
 
-3–10 nhân viên.
+3–10 staff.
 
-50–500 khách.
+50–500 customers.
 
 ---
 
 Nail
 
-2–10 nhân viên.
+2–10 staff.
 
 ---
 
-Gym mini
+Mini gym
 
-50–300 hội viên.
+50–300 members.
 
 ---
 
@@ -237,58 +237,58 @@ Massage
 
 ---
 
-Clinic nhỏ
+Small clinic
 
 ---
 
 # 6. Customers We Do NOT Target
 
-Trong giai đoạn đầu.
+In the early phase.
 
-Sổ Khách KHÔNG hướng tới:
+PunchBook does NOT target:
 
-- Chuỗi spa lớn
-- Hệ thống hàng chục chi nhánh
-- Bệnh viện
-- CRM doanh nghiệp
+- Large spa chains
+- Systems with dozens of branches
+- Hospitals
+- Enterprise CRM
 - ERP
-- POS chuyên nghiệp
+- Professional POS
 
-Đây là những thị trường hoàn toàn khác.
+These are entirely different markets.
 
 ---
 
 # 7. Product Positioning
 
-Không phải
+Not
 
 CRM
 
-Không phải
+Not
 
 ERP
 
-Không phải
+Not
 
 POS
 
-Không phải
+Not
 
 Booking System
 
-Mà là
+But
 
 Digital Membership Notebook.
 
-Một cuốn sổ khách điện tử.
+An electronic customer notebook.
 
 ---
 
 # 8. Core Value Proposition
 
-Nhân viên chỉ cần:
+Staff only need to:
 
-Tìm khách
+Find customer
 
 ↓
 
@@ -298,79 +298,79 @@ Check-in
 
 Done.
 
-Toàn bộ phần còn lại do hệ thống xử lý.
+The system handles everything else.
 
-- trừ buổi
-- kiểm tra hết hạn
-- tạo lịch sử
-- nhắc gia hạn
-- thống kê
+- deduct sessions
+- check expiry
+- create history
+- renewal reminders
+- statistics
 
 ---
 
 # 9. Success Metrics
 
-## Người dùng
+## Users
 
-Một nhân viên mới.
+A new staff member.
 
-Có thể check-in thành công.
+Can complete a successful check-in.
 
-Trong vòng
+Within
 
-30 giây.
+30 seconds.
 
 ---
 
-## Hiệu suất
+## Performance
 
-Một lần check-in.
+One check-in.
 
-Không quá
+No more than
 
-5 giây.
+5 seconds.
 
 ---
 
 ## MVP
 
-Một chủ tiệm.
+One shop owner.
 
-Có thể bỏ hoàn toàn sổ giấy.
+Can fully abandon paper notebooks.
 
-Sau 1 tuần.
+After 1 week.
 
 ---
 
 ## Business
 
-Trong 90 ngày.
+Within 90 days.
 
-Có ít nhất
+At least
 
-5 cửa hàng trả phí.
+5 paying shops.
 
 ---
 
 # 10. Product Principles
 
-Khi có yêu cầu tính năng mới.
+When a new feature is requested.
 
-Luôn hỏi.
+Always ask.
 
-"Nó có giúp khách check-in nhanh hơn không?"
+"Does it help customers check in faster?"
 
-Nếu
+If
 
-Có
+Yes
 
-→ xem xét.
+→ consider it.
 
-Nếu
+If
 
-Không
+No
 
-→ đưa vào backlog.
+→ put it in the backlog.
 
 ---
 
@@ -378,24 +378,24 @@ Không
 
 ## MVP
 
-- Đăng nhập
+- Login
 - Dashboard
-- Khách hàng
-- Gói dịch vụ
-- Hội viên
+- Customers
+- Service packages
+- Memberships
 - Check-in
-- Gia hạn
-- Thanh toán
-- Lịch sử
-- Cài đặt
+- Renewal
+- Payment
+- History
+- Settings
 
 ---
 
 ## Phase 2
 
 - Zalo Notification
-- Dashboard nâng cao
-- Báo cáo
+- Advanced dashboard
+- Reports
 - Export Excel
 
 ---
@@ -406,7 +406,7 @@ Không
 - API
 - Multi Shop
 - Audit Log
-- Phân quyền nâng cao
+- Advanced permissions
 
 ---
 
@@ -424,57 +424,57 @@ Không
 
 # 12. Things We Will Never Build
 
-Đây là danh sách "Anti Goals".
+This is the "Anti Goals" list.
 
-Ít nhất trong 2 năm đầu.
+At least for the first 2 years.
 
-Không làm.
+We will not build.
 
 - Chat
 - CRM Marketing
 - Email Marketing
 - SMS Marketing
 - Facebook Ads
-- Kế toán
-- Quản lý kho
-- Quản lý nhân sự
-- POS bán lẻ
+- Accounting
+- Inventory management
+- HR management
+- Retail POS
 - ERP
 
-Nếu có nhu cầu.
+If there is demand.
 
-Sẽ tích hợp.
+We will integrate.
 
-Không tự xây.
+We will not build it ourselves.
 
 ---
 
 # 13. Product Culture
 
-Khi phải lựa chọn.
+When forced to choose.
 
-Đơn giản luôn thắng.
+Simple always wins.
 
-Nhanh luôn thắng.
+Fast always wins.
 
-Ít nút bấm luôn thắng.
+Fewer buttons always wins.
 
-Một thao tác luôn thắng ba thao tác.
+One action always beats three actions.
 
 ---
 
 # 14. Vision 3 Years
 
-Trong vòng 3 năm.
+Within 3 years.
 
-Sổ Khách hướng tới trở thành ứng dụng quản lý hội viên đơn giản nhất Việt Nam.
+PunchBook aims to become the simplest membership management app in Vietnam.
 
-Không phải ứng dụng nhiều tính năng nhất.
+Not the app with the most features.
 
-Không phải ứng dụng đẹp nhất.
+Not the prettiest app.
 
-Mà là ứng dụng mà một chủ tiệm có thể mở lên và sử dụng ngay lập tức.
+But the app a shop owner can open and use immediately.
 
-Nếu một nhân viên mới mất hơn 30 giây để học cách dùng.
+If a new staff member takes more than 30 seconds to learn how to use it.
 
-Chúng ta đã thất bại.
+We have failed.

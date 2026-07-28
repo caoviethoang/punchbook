@@ -1,4 +1,4 @@
-# PunchBook (Sổ Khách)
+# PunchBook
 
 PunchBook is a SaaS application for small businesses (Spa, Nail, Gym, Massage, Clinic) to manage customers and memberships.
 
