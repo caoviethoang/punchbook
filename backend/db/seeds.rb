@@ -1,30 +1,46 @@
 # frozen_string_literal: true
 
-def seed_shop(index)
-  shop = Shop.create!(
-    name: "TallyPass Studio #{index + 1}",
-    phone: "090123456#{index}"
-  )
-
+def create_staffs(shop)
   staff1 = shop.staffs.create!(name: 'Nguyễn Văn A', role: 'Manager')
   staff2 = shop.staffs.create!(name: 'Trần Thị B', role: 'Trainer')
-
-  package_basic = shop.packages.create!(name: 'Gói Cơ Bản (10 Buổi)', sessions_count: 10, price: 1_000_000)
-  package_pro   = shop.packages.create!(name: 'Gói Pro (30 Buổi)',    sessions_count: 30, price: 2_500_000)
-
-  membership1 = Membership.create!(shop: shop, package: package_basic, customer_name: 'Lê Văn C',
-                                   phone: '0987654321', sessions_left: 8, expires_at: 3.months.from_now)
-  membership2 = Membership.create!(shop: shop, package: package_pro, customer_name: 'Phạm Thị D',
-                                   phone: '0977654321', sessions_left: 30, expires_at: 6.months.from_now)
-
-  CheckIn.create!(membership: membership1, staff: staff2, checked_in_at: 2.days.ago)
-  CheckIn.create!(membership: membership1, staff: staff1, checked_in_at: Time.current)
-
-  Invoice.create!(membership: membership1, amount: package_basic.price, status: 'PAID',
-                  payos_transaction_id: "PAYOS_#{SecureRandom.hex(6).upcase}")
-  Invoice.create!(membership: membership2, amount: package_pro.price, status: 'PENDING',
-                  payos_transaction_id: nil)
+  [staff1, staff2]
 end
+
+def create_packages(shop)
+  basic = shop.packages.create!(name: 'Gói Cơ Bản (10 Buổi)', sessions_count: 10, price: 1_000_000)
+  pro   = shop.packages.create!(name: 'Gói Pro (30 Buổi)',    sessions_count: 30, price: 2_500_000)
+  [basic, pro]
+end
+
+def create_memberships(shop, package_basic, package_pro)
+  m1 = Membership.create!(shop: shop, package: package_basic, customer_name: 'Lê Văn C',
+                           phone: '0987654321', sessions_left: 8, expires_at: 3.months.from_now)
+  m2 = Membership.create!(shop: shop, package: package_pro, customer_name: 'Phạm Thị D',
+                           phone: '0977654321', sessions_left: 30, expires_at: 6.months.from_now)
+  [m1, m2]
+end
+
+def seed_check_ins_and_invoices(memberships, staffs, packages)
+  m1, m2 = memberships
+  staff1, staff2 = staffs
+  package_basic, package_pro = packages
+
+  CheckIn.create!(membership: m1, staff: staff2, checked_in_at: 2.days.ago)
+  CheckIn.create!(membership: m1, staff: staff1, checked_in_at: Time.current)
+
+  Invoice.create!(membership: m1, amount: package_basic.price, status: 'PAID',
+                  payos_transaction_id: "PAYOS_#{SecureRandom.hex(6).upcase}")
+  Invoice.create!(membership: m2, amount: package_pro.price, status: 'PENDING', payos_transaction_id: nil)
+end
+
+def seed_shop(index)
+  shop     = Shop.create!(name: "TallyPass Studio #{index + 1}", phone: "090123456#{index}")
+  staffs   = create_staffs(shop)
+  packages = create_packages(shop)
+  members  = create_memberships(shop, packages[0], packages[1])
+  seed_check_ins_and_invoices(members, staffs, packages)
+end
+
 
 Rails.logger.debug 'Xóa dữ liệu cũ...'
 Invoice.destroy_all
