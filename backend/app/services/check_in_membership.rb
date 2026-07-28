@@ -28,9 +28,8 @@ class CheckInMembership
 
   attr_reader :membership, :staff
 
-  # sessions_count present => gói theo buổi; null => gói theo ngày
   def session_based?
-    membership.package.sessions_count.present?
+    membership.package.session_based?
   end
 
   def check_in_session_based!
