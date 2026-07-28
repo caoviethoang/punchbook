@@ -2,6 +2,7 @@
 *.log
 backend/log/*
 !backend/log/.keep
+frontend/tmp/*
 
 # Frontend (also covered by frontend/.gitignore)
 frontend/logs/

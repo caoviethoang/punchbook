@@ -33,9 +33,9 @@ RSpec.describe CheckInMembership do
     it 'check-in thất bại khi hết buổi, không trừ âm và không tạo CheckIn' do
       membership.update!(sessions_left: 0)
 
-      expect {
+      expect do
         described_class.call(membership: membership, staff: staff)
-      }.to raise_error(CheckInMembership::InsufficientSessionsError, 'Hội viên đã hết buổi')
+      end.to raise_error(CheckInMembership::InsufficientSessionsError, 'Hội viên đã hết buổi')
 
       expect(membership.reload.sessions_left).to eq(0)
       expect(CheckIn.count).to eq(0)
@@ -44,9 +44,9 @@ RSpec.describe CheckInMembership do
     it 'không cho sessions_left âm khi đã hết buổi' do
       membership.update!(sessions_left: 0)
 
-      expect {
+      expect do
         described_class.call(membership: membership, staff: staff)
-      }.to raise_error(CheckInMembership::InsufficientSessionsError)
+      end.to raise_error(CheckInMembership::InsufficientSessionsError)
 
       expect(membership.reload.sessions_left).to be >= 0
     end
@@ -79,17 +79,17 @@ RSpec.describe CheckInMembership do
     it 'check-in thành công đúng ngày hết hạn (expires_at = hôm nay)' do
       membership.update!(expires_at: Date.current)
 
-      expect {
+      expect do
         described_class.call(membership: membership, staff: staff)
-      }.to change(CheckIn, :count).by(1)
+      end.to change(CheckIn, :count).by(1)
     end
 
     it 'check-in thất bại khi hết hạn, không tạo CheckIn' do
       membership.update!(expires_at: Date.current - 1.day)
 
-      expect {
+      expect do
         described_class.call(membership: membership, staff: staff)
-      }.to raise_error(CheckInMembership::MembershipExpiredError, 'Hội viên đã hết hạn')
+      end.to raise_error(CheckInMembership::MembershipExpiredError, 'Hội viên đã hết hạn')
 
       expect(CheckIn.count).to eq(0)
       expect(membership.reload.sessions_left).to be_nil
@@ -98,9 +98,9 @@ RSpec.describe CheckInMembership do
     it 'check-in thất bại khi không có expires_at' do
       membership.update!(expires_at: nil)
 
-      expect {
+      expect do
         described_class.call(membership: membership, staff: staff)
-      }.to raise_error(CheckInMembership::MembershipExpiredError)
+      end.to raise_error(CheckInMembership::MembershipExpiredError)
     end
   end
 
