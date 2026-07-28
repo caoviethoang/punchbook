@@ -43,9 +43,9 @@ def seed_check_ins_and_invoices(memberships, staffs, packages)
   CheckIn.create!(membership: m1, staff: staff2, checked_in_at: 2.days.ago)
   CheckIn.create!(membership: m1, staff: staff1, checked_in_at: Time.current)
 
-  Invoice.create!(membership: m1, amount: package_basic.price, status: 'PAID',
+  Invoice.create!(membership: m1, amount: package_basic.price, status: 'paid',
                   payos_transaction_id: "PAYOS_#{SecureRandom.hex(6).upcase}")
-  Invoice.create!(membership: m2, amount: package_pro.price, status: 'PENDING', payos_transaction_id: nil)
+  Invoice.create!(membership: m2, amount: package_pro.price, payos_transaction_id: nil)
 end
 
 def seed_shop(index)
