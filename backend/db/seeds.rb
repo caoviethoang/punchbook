@@ -48,10 +48,21 @@ def seed_check_ins_and_invoices(memberships, staffs, packages)
   Invoice.create!(membership: m2, amount: package_pro.price, payos_transaction_id: nil)
 end
 
+def create_seed_shop(index, plan)
+  Shop.create!(
+    name: "PunchBook Studio #{index + 1}",
+    phone: "090123456#{index}",
+    plan: plan,
+    email: "studio#{index + 1}@punchbook.test",
+    password: 'password123',
+    password_confirmation: 'password123'
+  )
+end
+
 def seed_shop(index)
   # First shop is free (default); second is paid for limit / Zalo demos later
   plan = index.zero? ? 'free' : 'paid'
-  shop = Shop.create!(name: "PunchBook Studio #{index + 1}", phone: "090123456#{index}", plan: plan)
+  shop = create_seed_shop(index, plan)
   staffs   = create_staffs(shop)
   packages = create_packages(shop)
   members  = create_memberships(shop, packages[0], packages[1], packages[2])

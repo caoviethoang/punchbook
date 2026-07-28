@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe Invoice, type: :model do
-  let(:shop) { Shop.create!(name: 'Lan Spa', phone: '0901000000') }
+  let(:shop) { create_shop }
   let(:package) do
     Package.create!(shop: shop, name: '10-session massage', sessions_count: 10, price: 1_000_000)
   end
