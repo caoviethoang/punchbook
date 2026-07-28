@@ -1,0 +1,7 @@
+# Logs
+*.log
+backend/log/*
+!backend/log/.keep
+
+# Frontend (also covered by frontend/.gitignore)
+frontend/logs/
