@@ -22,6 +22,9 @@ gem 'sidekiq', '~> 7.0'
 # JWT Authentication
 gem 'jwt', '~> 2.9'
 
+# Shop owner authentication (password hashing via Devise; API sessions via JWT)
+gem 'devise', '~> 5.0'
+
 gem 'tzinfo-data', platforms: %i[windows jruby]
 
 group :development, :test do

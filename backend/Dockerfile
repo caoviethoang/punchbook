@@ -24,6 +24,12 @@ RUN bundle install
 # Final image
 FROM base
 
+# Dev compose mounts Gemfile + bundle volume and runs bundle install at runtime,
+# so native gems (bcrypt/devise) need a compiler toolchain here too.
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y build-essential git && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
 # Copy built gems
 COPY --from=build /usr/local/bundle /usr/local/bundle
 COPY --from=build /app /app

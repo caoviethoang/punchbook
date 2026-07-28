@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe Package, type: :model do
-  let(:shop) { Shop.create!(name: 'Lan Spa', phone: '0901000000') }
+  let(:shop) { create_shop }
 
   describe 'duration_days / sessions_count' do
     it 'allows session-based package with sessions_count only' do

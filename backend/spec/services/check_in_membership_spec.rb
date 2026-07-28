@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe CheckInMembership do
-  let(:shop) { Shop.create!(name: 'Lan Spa', phone: '0901000000') }
+  let(:shop) { create_shop(name: 'Lan Spa', phone: '0901000000') }
   let(:staff) { Staff.create!(shop: shop, name: 'Mai', role: 'staff') }
 
   describe 'session-based package' do
@@ -99,7 +99,7 @@ RSpec.describe CheckInMembership do
     # Transactional fixtures hide data from other threads — disable for a real race test
     self.use_transactional_tests = false
 
-    let!(:shop) { Shop.create!(name: 'Race Gym', phone: '0904000000') }
+    let!(:shop) { create_shop(name: 'Race Gym', phone: '0904000000') }
     let!(:staff) { Staff.create!(shop: shop, name: 'Lan', role: 'staff') }
     let!(:package) do
       Package.create!(shop: shop, name: '5 sessions', sessions_count: 5, price: 500_000)
