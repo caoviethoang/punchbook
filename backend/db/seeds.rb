@@ -34,7 +34,9 @@ def seed_check_ins_and_invoices(memberships, staffs, packages)
 end
 
 def seed_shop(index)
-  shop     = Shop.create!(name: "TallyPass Studio #{index + 1}", phone: "090123456#{index}")
+  # Shop đầu free (mặc định), shop thứ hai paid để demo giới hạn / Zalo sau này
+  plan = index.zero? ? 'free' : 'paid'
+  shop = Shop.create!(name: "TallyPass Studio #{index + 1}", phone: "090123456#{index}", plan: plan)
   staffs   = create_staffs(shop)
   packages = create_packages(shop)
   members  = create_memberships(shop, packages[0], packages[1])
