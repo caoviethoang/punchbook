@@ -9,15 +9,30 @@ end
 def create_packages(shop)
   basic = shop.packages.create!(name: 'Gói Cơ Bản (10 Buổi)', sessions_count: 10, price: 1_000_000)
   pro   = shop.packages.create!(name: 'Gói Pro (30 Buổi)',    sessions_count: 30, price: 2_500_000)
-  [basic, pro]
+  month = shop.packages.create!(name: 'Gói Tháng (30 Ngày)', duration_days: 30, price: 800_000)
+  [basic, pro, month]
 end
 
-def create_memberships(shop, package_basic, package_pro)
-  m1 = Membership.create!(shop: shop, package: package_basic, customer_name: 'Lê Văn C',
-                          phone: '0987654321', sessions_left: 8, expires_at: 3.months.from_now)
-  m2 = Membership.create!(shop: shop, package: package_pro, customer_name: 'Phạm Thị D',
-                          phone: '0977654321', sessions_left: 30, expires_at: 6.months.from_now)
-  [m1, m2]
+def create_memberships(shop, package_basic, package_pro, package_month = nil)
+  members = [
+    Membership.create!(shop: shop, package: package_basic, customer_name: 'Lê Văn C',
+                       phone: '0987654321', sessions_left: 8, expires_at: 3.months.from_now),
+    Membership.create!(shop: shop, package: package_pro, customer_name: 'Phạm Thị D',
+                       phone: '0977654321', sessions_left: 30, expires_at: 6.months.from_now)
+  ]
+  members << create_day_membership(shop, package_month) if package_month
+  members
+end
+
+def create_day_membership(shop, package)
+  Membership.create!(
+    shop: shop,
+    package: package,
+    customer_name: 'Hoàng Văn E',
+    phone: '0967654321',
+    sessions_left: nil,
+    expires_at: 30.days.from_now.to_date
+  )
 end
 
 def seed_check_ins_and_invoices(memberships, staffs, packages)
@@ -39,7 +54,7 @@ def seed_shop(index)
   shop = Shop.create!(name: "TallyPass Studio #{index + 1}", phone: "090123456#{index}", plan: plan)
   staffs   = create_staffs(shop)
   packages = create_packages(shop)
-  members  = create_memberships(shop, packages[0], packages[1])
+  members  = create_memberships(shop, packages[0], packages[1], packages[2])
   seed_check_ins_and_invoices(members, staffs, packages)
 end
 

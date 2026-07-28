@@ -50,7 +50,7 @@ RSpec.describe CheckInMembership do
 
   describe 'gói theo ngày' do
     let(:package) do
-      Package.create!(shop: shop, name: 'Tháng gym', sessions_count: nil, price: 500_000)
+      Package.create!(shop: shop, name: 'Tháng gym', duration_days: 30, price: 500_000)
     end
     let(:membership) do
       Membership.create!(
