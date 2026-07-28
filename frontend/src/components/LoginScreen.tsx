@@ -7,8 +7,7 @@ interface LoginScreenProps {
   onSuccess: (shop: Shop) => void
 }
 
-const labelClass =
-  "mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
+const labelClass = "mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
 
 const inputClass =
   "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
@@ -118,11 +117,7 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
           disabled={loading}
           className="mt-3 w-full cursor-pointer rounded-xl bg-indigo-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-60"
         >
-          {loading
-            ? "Please wait..."
-            : mode === "login"
-              ? "Sign in"
-              : "Create account"}
+          {loading ? "Please wait..." : mode === "login" ? "Sign in" : "Create account"}
         </button>
       </form>
 
@@ -134,9 +129,7 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
         }}
         className="mt-4 w-full text-center text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
       >
-        {mode === "login"
-          ? "New shop? Create an account"
-          : "Already have an account? Sign in"}
+        {mode === "login" ? "New shop? Create an account" : "Already have an account? Sign in"}
       </button>
 
       {mode === "login" && (
