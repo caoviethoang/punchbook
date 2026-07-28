@@ -14,9 +14,9 @@ end
 
 def create_memberships(shop, package_basic, package_pro)
   m1 = Membership.create!(shop: shop, package: package_basic, customer_name: 'Lê Văn C',
-                           phone: '0987654321', sessions_left: 8, expires_at: 3.months.from_now)
+                          phone: '0987654321', sessions_left: 8, expires_at: 3.months.from_now)
   m2 = Membership.create!(shop: shop, package: package_pro, customer_name: 'Phạm Thị D',
-                           phone: '0977654321', sessions_left: 30, expires_at: 6.months.from_now)
+                          phone: '0977654321', sessions_left: 30, expires_at: 6.months.from_now)
   [m1, m2]
 end
 
@@ -40,7 +40,6 @@ def seed_shop(index)
   members  = create_memberships(shop, packages[0], packages[1])
   seed_check_ins_and_invoices(members, staffs, packages)
 end
-
 
 Rails.logger.debug 'Xóa dữ liệu cũ...'
 Invoice.destroy_all
