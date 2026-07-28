@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+
+always run all steps like Github CI check after committing and before pushing
