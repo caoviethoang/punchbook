@@ -22,6 +22,7 @@ Style/FrozenStringLiteralComment:
 Metrics/MethodLength:
   Exclude:
     - 'app/controllers/graphql_controller.rb'
+    - 'spec/**/*'
 
 Naming/MethodParameterName:
   Exclude:
@@ -29,6 +30,9 @@ Naming/MethodParameterName:
 
 RSpec/MultipleExpectations:
   Enabled: false
+
+RSpec/ExampleLength:
+  Max: 25
 
 Metrics/BlockLength:
   Exclude:

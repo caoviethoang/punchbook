@@ -23,9 +23,7 @@ RSpec.describe CheckInMembership do
     it 'check-in thành công khi còn buổi, trừ 1 sessions_left và tạo CheckIn' do
       check_in = described_class.call(membership: membership, staff: staff)
 
-      expect(check_in).to be_a(CheckIn)
-      expect(check_in.membership).to eq(membership)
-      expect(check_in.staff).to eq(staff)
+      expect(check_in).to have_attributes(membership:, staff:)
       expect(check_in.checked_in_at).to be_within(2.seconds).of(Time.current)
       expect(membership.reload.sessions_left).to eq(2)
     end
@@ -33,9 +31,8 @@ RSpec.describe CheckInMembership do
     it 'check-in thất bại khi hết buổi, không trừ âm và không tạo CheckIn' do
       membership.update!(sessions_left: 0)
 
-      expect do
-        described_class.call(membership: membership, staff: staff)
-      end.to raise_error(CheckInMembership::InsufficientSessionsError, 'Hội viên đã hết buổi')
+      expect { described_class.call(membership: membership, staff: staff) }
+        .to raise_error(CheckInMembership::InsufficientSessionsError, 'Hội viên đã hết buổi')
 
       expect(membership.reload.sessions_left).to eq(0)
       expect(CheckIn.count).to eq(0)
@@ -44,9 +41,8 @@ RSpec.describe CheckInMembership do
     it 'không cho sessions_left âm khi đã hết buổi' do
       membership.update!(sessions_left: 0)
 
-      expect do
-        described_class.call(membership: membership, staff: staff)
-      end.to raise_error(CheckInMembership::InsufficientSessionsError)
+      expect { described_class.call(membership: membership, staff: staff) }
+        .to raise_error(CheckInMembership::InsufficientSessionsError)
 
       expect(membership.reload.sessions_left).to be >= 0
     end
@@ -70,26 +66,22 @@ RSpec.describe CheckInMembership do
     it 'check-in thành công khi còn hạn và không thay đổi sessions_left' do
       check_in = described_class.call(membership: membership, staff: staff)
 
-      expect(check_in).to be_a(CheckIn)
-      expect(check_in.membership).to eq(membership)
-      expect(membership.reload.sessions_left).to be_nil
-      expect(membership.expires_at).to eq(Date.current + 10.days)
+      expect(check_in).to have_attributes(membership:)
+      expect(membership.reload).to have_attributes(sessions_left: nil, expires_at: Date.current + 10.days)
     end
 
     it 'check-in thành công đúng ngày hết hạn (expires_at = hôm nay)' do
       membership.update!(expires_at: Date.current)
 
-      expect do
-        described_class.call(membership: membership, staff: staff)
-      end.to change(CheckIn, :count).by(1)
+      expect { described_class.call(membership: membership, staff: staff) }
+        .to change(CheckIn, :count).by(1)
     end
 
     it 'check-in thất bại khi hết hạn, không tạo CheckIn' do
       membership.update!(expires_at: Date.current - 1.day)
 
-      expect do
-        described_class.call(membership: membership, staff: staff)
-      end.to raise_error(CheckInMembership::MembershipExpiredError, 'Hội viên đã hết hạn')
+      expect { described_class.call(membership: membership, staff: staff) }
+        .to raise_error(CheckInMembership::MembershipExpiredError, 'Hội viên đã hết hạn')
 
       expect(CheckIn.count).to eq(0)
       expect(membership.reload.sessions_left).to be_nil
@@ -98,9 +90,8 @@ RSpec.describe CheckInMembership do
     it 'check-in thất bại khi không có expires_at' do
       membership.update!(expires_at: nil)
 
-      expect do
-        described_class.call(membership: membership, staff: staff)
-      end.to raise_error(CheckInMembership::MembershipExpiredError)
+      expect { described_class.call(membership: membership, staff: staff) }
+        .to raise_error(CheckInMembership::MembershipExpiredError)
     end
   end
 
@@ -132,32 +123,39 @@ RSpec.describe CheckInMembership do
     end
 
     it '2 request cùng lúc chỉ trừ đúng 1 buổi, không trừ âm' do
-      membership_id = membership.id
-      results = []
-      errors = []
-      mutex = Mutex.new
-
-      threads = 2.times.map do
-        Thread.new do
-          ActiveRecord::Base.connection_pool.with_connection do
-            m = Membership.find(membership_id)
-            s = Staff.find(staff.id)
-            begin
-              check_in = described_class.call(membership: m, staff: s)
-              mutex.synchronize { results << check_in }
-            rescue CheckInMembership::InsufficientSessionsError => e
-              mutex.synchronize { errors << e }
-            end
-          end
-        end
-      end
-
-      threads.each(&:join)
+      results, errors = run_concurrent_check_ins(membership_id: membership.id, staff_id: staff.id)
 
       expect(results.size).to eq(1)
       expect(errors.size).to eq(1)
       expect(membership.reload.sessions_left).to eq(0)
-      expect(CheckIn.where(membership_id: membership_id).count).to eq(1)
+      expect(CheckIn.where(membership_id: membership.id).count).to eq(1)
     end
+  end
+
+  def run_concurrent_check_ins(membership_id:, staff_id:)
+    results = []
+    errors = []
+    mutex = Mutex.new
+
+    threads = Array.new(2) do
+      Thread.new do
+        ActiveRecord::Base.connection_pool.with_connection do
+          attempt_check_in(membership_id, staff_id, results, errors, mutex)
+        end
+      end
+    end
+    threads.each(&:join)
+
+    [results, errors]
+  end
+
+  def attempt_check_in(membership_id, staff_id, results, errors, mutex)
+    check_in = described_class.call(
+      membership: Membership.find(membership_id),
+      staff: Staff.find(staff_id)
+    )
+    mutex.synchronize { results << check_in }
+  rescue CheckInMembership::InsufficientSessionsError => e
+    mutex.synchronize { errors << e }
   end
 end
