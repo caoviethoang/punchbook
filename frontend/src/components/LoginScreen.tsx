@@ -1,15 +1,28 @@
-import { useState } from "react"
-import {
-  login,
-  register,
-  setStoredToken,
-  type Shop,
-} from "../lib/auth"
+import { useState, type InputHTMLAttributes } from "react"
+import { login, register, setStoredToken, type Shop } from "../lib/auth"
 
 type Mode = "login" | "register"
 
 interface LoginScreenProps {
   onSuccess: (shop: Shop) => void
+}
+
+const labelClass =
+  "mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
+
+const inputClass =
+  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
+
+function Field({
+  label,
+  ...inputProps
+}: { label: string } & InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <label className="block">
+      <span className={labelClass}>{label}</span>
+      <input className={inputClass} {...inputProps} />
+    </label>
+  )
 }
 
 export function LoginScreen({ onSuccess }: LoginScreenProps) {
@@ -59,60 +72,40 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {mode === "register" && (
           <>
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                Shop name
-              </span>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
-              />
-            </label>
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                Phone
-              </span>
-              <input
-                type="tel"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
-              />
-            </label>
+            <Field
+              label="Shop name"
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <Field
+              label="Phone"
+              type="tel"
+              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
           </>
         )}
 
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            Email
-          </span>
-          <input
-            type="email"
-            required
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
-          />
-        </label>
+        <Field
+          label="Email"
+          type="email"
+          required
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            Password
-          </span>
-          <input
-            type="password"
-            required
-            autoComplete={mode === "login" ? "current-password" : "new-password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
-          />
-        </label>
+        <Field
+          label="Password"
+          type="password"
+          required
+          autoComplete={mode === "login" ? "current-password" : "new-password"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
         {error && (
           <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-400">
@@ -123,7 +116,7 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-60"
+          className="mt-3 w-full cursor-pointer rounded-xl bg-indigo-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-60"
         >
           {loading
             ? "Please wait..."
