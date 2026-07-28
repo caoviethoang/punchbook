@@ -33,7 +33,7 @@ class CheckInMembership
   end
 
   def check_in_session_based!
-    raise InsufficientSessionsError, 'Hội viên đã hết buổi' if membership.sessions_left.to_i <= 0
+    raise InsufficientSessionsError, 'Membership has no sessions left' if membership.sessions_left.to_i <= 0
 
     membership.update!(sessions_left: membership.sessions_left - 1)
     create_check_in!
@@ -41,7 +41,7 @@ class CheckInMembership
 
   def check_in_day_based!
     if membership.expires_at.blank? || membership.expires_at < Date.current
-      raise MembershipExpiredError, 'Hội viên đã hết hạn'
+      raise MembershipExpiredError, 'Membership has expired'
     end
 
     create_check_in!

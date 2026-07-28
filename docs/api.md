@@ -1,6 +1,6 @@
 # 04 - User Journeys
 
-Product: Sổ Khách
+Product: PunchBook
 
 Version: 2.0
 
@@ -19,39 +19,39 @@ Related Documents
 
 # 1. Purpose
 
-Tài liệu này mô tả toàn bộ hành trình của người dùng khi sử dụng sản phẩm.
+This document describes the full user journey when using the product.
 
-Khác với sơ đồ menu.
+Unlike a menu diagram.
 
-User Journey trả lời câu hỏi:
+User Journey answers:
 
-"Từng loại người dùng sẽ hoàn thành công việc như thế nào?"
+"How does each user type complete their work?"
 
-Mọi thiết kế UI đều phải phục vụ các Journey này.
+Every UI design must serve these journeys.
 
 ---
 
 # 2. Design Philosophy
 
-Sổ Khách KHÔNG được thiết kế theo chức năng.
+PunchBook is NOT designed by feature.
 
-Mà được thiết kế theo công việc (Job To Be Done).
+It is designed by job to be done.
 
-Có hai luồng chính.
+There are two main flows.
 
 ## Front Desk
 
-Dành cho Staff.
+For Staff.
 
-Tối ưu tốc độ.
+Optimized for speed.
 
 ## Back Office
 
-Dành cho Owner.
+For Owner.
 
-Tối ưu quản lý.
+Optimized for management.
 
-Hai trải nghiệm gần như độc lập.
+The two experiences are almost independent.
 
 ---
 
@@ -117,7 +117,7 @@ Done
 
 ## Morning Routine
 
-Owner mở ứng dụng.
+Owner opens the app.
 
 ↓
 
@@ -125,24 +125,24 @@ Dashboard.
 
 ↓
 
-Xem
+View
 
-- Doanh thu hôm nay.
-- Khách sắp hết hạn.
-- Khách đã check-in.
-- Giao dịch gần đây.
-
-↓
-
-Nếu không có vấn đề.
+- Today's revenue.
+- Customers about to expire.
+- Customers who checked in.
+- Recent transactions.
 
 ↓
 
-Đóng ứng dụng.
+If no issues.
 
-Thời gian mong muốn:
+↓
 
-< 60 giây.
+Close the app.
+
+Target time:
+
+< 60 seconds.
 
 ---
 
@@ -210,37 +210,37 @@ Done
 
 # 5. Staff Journey
 
-Đây là Journey quan trọng nhất của toàn bộ sản phẩm.
+This is the most important journey in the entire product.
 
-Mọi tối ưu UX đều phải ưu tiên Journey này.
+All UX optimization must prioritize this journey.
 
 ---
 
 ## Normal Check-in
 
-Staff mở ứng dụng.
+Staff opens the app.
 
 ↓
 
-Hiển thị ngay ô tìm kiếm.
+Search box shown immediately.
 
 ↓
 
-Nhập tên hoặc số điện thoại.
+Enter name or phone number.
 
 ↓
 
-Hiển thị khách.
+Customer displayed.
 
 ↓
 
-Bấm Check-in.
+Tap Check-in.
 
 ↓
 
-Hiển thị
+Show
 
-"Đã check-in"
+"Checked in"
 
 ↓
 
@@ -248,8 +248,8 @@ Done.
 
 Target
 
-- < 5 giây
-- ≤ 3 click
+- < 5 seconds
+- ≤ 3 clicks
 
 ---
 
@@ -259,7 +259,7 @@ Search
 
 ↓
 
-Không tìm thấy.
+Not found.
 
 ↓
 
@@ -293,19 +293,19 @@ Check-in.
 
 ↓
 
-Membership hết hạn.
+Membership expired.
 
 ↓
 
-Hiển thị nút Gia hạn.
+Show Renew button.
 
 ↓
 
-Chọn gói.
+Select package.
 
 ↓
 
-Thanh toán.
+Payment.
 
 ↓
 
@@ -327,13 +327,13 @@ Search.
 
 ↓
 
-Khách chưa có gói.
+Customer has no package.
 
 ↓
 
-Hiển thị
+Show
 
-"Mua gói"
+"Buy package"
 
 ↓
 
@@ -357,39 +357,39 @@ Done
 
 ## Double Click
 
-Staff bấm Check-in hai lần.
+Staff taps Check-in twice.
 
 ↓
 
-Hệ thống chỉ tạo một Check-in.
+System creates only one Check-in.
 
 ---
 
 ## Concurrent Check-in
 
-Hai Staff cùng check-in.
+Two Staff check in at once.
 
 ↓
 
-Membership chỉ bị trừ một lần.
+Membership is deducted only once.
 
 ---
 
 ## Payment Failed
 
-Gia hạn.
+Renew.
 
 ↓
 
-payOS thất bại.
+payOS fails.
 
 ↓
 
-Membership không được kích hoạt.
+Membership is not activated.
 
 ↓
 
-Cho phép thử lại.
+Allow retry.
 
 ---
 
@@ -399,25 +399,25 @@ Check-in.
 
 ↓
 
-Mất mạng.
+Network lost.
 
 ↓
 
-Hiển thị Retry.
+Show Retry.
 
 ↓
 
-Không trừ buổi hai lần.
+Do not deduct sessions twice.
 
 ---
 
 # 7. Cross Journey Rules
 
-Owner không cần nhìn thấy màn Check-in.
+Owner does not need to see the Check-in screen.
 
-Staff không cần nhìn thấy Dashboard.
+Staff do not need to see the Dashboard.
 
-Hai giao diện phải được tối ưu riêng.
+The two interfaces must be optimized separately.
 
 ---
 
@@ -425,17 +425,17 @@ Hai giao diện phải được tối ưu riêng.
 
 ## Owner
 
-Mở Dashboard.
+Open Dashboard.
 
 ↓
 
-Biết tình hình.
+Understand status.
 
 ↓
 
-Đóng.
+Close.
 
-< 60 giây.
+< 60 seconds.
 
 ---
 
@@ -447,13 +447,13 @@ Check-in.
 
 Done.
 
-< 5 giây.
+< 5 seconds.
 
 ---
 
 # 9. Journey Metrics
 
-Đo các chỉ số sau.
+Measure the following.
 
 - Search Time
 - Check-in Time

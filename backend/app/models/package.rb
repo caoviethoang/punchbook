@@ -21,6 +21,6 @@ class Package < ApplicationRecord
   def exactly_one_of_sessions_count_or_duration_days
     return if session_based? ^ day_based?
 
-    errors.add(:base, 'Phải chọn đúng một: số buổi (sessions_count) hoặc số ngày (duration_days)')
+    errors.add(:base, 'Must set exactly one of sessions_count or duration_days')
   end
 end
