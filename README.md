@@ -72,8 +72,8 @@ The easiest way to run the entire project is using Docker Compose.
 
 Now you can access:
 
-- **Frontend App**: [http://localhost:5174](http://localhost:5174) (Vite; see `docker-compose.yml` for host port)
-- **API / GraphQL**: [http://localhost:3001/graphql](http://localhost:3001/graphql)
+- **Frontend App**: [http://localhost:5173](http://localhost:5173)
+- **API / GraphQL**: [http://localhost:3000/graphql](http://localhost:3000/graphql)
 
 ---
 

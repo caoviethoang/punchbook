@@ -44,7 +44,7 @@ services:
       JWT_SECRET: supersecretjwtkeyforpunchbookmvp2026
       PORT: 3000
     ports:
-      - '3001:3000'
+      - '3000:3000'
     volumes:
       - ./backend:/app
       - bundle_cache:/usr/local/bundle
@@ -60,10 +60,10 @@ services:
       dockerfile: Dockerfile
     container_name: punchbook_frontend
     environment:
-      # The browser on the HOST connects to localhost:3001 (backend port-forwarded from Docker)
-      VITE_GRAPHQL_API_URL: http://localhost:3001/graphql
+      # Browser on the host calls the published backend port
+      VITE_GRAPHQL_API_URL: http://localhost:3000/graphql
     ports:
-      - '5174:5173'
+      - '5173:5173'
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
@@ -74,4 +74,3 @@ volumes:
   postgres_data:
   redis_data:
   bundle_cache:
-
