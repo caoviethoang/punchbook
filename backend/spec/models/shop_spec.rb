@@ -3,6 +3,15 @@
 require 'rails_helper'
 
 RSpec.describe Shop, type: :model do
+  describe 'name' do
+    it 'rejects blank name' do
+      shop = build_shop(name: '')
+
+      expect(shop).not_to be_valid
+      expect(shop.errors[:name]).to be_present
+    end
+  end
+
   describe 'plan' do
     it 'defaults to free when not provided' do
       shop = create_shop(name: 'Spa Lan', phone: '0901000000')

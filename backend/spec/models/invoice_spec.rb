@@ -17,6 +17,22 @@ RSpec.describe Invoice, type: :model do
     )
   end
 
+  describe 'amount' do
+    it 'rejects blank amount' do
+      invoice = described_class.new(membership: membership, amount: nil)
+
+      expect(invoice).not_to be_valid
+      expect(invoice.errors[:amount]).to be_present
+    end
+
+    it 'rejects negative amount' do
+      invoice = described_class.new(membership: membership, amount: -1)
+
+      expect(invoice).not_to be_valid
+      expect(invoice.errors[:amount]).to be_present
+    end
+  end
+
   describe 'status' do
     it 'defaults to pending when not provided' do
       invoice = described_class.create!(membership: membership, amount: 1_000_000)

@@ -5,5 +5,6 @@ class Invoice < ApplicationRecord
 
   belongs_to :membership
 
+  validates :amount, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :status, presence: true, inclusion: { in: STATUSES }
 end
