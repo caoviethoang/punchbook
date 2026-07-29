@@ -4,6 +4,8 @@ class Package < ApplicationRecord
   belongs_to :shop
   has_many :memberships, dependent: :destroy
 
+  validates :name, presence: true
+  validates :price, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :sessions_count, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :duration_days, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validate :exactly_one_of_sessions_count_or_duration_days

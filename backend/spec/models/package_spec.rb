@@ -5,6 +5,29 @@ require 'rails_helper'
 RSpec.describe Package, type: :model do
   let(:shop) { create_shop }
 
+  describe 'name and price' do
+    it 'rejects blank name' do
+      package = described_class.new(shop: shop, name: '', sessions_count: 10, price: 100_000)
+
+      expect(package).not_to be_valid
+      expect(package.errors[:name]).to be_present
+    end
+
+    it 'rejects blank price' do
+      package = described_class.new(shop: shop, name: 'Massage', sessions_count: 10, price: nil)
+
+      expect(package).not_to be_valid
+      expect(package.errors[:price]).to be_present
+    end
+
+    it 'rejects negative price' do
+      package = described_class.new(shop: shop, name: 'Massage', sessions_count: 10, price: -1)
+
+      expect(package).not_to be_valid
+      expect(package.errors[:price]).to be_present
+    end
+  end
+
   describe 'duration_days / sessions_count' do
     it 'allows session-based package with sessions_count only' do
       package = described_class.create!(
