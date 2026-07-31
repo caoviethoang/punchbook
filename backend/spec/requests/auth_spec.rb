@@ -55,9 +55,7 @@ RSpec.describe 'Auth', type: :request do
     let!(:shop) { create_shop(email: 'me@example.com', password: 'password123') }
 
     it 'returns the current shop when authorized' do
-      token = JsonWebToken.encode({ shop_id: shop.id })
-
-      get '/auth/me', headers: { 'Authorization' => "Bearer #{token}" }
+      get '/auth/me', headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.dig('shop', 'email')).to eq('me@example.com')
@@ -77,9 +75,7 @@ RSpec.describe 'Auth', type: :request do
     end
 
     it 'blocks non-Bearer authorization schemes' do
-      token = JsonWebToken.encode({ shop_id: shop.id })
-
-      get '/auth/me', headers: { 'Authorization' => "Token #{token}" }
+      get '/auth/me', headers: { 'Authorization' => "Token #{token_for(shop)}" }
 
       expect(response).to have_http_status(:unauthorized)
     end
