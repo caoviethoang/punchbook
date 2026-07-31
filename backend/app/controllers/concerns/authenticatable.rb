@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# JWT Bearer auth for shop-scoped API requests.
+# Prefer inheriting ApiController (runs authenticate_shop! automatically).
 module Authenticatable
   extend ActiveSupport::Concern
 
