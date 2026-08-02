@@ -7,7 +7,11 @@ Rails.application.routes.draw do
   post '/auth/login', to: 'auth#login'
   get '/auth/me', to: 'auth#me'
 
-  resources :memberships, only: %i[index]
+  resources :memberships, only: %i[index] do
+    member do
+      post :check_in
+    end
+  end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.

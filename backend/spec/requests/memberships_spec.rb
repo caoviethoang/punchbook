@@ -101,4 +101,105 @@ RSpec.describe 'Memberships', type: :request do
       expect(response.parsed_body['memberships']).to eq([])
     end
   end
+
+  describe 'POST /memberships/:id/check_in' do
+    let!(:staff) { Staff.create!(shop: shop, name: 'Mai', role: 'staff') }
+
+    it 'returns 401 when unauthenticated' do
+      post "/memberships/#{hoa.id}/check_in", params: { staff_id: staff.id }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'checks in successfully, decrements sessions_left, and returns check_in' do
+      expect do
+        post "/memberships/#{hoa.id}/check_in",
+             params: { staff_id: staff.id },
+             headers: auth_headers(shop)
+      end.to change(CheckIn, :count).by(1)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body.dig('membership', 'id')).to eq(hoa.id)
+      expect(body.dig('membership', 'sessions_left')).to eq(2)
+      expect(body.dig('check_in', 'id')).to be_present
+      expect(body.dig('check_in', 'checked_in_at')).to be_present
+      expect(hoa.reload.sessions_left).to eq(2)
+    end
+
+    it 'returns 422 when out of sessions and does not create a CheckIn' do
+      hoa.update!(sessions_left: 0)
+
+      expect do
+        post "/memberships/#{hoa.id}/check_in",
+             params: { staff_id: staff.id },
+             headers: auth_headers(shop)
+      end.not_to change(CheckIn, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body['error']).to eq('Membership has no sessions left')
+      expect(hoa.reload.sessions_left).to eq(0)
+    end
+
+    it 'returns 422 when day-based membership is expired' do
+      day_package = Package.create!(shop: shop, name: 'Monthly gym', duration_days: 30, price: 500_000)
+      member = Membership.create!(
+        shop: shop,
+        package: day_package,
+        customer_name: 'Expired Member',
+        phone: '0922222222',
+        sessions_left: nil,
+        expires_at: Date.current - 1.day
+      )
+
+      expect do
+        post "/memberships/#{member.id}/check_in",
+             params: { staff_id: staff.id },
+             headers: auth_headers(shop)
+      end.not_to change(CheckIn, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body['error']).to eq('Membership has expired')
+    end
+
+    it 'returns 422 when staff_id is missing' do
+      post "/memberships/#{hoa.id}/check_in", headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body['error']).to be_present
+    end
+
+    it 'returns 404 for another shop membership and does not check in' do
+      other_shop = create_shop(name: 'Other Spa', email: 'other@example.com')
+      other_package = Package.create!(shop: other_shop, name: 'Secret package', sessions_count: 5, price: 500_000)
+      other_member = Membership.create!(
+        shop: other_shop,
+        package: other_package,
+        customer_name: 'Hoa Secret',
+        phone: '0902000000',
+        sessions_left: 9
+      )
+
+      expect do
+        post "/memberships/#{other_member.id}/check_in",
+             params: { staff_id: staff.id },
+             headers: auth_headers(shop)
+      end.not_to change(CheckIn, :count)
+
+      expect(response).to have_http_status(:not_found)
+      expect(other_member.reload.sessions_left).to eq(9)
+    end
+
+    it 'returns 404 when staff belongs to another shop' do
+      other_shop = create_shop(name: 'Other Spa', email: 'other@example.com')
+      other_staff = Staff.create!(shop: other_shop, name: 'Other', role: 'staff')
+
+      post "/memberships/#{hoa.id}/check_in",
+           params: { staff_id: other_staff.id },
+           headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:not_found)
+      expect(hoa.reload.sessions_left).to eq(3)
+    end
+  end
 end
