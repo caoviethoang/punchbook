@@ -26,7 +26,6 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
   const debouncedQuery = useDebounce(query, 300)
 
   const [memberships, setMemberships] = useState<Membership[]>([])
-  const [initialLoading, setInitialLoading] = useState(true)
   const [checkingInId, setCheckingInId] = useState<string | null>(null)
   const [checkInMessage, setCheckInMessage] = useState<{
     id: string
@@ -43,7 +42,6 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
   // Fetch memberships using debounced query
   useEffect(() => {
     let isCancelled = false
-    setInitialLoading(true)
 
     search(debouncedQuery)
       .then((results) => {
@@ -53,11 +51,6 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
       })
       .catch(() => {
         // Error handling managed by useMembershipsApi hook
-      })
-      .finally(() => {
-        if (!isCancelled) {
-          setInitialLoading(false)
-        }
       })
 
     return () => {
@@ -112,7 +105,7 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
     }
   }
 
-  const showLoading = apiLoading || initialLoading
+  const showLoading = apiLoading
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 p-4 sm:p-6">
