@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { useQuery } from "@apollo/client/react"
 import { gql } from "@apollo/client/core"
+import { CheckInScreen } from "./components/CheckInScreen"
 import { LoginScreen } from "./components/LoginScreen"
 import {
   clearStoredToken,
@@ -27,7 +28,7 @@ function App() {
   const [shop, setShop] = useState<Shop | null>(null)
   const [authLoading, setAuthLoading] = useState(() => getStoredToken() !== null)
 
-  const { loading, error, data } = useQuery<HelloData>(HELLO_QUERY, {
+  const { data } = useQuery<HelloData>(HELLO_QUERY, {
     skip: !shop,
   })
 
@@ -63,51 +64,49 @@ function App() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 p-4 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
-      <div className="mx-auto w-full max-w-md rounded-2xl bg-white p-8 shadow-xl dark:bg-slate-900 dark:shadow-2xl">
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
+      {/* Top Navbar */}
+      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400">
               PunchBook
             </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
               {shop.name}
-            </p>
+            </span>
           </div>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-300"
-          >
-            Sign out
-          </button>
-        </div>
 
-        <div className="flex h-24 items-center justify-center rounded-xl bg-slate-100 p-4 text-center font-semibold dark:bg-slate-800">
-          {loading && (
-            <div className="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              <span>Loading...</span>
-            </div>
-          )}
-          {error && (
-            <p className="text-sm text-red-500">
-              Error fetching: {error.message}
-            </p>
-          )}
-          {data && (
-            <p className="text-lg font-medium text-emerald-600 dark:text-emerald-400">
-              {data.hello.message}
-            </p>
-          )}
+          <div className="flex items-center gap-4 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            <span>
+              Plan: <strong className="font-semibold text-slate-700 dark:text-slate-200">{shop.plan}</strong>
+            </span>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-lg border border-slate-200 px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
+      </header>
 
-        <div className="mt-6 text-center text-xs text-slate-400 dark:text-slate-500">
-          Plan: {shop.plan} · {shop.email}
-        </div>
-      </div>
+      {/* Main Content Area */}
+      <main className="mx-auto max-w-5xl py-6">
+        {/* GraphQL Hello Badge */}
+        {data?.hello?.message && (
+          <div className="mx-4 mb-6 rounded-xl bg-emerald-50 p-3 text-center text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 sm:mx-6">
+            System status: {data.hello.message}
+          </div>
+        )}
+
+        {/* CheckIn Screen */}
+        <CheckInScreen />
+      </main>
     </div>
   )
 }
 
 export default App
+
