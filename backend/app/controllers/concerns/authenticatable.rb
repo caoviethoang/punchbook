@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # JWT Bearer auth for shop-scoped API requests.
-# Prefer inheriting ApiController (runs authenticate_shop! automatically).
+# Inherit ApiController to run authenticate_shop! automatically.
 module Authenticatable
   extend ActiveSupport::Concern
 
@@ -13,9 +13,7 @@ module Authenticatable
 
   def authenticate_shop!
     @current_shop = shop_from_token
-    return if @current_shop
-
-    render json: { error: 'Unauthorized' }, status: :unauthorized
+    render json: { error: 'Unauthorized' }, status: :unauthorized unless @current_shop
   end
 
   def shop_from_token
@@ -23,17 +21,12 @@ module Authenticatable
     return if token.blank?
 
     payload = JsonWebToken.decode(token)
-    return if payload.blank? || payload[:shop_id].blank?
-
-    Shop.find_by(id: payload[:shop_id])
+    Shop.find_by(id: payload&.dig(:shop_id))
   end
 
   def bearer_token
+    pattern = /\ABearer\s+(.+)\z/i
     header = request.headers['Authorization'].to_s
-    scheme, token = header.split(' ', 2)
-    return if scheme.blank? || token.blank?
-    return unless scheme.match?(/\ABearer\z/i)
-
-    token
+    header[pattern, 1]
   end
 end
