@@ -24,6 +24,17 @@ export interface CheckInResult {
   check_in: CheckInRecord
 }
 
+/** True when the member has no sessions left or the day-based pass is past expires_at. */
+export function isMembershipExhausted(
+  membership: Pick<Membership, "sessions_left" | "expires_at">,
+): boolean {
+  if (membership.sessions_left === 0) return true
+  if (membership.expires_at && new Date(membership.expires_at) < new Date()) {
+    return true
+  }
+  return false
+}
+
 function authHeaders(): HeadersInit {
   const token = getStoredToken()
   if (!token) {

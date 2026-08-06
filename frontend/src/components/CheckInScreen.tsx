@@ -13,7 +13,10 @@ import {
 } from "lucide-react"
 import { useDebounce } from "../hooks/useDebounce"
 import { useMembershipsApi } from "../hooks/useMembershipsApi"
-import type { Membership } from "../lib/memberships"
+import {
+  isMembershipExhausted,
+  type Membership,
+} from "../lib/memberships"
 
 interface CheckInScreenProps {
   /** Optional staff ID to perform check-ins. */
@@ -116,10 +119,8 @@ function MembershipResultList({
     <div role="list" aria-label="Danh sách hội viên" className="grid gap-4">
       {memberships.map((membership) => {
         const isCheckingIn = checkingInId === membership.id
-        const hasNoSessionsLeft = membership.sessions_left === 0
-        const isExpired =
-          membership.expires_at && new Date(membership.expires_at) < new Date()
-        const isDisabled = hasNoSessionsLeft || Boolean(isExpired)
+        const isExhausted = isMembershipExhausted(membership)
+        const isDisabled = isCheckingIn || isExhausted
         const currentMessage =
           checkInMessage?.id === membership.id ? checkInMessage : null
 
@@ -173,15 +174,23 @@ function MembershipResultList({
               />
             </div>
 
-            {/* Col 4: Check-in button */}
+            {/* Col 4: Check-in button — exhausted rows show "Đã hết" and cannot be clicked */}
             <div className="shrink-0">
               <button
                 type="button"
-                disabled={isCheckingIn || isDisabled}
-                onClick={() => onCheckIn(membership.id)}
-                aria-label={`Check-in cho ${membership.customer_name}`}
+                disabled={isDisabled}
+                onClick={() => {
+                  if (isExhausted) return
+                  onCheckIn(membership.id)
+                }}
+                aria-disabled={isExhausted}
+                aria-label={
+                  isExhausted
+                    ? `${membership.customer_name} đã hết — không thể check-in`
+                    : `Check-in cho ${membership.customer_name}`
+                }
                 className={`inline-flex min-w-28 items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-base font-semibold shadow-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:min-w-36 ${
-                  isDisabled
+                  isExhausted
                     ? "cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600"
                     : "bg-indigo-600 text-white hover:bg-indigo-500 active:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
                 }`}
@@ -191,6 +200,8 @@ function MembershipResultList({
                     <Loader2 className="h-5 w-5 animate-spin" />
                     <span>Check-in...</span>
                   </>
+                ) : isExhausted ? (
+                  <span>Đã hết</span>
                 ) : (
                   <>
                     <UserCheck className="h-5 w-5" />
@@ -253,6 +264,9 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
   }
 
   async function handleCheckIn(membershipId: string) {
+    const membership = memberships.find((m) => m.id === membershipId)
+    if (membership && isMembershipExhausted(membership)) return
+
     if (!currentStaffId) {
       setCheckInMessage({
         id: membershipId,
