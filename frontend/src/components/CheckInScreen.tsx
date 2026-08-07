@@ -232,7 +232,7 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
   } | null>(null)
 
   const inputRef = useRef<HTMLInputElement>(null)
-  const { search, checkIn, loading: apiLoading, error: apiError } = useMembershipsApi()
+  const { search, checkIn, searchLoading, error: apiError } = useMembershipsApi()
 
   // Track if input is currently being debounced (300ms delay has not passed yet)
   const isDebouncing = query !== debouncedQuery
@@ -263,24 +263,47 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
     }
   }
 
+  function toVietnameseError(err: unknown): string {
+    const raw = err instanceof Error ? err.message : ""
+    if (raw === "Membership has no sessions left") return "Hội viên đã hết buổi."
+    if (raw === "Membership has expired") return "Thẻ thành viên đã hết hạn."
+    if (raw === "Unauthorized" || raw === "NetworkError") return "Mất kết nối. Vui lòng thử lại."
+    if (!raw || raw === "Request failed") return "Check-in thất bại. Vui lòng thử lại."
+    return raw
+  }
+
   async function handleCheckIn(membershipId: string) {
     const membership = memberships.find((m) => m.id === membershipId)
-    if (membership && isMembershipExhausted(membership)) return
+    if (!membership || isMembershipExhausted(membership)) return
 
     if (!currentStaffId) {
       setCheckInMessage({
         id: membershipId,
         type: "error",
-        text: "Vui lòng chọn nhân viên thực hiện check-in",
+        text: "Vui lòng chọn nhân viên thực hiện check-in.",
       })
       return
     }
 
+    // Snapshot for rollback
+    const previousSessionsLeft = membership.sessions_left
+
+    // Disable button immediately (prevents double-click)
     setCheckingInId(membershipId)
     setCheckInMessage(null)
 
+    // Optimistic update: decrement by 1 right now
+    setMemberships((prev) =>
+      prev.map((m) =>
+        m.id === membershipId && m.sessions_left !== null
+          ? { ...m, sessions_left: m.sessions_left - 1 }
+          : m,
+      ),
+    )
+
     try {
       const result = await checkIn(membershipId, currentStaffId)
+      // Apply server-confirmed value
       setMemberships((prev) =>
         prev.map((m) =>
           m.id === membershipId
@@ -294,18 +317,25 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
         text: `Check-in thành công! (Còn lại ${result.membership.sessions_left ?? "không giới hạn"} buổi)`,
       })
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Check-in thất bại"
+      // Rollback to the state before the optimistic update
+      setMemberships((prev) =>
+        prev.map((m) =>
+          m.id === membershipId
+            ? { ...m, sessions_left: previousSessionsLeft }
+            : m,
+        ),
+      )
       setCheckInMessage({
         id: membershipId,
         type: "error",
-        text: msg,
+        text: toVietnameseError(err),
       })
     } finally {
       setCheckingInId(null)
     }
   }
 
-  const showLoading = apiLoading
+  const showLoading = searchLoading
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
