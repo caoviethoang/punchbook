@@ -7,6 +7,8 @@ Rails.application.routes.draw do
   post '/auth/login', to: 'auth#login'
   get '/auth/me', to: 'auth#me'
 
+  get '/dashboard', to: 'dashboard#show'
+
   resources :memberships, only: %i[index] do
     member do
       post :check_in
