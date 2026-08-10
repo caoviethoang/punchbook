@@ -21,12 +21,13 @@ RSpec.describe 'Dashboard', type: :request do
     it 'returns revenue, active count, and expiring count for current_shop only' do
       active = create_member(package: session_package, name: 'Hoa Nguyen', sessions_left: 5,
                              expires_at: Date.current + 30.days)
-      expiring = create_member(package: day_package, name: 'Lan Tran', phone: '0911111111',
-                               sessions_left: nil, expires_at: Date.current + 3.days)
+      expiring_day = create_member(package: day_package, name: 'Lan Tran', phone: '0911111111',
+                                   sessions_left: nil, expires_at: Date.current + 3.days)
+      create_member(package: session_package, name: 'Near Empty', phone: '0944444444', sessions_left: 2)
       create_member(package: session_package, name: 'Expired User', phone: '0922222222', sessions_left: 0)
 
       Invoice.create!(membership: active, amount: 1_000_000, status: 'paid')
-      Invoice.create!(membership: expiring, amount: 500_000, status: 'paid')
+      Invoice.create!(membership: expiring_day, amount: 500_000, status: 'paid')
       Invoice.create!(membership: active, amount: 200_000, status: 'pending')
       seed_other_shop_paid_invoice!
 
@@ -35,8 +36,9 @@ RSpec.describe 'Dashboard', type: :request do
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
       expect(body['revenue_this_month']).to eq(1_500_000)
-      expect(body['active_memberships_count']).to eq(2)
-      expect(body['expiring_within_7_days_count']).to eq(1)
+      expect(body['active_memberships_count']).to eq(3)
+      # day-based within 7 days + session-based with sessions_left <= 3
+      expect(body['expiring_within_7_days_count']).to eq(2)
     end
 
     it 'returns memberships with package and status, scoped to current_shop' do
