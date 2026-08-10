@@ -7,7 +7,7 @@ class DashboardController < ApiController
     render json: {
       revenue_this_month: revenue_this_month,
       active_memberships_count: memberships.count { |m| m.status != 'expired' },
-      expiring_within_7_days_count: memberships.count { |m| expiring_within_7_days?(m) },
+      expiring_within_7_days_count: memberships.count { |m| m.status == 'expiring' },
       memberships: memberships.map(&:as_dashboard_json)
     }
   end
@@ -21,11 +21,5 @@ class DashboardController < ApiController
       .where(status: 'paid')
       .where(created_at: Time.zone.now.all_month)
       .sum(:amount)
-  end
-
-  def expiring_within_7_days?(membership)
-    membership.expires_at.present? &&
-      membership.expires_at >= Date.current &&
-      membership.expires_at <= Date.current + 7.days
   end
 end

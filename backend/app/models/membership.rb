@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class Membership < ApplicationRecord
+  STATUSES = %w[active expiring expired].freeze
+  EXPIRING_SESSIONS_THRESHOLD = 3
+  EXPIRING_DAYS_WINDOW = 7
+
   belongs_to :shop
   belongs_to :package
   has_many :check_ins, dependent: :destroy
@@ -24,7 +28,14 @@ class Membership < ApplicationRecord
     package.session_based? && sessions_left.to_i <= 0
   end
 
-  # Dashboard status: expired | expiring | active (see issue #27 rules).
+  # Single source of truth for dashboard + member tables.
+  #
+  # Rules (package-type scoped):
+  # - expired:  session → sessions_left == 0
+  #             day     → expires_at blank or expires_at < today
+  # - expiring: session → sessions_left <= 3 (and not expired)
+  #             day     → expires_at within today..today+7 days
+  # - active:   everything else
   def status
     return 'expired' if status_expired?
     return 'expiring' if status_expiring?
@@ -55,9 +66,11 @@ class Membership < ApplicationRecord
 
   def status_expiring?
     if package.session_based?
-      sessions_left.to_i <= 3
+      sessions_left.to_i <= EXPIRING_SESSIONS_THRESHOLD
     else
-      expires_at.present? && expires_at <= Date.current + 7.days
+      expires_at.present? &&
+        expires_at >= Date.current &&
+        expires_at <= Date.current + EXPIRING_DAYS_WINDOW.days
     end
   end
 end
