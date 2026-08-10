@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
-import { useQuery } from "@apollo/client/react"
-import { gql } from "@apollo/client/core"
 import { CheckInScreen } from "./components/CheckInScreen"
+import { DashboardScreen } from "./components/DashboardScreen"
 import { LoginScreen } from "./components/LoginScreen"
 import {
   clearStoredToken,
@@ -10,27 +9,12 @@ import {
   type Shop,
 } from "./lib/auth"
 
-const HELLO_QUERY = gql`
-  query GetHello {
-    hello {
-      message
-    }
-  }
-`
-
-interface HelloData {
-  hello: {
-    message: string
-  }
-}
+type AppView = "dashboard" | "checkin"
 
 function App() {
   const [shop, setShop] = useState<Shop | null>(null)
   const [authLoading, setAuthLoading] = useState(() => getStoredToken() !== null)
-
-  const { data } = useQuery<HelloData>(HELLO_QUERY, {
-    skip: !shop,
-  })
+  const [view, setView] = useState<AppView>("dashboard")
 
   useEffect(() => {
     const token = getStoredToken()
@@ -45,6 +29,7 @@ function App() {
   function handleLogout() {
     clearStoredToken()
     setShop(null)
+    setView("dashboard")
   }
 
   if (authLoading) {
@@ -65,9 +50,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
-      {/* Top Navbar */}
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400">
               PunchBook
@@ -77,9 +61,36 @@ function App() {
             </span>
           </div>
 
-          <div className="flex items-center gap-4 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            <nav className="flex rounded-xl border border-slate-200 p-1 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={() => setView("dashboard")}
+                className={`rounded-lg px-3 py-1.5 font-semibold transition ${
+                  view === "dashboard"
+                    ? "bg-indigo-600 text-white"
+                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                }`}
+              >
+                Dashboard
+              </button>
+              <button
+                type="button"
+                onClick={() => setView("checkin")}
+                className={`rounded-lg px-3 py-1.5 font-semibold transition ${
+                  view === "checkin"
+                    ? "bg-indigo-600 text-white"
+                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                }`}
+              >
+                Check-in
+              </button>
+            </nav>
             <span>
-              Plan: <strong className="font-semibold text-slate-700 dark:text-slate-200">{shop.plan}</strong>
+              Plan:{" "}
+              <strong className="font-semibold text-slate-700 dark:text-slate-200">
+                {shop.plan}
+              </strong>
             </span>
             <button
               type="button"
@@ -92,21 +103,11 @@ function App() {
         </div>
       </header>
 
-      {/* Main Content Area */}
       <main className="mx-auto max-w-5xl py-6">
-        {/* GraphQL Hello Badge */}
-        {data?.hello?.message && (
-          <div className="mx-4 mb-6 rounded-xl bg-emerald-50 p-3 text-center text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 sm:mx-6">
-            System status: {data.hello.message}
-          </div>
-        )}
-
-        {/* CheckIn Screen */}
-        <CheckInScreen />
+        {view === "dashboard" ? <DashboardScreen /> : <CheckInScreen />}
       </main>
     </div>
   )
 }
 
 export default App
-
