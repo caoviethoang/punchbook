@@ -76,6 +76,23 @@ RSpec.describe 'Dashboard', type: :request do
 
       expect(response.parsed_body['revenue_this_month']).to eq(0)
     end
+
+    it 'does not N+1 query when memberships grow', :aggregate_failures do
+      create_member(package: session_package, name: 'Member 1', phone: '0901000001', sessions_left: 5)
+
+      queries_baseline = count_queries { get '/dashboard', headers: auth_headers(shop) }
+
+      8.times do |i|
+        create_member(package: session_package, name: "Member #{i + 2}", phone: "09010000#{format('%02d', i + 2)}",
+                      sessions_left: i + 1)
+      end
+
+      queries_with_many = count_queries { get '/dashboard', headers: auth_headers(shop) }
+
+      # Constant query count proves eager-loading is working — not one query per membership.
+      # Allow a ±2 slack for incidental differences (e.g. SAVEPOINT in test transactions).
+      expect(queries_with_many).to be_within(2).of(queries_baseline)
+    end
   end
 
   def create_member(package:, name:, sessions_left:, phone: '0902000000', expires_at: nil)
