@@ -9,6 +9,8 @@ Rails.application.routes.draw do
 
   get '/dashboard', to: 'dashboard#show'
 
+  resources :packages, only: %i[create]
+
   resources :memberships, only: %i[index] do
     member do
       post :check_in
