@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { CheckInScreen } from "./components/CheckInScreen"
 import { DashboardScreen } from "./components/DashboardScreen"
 import { LoginScreen } from "./components/LoginScreen"
+import { PackageCreateForm } from "./components/PackageCreateForm"
 import {
   clearStoredToken,
   fetchCurrentShop,
@@ -9,7 +10,7 @@ import {
   type Shop,
 } from "./lib/auth"
 
-type AppView = "dashboard" | "checkin"
+type AppView = "dashboard" | "checkin" | "packages"
 
 function App() {
   const [shop, setShop] = useState<Shop | null>(null)
@@ -85,6 +86,17 @@ function App() {
               >
                 Check-in
               </button>
+              <button
+                type="button"
+                onClick={() => setView("packages")}
+                className={`rounded-lg px-3 py-1.5 font-semibold transition ${
+                  view === "packages"
+                    ? "bg-indigo-600 text-white"
+                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                }`}
+              >
+                Gói dịch vụ
+              </button>
             </nav>
             <span>
               Plan:{" "}
@@ -103,8 +115,16 @@ function App() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl py-6">
-        {view === "dashboard" ? <DashboardScreen /> : <CheckInScreen />}
+      <main className="mx-auto max-w-5xl py-6 px-4">
+        {view === "dashboard" ? (
+          <DashboardScreen />
+        ) : view === "checkin" ? (
+          <CheckInScreen />
+        ) : (
+          <div className="flex justify-center">
+            <PackageCreateForm />
+          </div>
+        )}
       </main>
     </div>
   )
