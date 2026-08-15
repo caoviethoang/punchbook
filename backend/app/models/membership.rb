@@ -54,6 +54,14 @@ class Membership < ApplicationRecord
     as_api_json.merge('status' => status)
   end
 
+  def apply_package_init
+    if package.session_based?
+      self.sessions_left = package.sessions_count
+    else
+      self.expires_at = Date.current + package.duration_days
+    end
+  end
+
   private
 
   def status_expired?

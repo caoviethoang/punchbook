@@ -11,7 +11,7 @@ Rails.application.routes.draw do
 
   resources :packages, only: %i[create]
 
-  resources :memberships, only: %i[index] do
+  resources :memberships, only: %i[index create] do
     member do
       post :check_in
     end
