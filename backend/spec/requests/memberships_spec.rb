@@ -102,6 +102,92 @@ RSpec.describe 'Memberships', type: :request do
     end
   end
 
+  describe 'POST /memberships' do
+    it 'returns 401 when unauthenticated' do
+      post '/memberships', params: {
+        membership: { customer_name: 'Mai Le', phone: '0903000000', package_id: package.id }
+      }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'creates a session-based membership with sessions_left from package' do
+      payload = {
+        membership: {
+          customer_name: 'Mai Le',
+          phone: '0903000000',
+          package_id: package.id
+        }
+      }
+
+      expect do
+        post '/memberships', params: payload, headers: auth_headers(shop)
+      end.to change(Membership, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+      body = response.parsed_body['membership']
+      expect(body).to include(
+        'customer_name' => 'Mai Le',
+        'phone' => '0903000000',
+        'sessions_left' => 10
+      )
+      expect(body['package']).to eq('id' => package.id, 'name' => '10-session massage')
+      expect(Membership.find(body['id'])).to have_attributes(shop_id: shop.id, sessions_left: 10)
+    end
+
+    it 'creates a day-based membership with expires_at from package duration' do
+      day_package = Package.create!(shop: shop, name: 'Monthly gym', duration_days: 30, price: 500_000)
+      payload = {
+        membership: {
+          customer_name: 'Tuan Pham',
+          phone: '0904000000',
+          package_id: day_package.id
+        }
+      }
+
+      expect do
+        post '/memberships', params: payload, headers: auth_headers(shop)
+      end.to change(Membership, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+      body = response.parsed_body['membership']
+      expect(body).to include(
+        'customer_name' => 'Tuan Pham',
+        'phone' => '0904000000',
+        'sessions_left' => nil,
+        'expires_at' => (Date.current + 30.days).iso8601
+      )
+    end
+
+    it 'returns 422 when customer_name is blank' do
+      post '/memberships',
+           params: { membership: { customer_name: '', phone: '0903000000', package_id: package.id } },
+           headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body['errors']).to be_present
+    end
+
+    it 'returns 404 when package belongs to another shop' do
+      other_shop = create_shop(name: 'Other Spa', email: 'other@example.com')
+      other_package = Package.create!(shop: other_shop, name: 'Secret', sessions_count: 5, price: 100_000)
+
+      expect do
+        post '/memberships',
+             params: {
+               membership: {
+                 customer_name: 'Mai Le',
+                 phone: '0903000000',
+                 package_id: other_package.id
+               }
+             },
+             headers: auth_headers(shop)
+      end.not_to change(Membership, :count)
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
   describe 'POST /memberships/:id/check_in' do
     let!(:staff) { Staff.create!(shop: shop, name: 'Mai', role: 'staff') }
 
