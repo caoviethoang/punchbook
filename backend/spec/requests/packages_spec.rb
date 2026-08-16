@@ -5,6 +5,28 @@ require 'rails_helper'
 RSpec.describe 'Packages', type: :request do
   let!(:shop) { create_shop(name: 'Lan Spa', email: 'lan@example.com') }
 
+  describe 'GET /packages' do
+    it 'returns 401 when unauthenticated' do
+      get '/packages'
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'returns only current_shop packages ordered by name' do
+      yoga = Package.create!(shop: shop, name: 'Yoga 10', sessions_count: 10, price: 500_000)
+      gym = Package.create!(shop: shop, name: 'Gym 30', duration_days: 30, price: 800_000)
+      other_shop = create_shop(name: 'Other', email: 'other@example.com')
+      Package.create!(shop: other_shop, name: 'Secret', sessions_count: 5, price: 100_000)
+
+      get '/packages', headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      names = response.parsed_body['packages'].pluck('name')
+      expect(names).to eq(['Gym 30', 'Yoga 10'])
+      expect(response.parsed_body['packages'].pluck('id')).to contain_exactly(yoga.id, gym.id)
+    end
+  end
+
   describe 'POST /packages' do
     it 'returns 401 when unauthenticated' do
       post '/packages', params: { package: { name: 'Gói 10 buổi', price: 500_000, sessions_count: 10 } }

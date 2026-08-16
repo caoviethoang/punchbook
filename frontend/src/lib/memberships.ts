@@ -79,6 +79,25 @@ export async function searchMemberships(query: string): Promise<Membership[]> {
   return body.memberships
 }
 
+export interface CreateMembershipPayload {
+  customer_name: string
+  phone: string
+  package_id: string
+}
+
+/** POST /memberships — create member; backend inits sessions_left / expires_at from package. */
+export async function createMembership(
+  payload: CreateMembershipPayload,
+): Promise<Membership> {
+  const response = await fetch(`${apiBaseUrl}/memberships`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ membership: payload }),
+  })
+  const body = await parseJson<{ membership: Membership }>(response)
+  return body.membership
+}
+
 /**
  * POST /memberships/:id/check_in
  * staffId is required — shop JWT has no staff identity yet (see backend MembershipsController).
