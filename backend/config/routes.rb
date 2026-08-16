@@ -9,7 +9,7 @@ Rails.application.routes.draw do
 
   get '/dashboard', to: 'dashboard#show'
 
-  resources :packages, only: %i[create]
+  resources :packages, only: %i[index create]
 
   resources :memberships, only: %i[index create] do
     member do

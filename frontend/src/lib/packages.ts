@@ -46,6 +46,17 @@ async function parseJson<T>(response: Response): Promise<T> {
 }
 
 /**
+ * GET /packages — shop-scoped package list for membership form select.
+ */
+export async function listPackages(): Promise<PackageItem[]> {
+  const response = await fetch(`${apiBaseUrl}/packages`, {
+    headers: authHeaders(),
+  })
+  const body = await parseJson<{ packages: PackageItem[] }>(response)
+  return body.packages
+}
+
+/**
  * POST /packages
  * Creates a new package for the current shop
  */

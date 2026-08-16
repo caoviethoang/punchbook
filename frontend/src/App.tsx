@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { CheckInScreen } from "./components/CheckInScreen"
 import { DashboardScreen } from "./components/DashboardScreen"
 import { LoginScreen } from "./components/LoginScreen"
+import { MembershipCreateForm } from "./components/MembershipCreateForm"
 import { PackageCreateForm } from "./components/PackageCreateForm"
 import {
   clearStoredToken,
@@ -10,7 +11,7 @@ import {
   type Shop,
 } from "./lib/auth"
 
-type AppView = "dashboard" | "checkin" | "packages"
+type AppView = "dashboard" | "checkin" | "packages" | "members"
 
 function App() {
   const [shop, setShop] = useState<Shop | null>(null)
@@ -62,8 +63,8 @@ function App() {
             </span>
           </div>
 
-          <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            <nav className="flex rounded-xl border border-slate-200 p-1 dark:border-slate-700">
+          <div className="flex items-center gap-3 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
+            <nav className="flex flex-wrap rounded-xl border border-slate-200 p-1 dark:border-slate-700">
               <button
                 type="button"
                 onClick={() => setView("dashboard")}
@@ -85,6 +86,17 @@ function App() {
                 }`}
               >
                 Check-in
+              </button>
+              <button
+                type="button"
+                onClick={() => setView("members")}
+                className={`rounded-lg px-3 py-1.5 font-semibold transition ${
+                  view === "members"
+                    ? "bg-indigo-600 text-white"
+                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                }`}
+              >
+                Hội viên
               </button>
               <button
                 type="button"
@@ -115,11 +127,15 @@ function App() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl py-6 px-4">
+      <main className="mx-auto max-w-5xl px-4 py-6">
         {view === "dashboard" ? (
           <DashboardScreen />
         ) : view === "checkin" ? (
           <CheckInScreen />
+        ) : view === "members" ? (
+          <div className="flex justify-center">
+            <MembershipCreateForm />
+          </div>
         ) : (
           <div className="flex justify-center">
             <PackageCreateForm />
