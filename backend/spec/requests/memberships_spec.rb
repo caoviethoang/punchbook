@@ -186,6 +186,67 @@ RSpec.describe 'Memberships', type: :request do
 
       expect(response).to have_http_status(:not_found)
     end
+
+    context 'when enforcing plan limits' do
+      it 'blocks creating 16th membership for free shop and returns upgrade error' do
+        free_shop = create_shop(name: 'Free Shop', email: 'freeshop@example.com', plan: 'free')
+        free_pkg = Package.create!(shop: free_shop, name: 'Pkg', sessions_count: 10, price: 100_000)
+
+        15.times do |i|
+          Membership.create!(
+            shop: free_shop,
+            package: free_pkg,
+            customer_name: "Customer #{i + 1}",
+            phone: "09800000#{i.to_s.rjust(2, '0')}"
+          )
+        end
+
+        expect do
+          post '/memberships',
+               params: {
+                 membership: {
+                   customer_name: 'Customer 16',
+                   phone: '0980000016',
+                   package_id: free_pkg.id
+                 }
+               },
+               headers: auth_headers(free_shop)
+        end.not_to change(Membership, :count)
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.parsed_body['errors']).to include(
+          'Gói Free chỉ được tạo tối đa 15 hội viên. Vui lòng nâng cấp gói trả phí để tạo thêm hội viên.'
+        )
+      end
+
+      it 'allows creating 16th membership for paid shop' do
+        paid_shop = create_shop(name: 'Paid Shop', email: 'paidshop@example.com', plan: 'paid')
+        paid_pkg = Package.create!(shop: paid_shop, name: 'Pkg', sessions_count: 10, price: 100_000)
+
+        15.times do |i|
+          Membership.create!(
+            shop: paid_shop,
+            package: paid_pkg,
+            customer_name: "Customer #{i + 1}",
+            phone: "09800000#{i.to_s.rjust(2, '0')}"
+          )
+        end
+
+        expect do
+          post '/memberships',
+               params: {
+                 membership: {
+                   customer_name: 'Customer 16',
+                   phone: '0980000016',
+                   package_id: paid_pkg.id
+                 }
+               },
+               headers: auth_headers(paid_shop)
+        end.to change(Membership, :count).by(1)
+
+        expect(response).to have_http_status(:created)
+      end
+    end
   end
 
   describe 'POST /memberships/:id/check_in' do
