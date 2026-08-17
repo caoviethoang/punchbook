@@ -59,6 +59,78 @@ RSpec.describe Membership, type: :model do
       expect(membership).not_to be_valid
       expect(membership.errors[:sessions_left]).to be_present
     end
+
+    context 'when shop is on free plan' do
+      let(:free_shop) { create_shop(plan: 'free') }
+      let(:free_package) do
+        Package.create!(shop: free_shop, name: 'Free package', sessions_count: 5, price: 100_000)
+      end
+
+      before do
+        15.times do |i|
+          described_class.create!(
+            shop: free_shop,
+            package: free_package,
+            customer_name: "Member #{i + 1}",
+            phone: "09000000#{i.to_s.rjust(2, '0')}"
+          )
+        end
+      end
+
+      it 'allows creating up to 15 memberships' do
+        expect(free_shop.memberships.count).to eq(15)
+      end
+
+      it 'rejects creating 16th membership for free shop' do
+        member16 = described_class.new(
+          shop: free_shop,
+          package: free_package,
+          customer_name: 'Member 16',
+          phone: '0900000016'
+        )
+
+        expect(member16).not_to be_valid
+        expect(member16.errors[:base]).to include(
+          'Gói Free chỉ được tạo tối đa 15 hội viên. Vui lòng nâng cấp gói trả phí để tạo thêm hội viên.'
+        )
+      end
+
+      it 'allows updating an existing membership beyond count check' do
+        existing_member = free_shop.memberships.first
+        existing_member.customer_name = 'Updated Name'
+
+        expect(existing_member).to be_valid
+      end
+    end
+
+    context 'when shop is on paid plan' do
+      let(:paid_shop) { create_shop(plan: 'paid') }
+      let(:paid_package) do
+        Package.create!(shop: paid_shop, name: 'Paid package', sessions_count: 5, price: 100_000)
+      end
+
+      before do
+        15.times do |i|
+          described_class.create!(
+            shop: paid_shop,
+            package: paid_package,
+            customer_name: "Member #{i + 1}",
+            phone: "09000000#{i.to_s.rjust(2, '0')}"
+          )
+        end
+      end
+
+      it 'allows creating 16th or more memberships for paid shop' do
+        member16 = described_class.new(
+          shop: paid_shop,
+          package: paid_package,
+          customer_name: 'Member 16',
+          phone: '0900000016'
+        )
+
+        expect(member16).to be_valid
+      end
+    end
   end
 
   describe '#status' do

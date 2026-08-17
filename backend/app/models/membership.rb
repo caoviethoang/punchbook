@@ -5,6 +5,8 @@ class Membership < ApplicationRecord
   EXPIRING_SESSIONS_THRESHOLD = 3
   EXPIRING_DAYS_WINDOW = 7
 
+  MAX_FREE_MEMBERSHIPS = 15
+
   belongs_to :shop
   belongs_to :package
   has_many :check_ins, dependent: :destroy
@@ -12,6 +14,7 @@ class Membership < ApplicationRecord
 
   validates :customer_name, :phone, presence: true
   validates :sessions_left, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
+  validate :shop_free_plan_membership_limit, on: :create
 
   scope :search_by_query, lambda { |query|
     return all if query.blank?
@@ -80,5 +83,12 @@ class Membership < ApplicationRecord
         expires_at >= Date.current &&
         expires_at <= Date.current + EXPIRING_DAYS_WINDOW.days
     end
+  end
+
+  def shop_free_plan_membership_limit
+    return unless shop&.plan == 'free'
+    return if shop.memberships.count < MAX_FREE_MEMBERSHIPS
+
+    errors.add(:base, 'Gói Free chỉ được tạo tối đa 15 hội viên. Vui lòng nâng cấp gói trả phí để tạo thêm hội viên.')
   end
 end
