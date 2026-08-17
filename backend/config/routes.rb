@@ -15,6 +15,7 @@ Rails.application.routes.draw do
     member do
       post :check_in
     end
+    resources :invoices, only: %i[create]
   end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
