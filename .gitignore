@@ -12,3 +12,4 @@ frontend/logs/
 .env.*
 !.env.example
 !.env.*.example
+backend/config/master.key
