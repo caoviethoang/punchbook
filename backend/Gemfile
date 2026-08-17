@@ -25,12 +25,14 @@ gem 'jwt', '~> 2.9'
 # Shop owner authentication (password hashing via Devise; API sessions via JWT)
 gem 'devise', '~> 5.0'
 
-gem 'tzinfo-data', platforms: %i[windows jruby]
+# HTTP client for external integrations (payOS, etc.)
+gem 'faraday', '~> 2.12'
 
 group :development, :test do
   gem 'debug', platforms: %i[mri windows], require: 'debug/prelude'
   gem 'dotenv-rails'
   gem 'rspec-rails', '~> 7.0'
+  gem 'webmock'
 end
 
 group :development do
