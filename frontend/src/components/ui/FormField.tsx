@@ -1,5 +1,5 @@
 import type { InputHTMLAttributes } from "react"
-import { cn } from "../lib/utils"
+import { cn } from "../../lib/utils"
 
 const BASE_INPUT_CLASS =
   "w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-400"

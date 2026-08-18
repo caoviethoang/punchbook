@@ -15,7 +15,7 @@ export interface BaseMembership {
   package: MembershipPackage
 }
 
-export interface Membership extends BaseMembership {}
+export type Membership = BaseMembership
 
 export interface CheckInRecord {
   id: string
