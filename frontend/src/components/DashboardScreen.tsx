@@ -1,44 +1,13 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { AlertCircle, CalendarClock, Loader2, RefreshCw, Users, Wallet } from "lucide-react"
 import { useDashboard } from "../hooks/useDashboard"
-import type { DashboardMembership, MembershipStatus } from "../lib/dashboard"
+import {
+  STATUS_CLASS,
+  STATUS_LABEL,
+  type DashboardMembership,
+} from "../lib/dashboard"
+import { formatVnd, remainingLabel } from "../lib/formatters"
 import { RenewalModal } from "./RenewalModal"
-
-const statusLabel: Record<MembershipStatus, string> = {
-  active: "Còn hạn",
-  expiring: "Sắp hết",
-  expired: "Đã hết",
-}
-
-const statusClass: Record<MembershipStatus, string> = {
-  active:
-    "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
-  expiring:
-    "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
-  expired: "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300",
-}
-
-function formatVnd(amount: number): string {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  }).format(amount)
-}
-
-function remainingLabel(membership: DashboardMembership): string {
-  if (membership.sessions_left !== null) {
-    return `${membership.sessions_left} buổi`
-  }
-  if (membership.expires_at) {
-    return new Date(membership.expires_at).toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    })
-  }
-  return "—"
-}
 
 function Metric({
   label,
@@ -177,9 +146,9 @@ export function DashboardScreen() {
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass[membership.status]}`}
+                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_CLASS[membership.status]}`}
                       >
-                        {statusLabel[membership.status]}
+                        {STATUS_LABEL[membership.status]}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">

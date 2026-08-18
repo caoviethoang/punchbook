@@ -14,7 +14,7 @@ class Membership < ApplicationRecord
 
   validates :customer_name, :phone, presence: true
   validates :sessions_left, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
-  validate :shop_free_plan_membership_limit, on: :create
+  validate :validate_free_plan_limit, on: :create
 
   scope :search_by_query, lambda { |query|
     return all if query.blank?
@@ -47,14 +47,11 @@ class Membership < ApplicationRecord
   end
 
   def as_api_json
-    as_json(
-      only: %i[id customer_name phone sessions_left expires_at],
-      include: { package: { only: %i[id name] } }
-    )
+    MembershipSerializer.new(self).as_api_json
   end
 
   def as_dashboard_json
-    as_api_json.merge('status' => status)
+    MembershipSerializer.new(self).as_dashboard_json
   end
 
   def apply_package_init
@@ -85,7 +82,7 @@ class Membership < ApplicationRecord
     end
   end
 
-  def shop_free_plan_membership_limit
+  def validate_free_plan_limit
     return unless shop&.plan == 'free'
     return if shop.memberships.count < MAX_FREE_MEMBERSHIPS
 

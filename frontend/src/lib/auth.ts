@@ -1,3 +1,5 @@
+import { parseApiResponse } from "./api"
+
 const graphqlUrl =
   import.meta.env.VITE_GRAPHQL_API_URL || "http://localhost:3000/graphql"
 
@@ -32,27 +34,13 @@ export function clearStoredToken(): void {
   localStorage.removeItem(TOKEN_KEY)
 }
 
-async function parseJson<T>(response: Response): Promise<T> {
-  const body = await response.json()
-  if (!response.ok) {
-    const message =
-      typeof body?.error === "string"
-        ? body.error
-        : Array.isArray(body?.errors)
-          ? body.errors.join(", ")
-          : "Request failed"
-    throw new Error(message)
-  }
-  return body as T
-}
-
 export async function login(email: string, password: string): Promise<AuthResponse> {
   const response = await fetch(`${apiBaseUrl}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   })
-  return parseJson<AuthResponse>(response)
+  return parseApiResponse<AuthResponse>(response)
 }
 
 export async function register(input: {
@@ -67,13 +55,13 @@ export async function register(input: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   })
-  return parseJson<AuthResponse>(response)
+  return parseApiResponse<AuthResponse>(response)
 }
 
 export async function fetchCurrentShop(token: string): Promise<Shop> {
   const response = await fetch(`${apiBaseUrl}/auth/me`, {
     headers: { Authorization: `Bearer ${token}` },
   })
-  const body = await parseJson<{ shop: Shop }>(response)
+  const body = await parseApiResponse<{ shop: Shop }>(response)
   return body.shop
 }

@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 import { useDebounce } from "../hooks/useDebounce"
 import { useMembershipsApi } from "../hooks/useMembershipsApi"
+import { toCheckInError } from "../lib/errors"
 import {
   isMembershipExhausted,
   type Membership,
@@ -278,15 +279,6 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
     }
   }
 
-  function toVietnameseError(err: unknown): string {
-    const raw = err instanceof Error ? err.message : ""
-    if (raw === "Membership has no sessions left") return "Hội viên đã hết buổi."
-    if (raw === "Membership has expired") return "Thẻ thành viên đã hết hạn."
-    if (raw === "Unauthorized" || raw === "NetworkError") return "Mất kết nối. Vui lòng thử lại."
-    if (!raw || raw === "Request failed") return "Check-in thất bại. Vui lòng thử lại."
-    return raw
-  }
-
   async function handleCheckIn(membershipId: string) {
     const membership = memberships.find((m) => m.id === membershipId)
     if (!membership || isMembershipExhausted(membership)) return
@@ -343,7 +335,7 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
       setCheckInMessage({
         id: membershipId,
         type: "error",
-        text: toVietnameseError(err),
+        text: toCheckInError(err),
       })
     } finally {
       setCheckingInId(null)

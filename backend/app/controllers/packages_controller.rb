@@ -12,7 +12,7 @@ class PackagesController < ApiController
     if package.save
       render json: package, status: :created
     else
-      render json: { errors: package.errors.full_messages }, status: :unprocessable_content
+      render_unprocessable(package.errors.full_messages)
     end
   end
 

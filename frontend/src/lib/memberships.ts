@@ -1,11 +1,12 @@
-import { apiBaseUrl, getStoredToken } from "./auth"
+import { apiBaseUrl } from "./auth"
+import { authHeaders, parseApiResponse } from "./api"
 
 export interface MembershipPackage {
   id: string
   name: string
 }
 
-export interface Membership {
+export interface BaseMembership {
   id: string
   customer_name: string
   phone: string
@@ -13,6 +14,8 @@ export interface Membership {
   expires_at: string | null
   package: MembershipPackage
 }
+
+export interface Membership extends BaseMembership {}
 
 export interface CheckInRecord {
   id: string
@@ -26,40 +29,13 @@ export interface CheckInResult {
 
 /** True when the member has no sessions left or the day-based pass is past expires_at. */
 export function isMembershipExhausted(
-  membership: Pick<Membership, "sessions_left" | "expires_at">,
+  membership: Pick<BaseMembership, "sessions_left" | "expires_at">,
 ): boolean {
   if (membership.sessions_left === 0) return true
   if (membership.expires_at && new Date(membership.expires_at) < new Date()) {
     return true
   }
   return false
-}
-
-function authHeaders(): HeadersInit {
-  const token = getStoredToken()
-  if (!token) {
-    throw new Error("Unauthorized")
-  }
-
-  return {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  }
-}
-
-async function parseJson<T>(response: Response): Promise<T> {
-  const body: unknown = await response.json()
-  if (!response.ok) {
-    const record = body as { error?: unknown; errors?: unknown }
-    const message =
-      typeof record.error === "string"
-        ? record.error
-        : Array.isArray(record.errors)
-          ? record.errors.join(", ")
-          : "Request failed"
-    throw new Error(message)
-  }
-  return body as T
 }
 
 /** GET /memberships?query=... — shop-scoped search (blank query returns limited list). */
@@ -75,7 +51,7 @@ export async function searchMemberships(query: string): Promise<Membership[]> {
     `${apiBaseUrl}/memberships${qs ? `?${qs}` : ""}`,
     { headers: authHeaders() },
   )
-  const body = await parseJson<{ memberships: Membership[] }>(response)
+  const body = await parseApiResponse<{ memberships: Membership[] }>(response)
   return body.memberships
 }
 
@@ -94,7 +70,7 @@ export async function createMembership(
     headers: authHeaders(),
     body: JSON.stringify({ membership: payload }),
   })
-  const body = await parseJson<{ membership: Membership }>(response)
+  const body = await parseApiResponse<{ membership: Membership }>(response)
   return body.membership
 }
 
@@ -134,7 +110,7 @@ export async function createInvoice(
       }),
     },
   )
-  return parseJson<PayosInvoiceResult>(response)
+  return parseApiResponse<PayosInvoiceResult>(response)
 }
 
 /**
@@ -150,5 +126,5 @@ export async function checkIn(
     headers: authHeaders(),
     body: JSON.stringify({ staff_id: staffId }),
   })
-  return parseJson<CheckInResult>(response)
+  return parseApiResponse<CheckInResult>(response)
 }

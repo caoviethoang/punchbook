@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react"
 import { createInvoice, type PayosInvoiceResult } from "../lib/memberships"
+import { formatVnd } from "../lib/formatters"
 
 interface RenewalModalProps {
   membership: {
@@ -22,14 +23,6 @@ interface RenewalModalProps {
     }
   }
   onClose: () => void
-}
-
-function formatVnd(amount: number): string {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  }).format(amount)
 }
 
 export function RenewalModal({ membership, onClose }: RenewalModalProps) {
@@ -63,7 +56,7 @@ export function RenewalModal({ membership, onClose }: RenewalModalProps) {
     })
   }
 
-  // Construct QR image URL using VietQR format if payos returns raw QR payload or fallback to Google Charts / QR image
+  // Construct QR image URL using VietQR format if payos returns raw QR payload or fallback to QR image API
   const qrImageUrl = result?.payos.qr_code
     ? result.payos.qr_code.startsWith("http")
       ? result.payos.qr_code

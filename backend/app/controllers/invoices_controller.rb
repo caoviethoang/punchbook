@@ -8,11 +8,11 @@ class InvoicesController < ApiController
 
     render_created_invoice(invoice, result)
   rescue ActiveRecord::RecordNotFound
-    render json: { error: 'Not found' }, status: :not_found
+    render_not_found
   rescue ActiveRecord::RecordInvalid => e
-    render json: { errors: e.record.errors.full_messages }, status: :unprocessable_content
+    render_unprocessable(e.record.errors.full_messages)
   rescue PayosService::Error, ActionController::ParameterMissing => e
-    render json: { error: e.message }, status: :unprocessable_content
+    render_unprocessable_message(e.message)
   end
 
   private

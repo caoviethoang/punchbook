@@ -14,17 +14,14 @@ class MembershipsController < ApiController
   end
 
   def create
-    membership = build_membership_from_package
-
-    if membership.save
-      render json: { membership: membership.as_api_json }, status: :created
-    else
-      render json: { errors: membership.errors.full_messages }, status: :unprocessable_content
-    end
+    membership = create_membership_service
+    render json: { membership: membership.as_api_json }, status: :created
   rescue ActiveRecord::RecordNotFound
-    render json: { error: 'Not found' }, status: :not_found
+    render_not_found
+  rescue ActiveRecord::RecordInvalid => e
+    render_unprocessable(e.record.errors.full_messages)
   rescue ActionController::ParameterMissing => e
-    render json: { error: e.message }, status: :unprocessable_content
+    render_unprocessable_message(e.message)
   end
 
   # staff_id is required (shop JWT has no staff identity yet). Must belong to current_shop.
@@ -37,23 +34,20 @@ class MembershipsController < ApiController
       check_in: check_in_json(record)
     }
   rescue ActiveRecord::RecordNotFound
-    render json: { error: 'Not found' }, status: :not_found
+    render_not_found
   rescue ActionController::ParameterMissing, CheckInMembership::Error => e
-    render json: { error: e.message }, status: :unprocessable_content
+    render_unprocessable_message(e.message)
   end
 
   private
 
-  def build_membership_from_package
-    attrs = membership_params
-    package = current_shop.packages.find(attrs[:package_id])
-    membership = current_shop.memberships.build(
-      customer_name: attrs[:customer_name],
-      phone: attrs[:phone],
-      package: package
+  def create_membership_service
+    CreateMembership.call(
+      shop: current_shop,
+      customer_name: membership_params[:customer_name],
+      phone: membership_params[:phone],
+      package_id: membership_params[:package_id]
     )
-    membership.apply_package_init
-    membership
   end
 
   def membership_params
