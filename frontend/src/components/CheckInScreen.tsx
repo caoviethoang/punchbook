@@ -6,6 +6,7 @@ import {
   Clock,
   Loader2,
   Package as PackageIcon,
+  RefreshCw,
   Search,
   User,
   UserCheck,
@@ -17,6 +18,7 @@ import {
   isMembershipExhausted,
   type Membership,
 } from "../lib/memberships"
+import { RenewalModal } from "./RenewalModal"
 
 interface CheckInScreenProps {
   /** Optional staff ID to perform check-ins. */
@@ -107,6 +109,7 @@ interface MembershipResultListProps {
   checkingInId: string | null
   checkInMessage: { id: string; type: "success" | "error"; text: string } | null
   onCheckIn: (id: string) => void
+  onRenew: (membership: Membership) => void
 }
 
 function MembershipResultList({
@@ -114,6 +117,7 @@ function MembershipResultList({
   checkingInId,
   checkInMessage,
   onCheckIn,
+  onRenew,
 }: MembershipResultListProps) {
   return (
     <div role="list" aria-label="Danh sách hội viên" className="grid gap-4">
@@ -174,8 +178,19 @@ function MembershipResultList({
               />
             </div>
 
-            {/* Col 4: Check-in button — exhausted rows show "Đã hết" and cannot be clicked */}
-            <div className="shrink-0">
+            {/* Col 4: Action buttons (Gia hạn + Check-in) */}
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onRenew(membership)}
+                title="Gia hạn gói"
+                aria-label={`Gia hạn cho ${membership.customer_name}`}
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                <RefreshCw className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                <span className="hidden sm:inline">Gia hạn</span>
+              </button>
+
               <button
                 type="button"
                 disabled={isDisabled}
@@ -335,6 +350,9 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
     }
   }
 
+  const [selectedMembershipForRenewal, setSelectedMembershipForRenewal] =
+    useState<Membership | null>(null)
+
   const showLoading = searchLoading
 
   return (
@@ -469,9 +487,17 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
             checkingInId={checkingInId}
             checkInMessage={checkInMessage}
             onCheckIn={handleCheckIn}
+            onRenew={(membership) => setSelectedMembershipForRenewal(membership)}
           />
         )}
       </div>
+
+      {selectedMembershipForRenewal && (
+        <RenewalModal
+          membership={selectedMembershipForRenewal}
+          onClose={() => setSelectedMembershipForRenewal(null)}
+        />
+      )}
     </div>
   )
 }

@@ -98,6 +98,45 @@ export async function createMembership(
   return body.membership
 }
 
+export interface Invoice {
+  id: string
+  membership_id: string
+  amount: number
+  status: "pending" | "paid" | "cancelled"
+  payos_transaction_id: string | null
+  payos_checkout_url: string | null
+  created_at: string
+}
+
+export interface PayosInvoiceResult {
+  invoice: Invoice
+  payos: {
+    checkout_url: string
+    qr_code?: string
+  }
+}
+
+/**
+ * POST /memberships/:id/invoices
+ * Creates a pending invoice and returns payOS checkout URL + QR code.
+ */
+export async function createInvoice(
+  membershipId: string,
+  amount?: number,
+): Promise<PayosInvoiceResult> {
+  const response = await fetch(
+    `${apiBaseUrl}/memberships/${membershipId}/invoices`,
+    {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        invoice: amount ? { amount } : {},
+      }),
+    },
+  )
+  return parseJson<PayosInvoiceResult>(response)
+}
+
 /**
  * POST /memberships/:id/check_in
  * staffId is required — shop JWT has no staff identity yet (see backend MembershipsController).

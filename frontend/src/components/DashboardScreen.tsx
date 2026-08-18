@@ -1,7 +1,8 @@
-import { useEffect, type ReactNode } from "react"
-import { AlertCircle, CalendarClock, Loader2, Users, Wallet } from "lucide-react"
+import { useEffect, useState, type ReactNode } from "react"
+import { AlertCircle, CalendarClock, Loader2, RefreshCw, Users, Wallet } from "lucide-react"
 import { useDashboard } from "../hooks/useDashboard"
 import type { DashboardMembership, MembershipStatus } from "../lib/dashboard"
+import { RenewalModal } from "./RenewalModal"
 
 const statusLabel: Record<MembershipStatus, string> = {
   active: "Còn hạn",
@@ -63,6 +64,8 @@ function Metric({
 
 export function DashboardScreen() {
   const { data, loading, error, load } = useDashboard()
+  const [selectedMembershipForRenewal, setSelectedMembershipForRenewal] =
+    useState<DashboardMembership | null>(null)
 
   useEffect(() => {
     void load().catch(() => {
@@ -179,6 +182,16 @@ export function DashboardScreen() {
                         {statusLabel[membership.status]}
                       </span>
                     </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMembershipForRenewal(membership)}
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                      >
+                        <RefreshCw className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                        <span>Gia hạn</span>
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -186,6 +199,13 @@ export function DashboardScreen() {
           </div>
         )}
       </div>
+
+      {selectedMembershipForRenewal && (
+        <RenewalModal
+          membership={selectedMembershipForRenewal}
+          onClose={() => setSelectedMembershipForRenewal(null)}
+        />
+      )}
     </div>
   )
 }
