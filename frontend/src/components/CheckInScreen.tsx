@@ -14,10 +14,12 @@ import {
 } from "lucide-react"
 import { useDebounce } from "../hooks/useDebounce"
 import { useMembershipsApi } from "../hooks/useMembershipsApi"
+import { toCheckInError } from "../lib/errors"
 import {
   isMembershipExhausted,
   type Membership,
 } from "../lib/memberships"
+import { formatDate } from "../lib/formatters"
 import { RenewalModal } from "./RenewalModal"
 
 interface CheckInScreenProps {
@@ -75,15 +77,10 @@ function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) {
 
   // Session-unlimited membership — show expiry date if available
   if (expiresAt) {
-    const formatted = new Date(expiresAt).toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    })
     return (
       <div className="flex min-w-20 flex-col items-center justify-center rounded-xl bg-indigo-50 px-4 py-3 text-center dark:bg-indigo-950/40">
         <span className="text-base font-bold leading-tight text-indigo-700 dark:text-indigo-300">
-          {formatted}
+          {formatDate(expiresAt)}
         </span>
         <span className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-indigo-500 dark:text-indigo-400">
           hạn dùng
@@ -278,15 +275,6 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
     }
   }
 
-  function toVietnameseError(err: unknown): string {
-    const raw = err instanceof Error ? err.message : ""
-    if (raw === "Membership has no sessions left") return "Hội viên đã hết buổi."
-    if (raw === "Membership has expired") return "Thẻ thành viên đã hết hạn."
-    if (raw === "Unauthorized" || raw === "NetworkError") return "Mất kết nối. Vui lòng thử lại."
-    if (!raw || raw === "Request failed") return "Check-in thất bại. Vui lòng thử lại."
-    return raw
-  }
-
   async function handleCheckIn(membershipId: string) {
     const membership = memberships.find((m) => m.id === membershipId)
     if (!membership || isMembershipExhausted(membership)) return
@@ -343,7 +331,7 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
       setCheckInMessage({
         id: membershipId,
         type: "error",
-        text: toVietnameseError(err),
+        text: toCheckInError(err),
       })
     } finally {
       setCheckingInId(null)

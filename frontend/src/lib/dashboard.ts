@@ -1,18 +1,10 @@
-import { apiBaseUrl, getStoredToken } from "./auth"
+import { apiGet } from "./api"
+import type { Membership } from "./memberships"
 
 export type MembershipStatus = "active" | "expiring" | "expired"
 
-export interface DashboardMembership {
-  id: string
-  customer_name: string
-  phone: string
-  sessions_left: number | null
-  expires_at: string | null
+export interface DashboardMembership extends Membership {
   status: MembershipStatus
-  package: {
-    id: string
-    name: string
-  }
 }
 
 export interface DashboardData {
@@ -22,37 +14,21 @@ export interface DashboardData {
   memberships: DashboardMembership[]
 }
 
-function authHeaders(): HeadersInit {
-  const token = getStoredToken()
-  if (!token) {
-    throw new Error("Unauthorized")
-  }
-
-  return {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  }
+export const STATUS_LABEL: Record<MembershipStatus, string> = {
+  active: "Còn hạn",
+  expiring: "Sắp hết",
+  expired: "Đã hết",
 }
 
-async function parseJson<T>(response: Response): Promise<T> {
-  const body: unknown = await response.json()
-  if (!response.ok) {
-    const record = body as { error?: unknown; errors?: unknown }
-    const message =
-      typeof record.error === "string"
-        ? record.error
-        : Array.isArray(record.errors)
-          ? record.errors.join(", ")
-          : "Request failed"
-    throw new Error(message)
-  }
-  return body as T
+export const STATUS_CLASS: Record<MembershipStatus, string> = {
+  active:
+    "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
+  expiring:
+    "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+  expired: "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300",
 }
 
 /** GET /dashboard — shop-scoped stats + membership list with status. */
 export async function fetchDashboard(): Promise<DashboardData> {
-  const response = await fetch(`${apiBaseUrl}/dashboard`, {
-    headers: authHeaders(),
-  })
-  return parseJson<DashboardData>(response)
+  return apiGet<DashboardData>("/dashboard")
 }

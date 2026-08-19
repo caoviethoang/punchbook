@@ -1,27 +1,11 @@
-import { useState, type InputHTMLAttributes } from "react"
+import { useState } from "react"
 import { login, register, setStoredToken, type Shop } from "../lib/auth"
+import { FormField } from "./ui/FormField"
 
 type Mode = "login" | "register"
 
 interface LoginScreenProps {
   onSuccess: (shop: Shop) => void
-}
-
-const labelClass = "mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-
-const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
-
-function Field({
-  label,
-  ...inputProps
-}: { label: string } & InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <label className="block">
-      <span className={labelClass}>{label}</span>
-      <input className={inputClass} {...inputProps} />
-    </label>
-  )
 }
 
 export function LoginScreen({ onSuccess }: LoginScreenProps) {
@@ -71,14 +55,14 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {mode === "register" && (
           <>
-            <Field
+            <FormField
               label="Shop name"
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-            <Field
+            <FormField
               label="Phone"
               type="tel"
               required
@@ -88,7 +72,7 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
           </>
         )}
 
-        <Field
+        <FormField
           label="Email"
           type="email"
           required
@@ -97,7 +81,7 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
           onChange={(e) => setEmail(e.target.value)}
         />
 
-        <Field
+        <FormField
           label="Password"
           type="password"
           required

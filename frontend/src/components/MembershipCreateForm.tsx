@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { createMembership, type Membership } from "../lib/memberships"
 import { listPackages, type PackageItem } from "../lib/packages"
+import { FormField, FORM_CONTROL_CLASS } from "./ui/FormField"
 
 interface MembershipCreateFormProps {
   onSuccess?: (membership: Membership) => void
@@ -14,13 +15,7 @@ function packageLabel(pkg: PackageItem): string {
   return `${pkg.name} (${detail})`
 }
 
-const inputClass =
-  "w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-400"
-
-export const MembershipCreateForm: React.FC<MembershipCreateFormProps> = ({
-  onSuccess,
-  onCancel,
-}) => {
+export function MembershipCreateForm({ onSuccess, onCancel }: MembershipCreateFormProps) {
   const [customerName, setCustomerName] = useState("")
   const [phone, setPhone] = useState("")
   const [packageId, setPackageId] = useState("")
@@ -138,33 +133,23 @@ export const MembershipCreateForm: React.FC<MembershipCreateFormProps> = ({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            Tên hội viên <span className="text-rose-500">*</span>
-          </label>
-          <input
-            type="text"
-            required
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            placeholder="Ví dụ: Hoa Nguyen"
-            className={inputClass}
-          />
-        </div>
+        <FormField
+          label="Tên hội viên"
+          required
+          type="text"
+          value={customerName}
+          onChange={(e) => setCustomerName(e.target.value)}
+          placeholder="Ví dụ: Hoa Nguyen"
+        />
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            Số điện thoại <span className="text-rose-500">*</span>
-          </label>
-          <input
-            type="tel"
-            required
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="0902000000"
-            className={inputClass}
-          />
-        </div>
+        <FormField
+          label="Số điện thoại"
+          required
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="0902000000"
+        />
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -175,7 +160,7 @@ export const MembershipCreateForm: React.FC<MembershipCreateFormProps> = ({
             value={packageId}
             onChange={(e) => setPackageId(e.target.value)}
             disabled={packagesLoading || packages.length === 0}
-            className={inputClass}
+            className={FORM_CONTROL_CLASS}
           >
             <option value="">
               {packagesLoading

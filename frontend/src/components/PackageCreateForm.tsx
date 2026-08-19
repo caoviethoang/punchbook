@@ -1,15 +1,22 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { createPackage, type PackageItem, type PackageType } from "../lib/packages"
+import { FormField, FORM_CONTROL_CLASS } from "./ui/FormField"
+import { formatVndInput } from "../lib/formatters"
+import { cn } from "../lib/utils"
 
 interface PackageCreateFormProps {
   onSuccess?: (pkg: PackageItem) => void
   onCancel?: () => void
 }
 
-export const PackageCreateForm: React.FC<PackageCreateFormProps> = ({
-  onSuccess,
-  onCancel,
-}) => {
+const typeButtonClass = (active: boolean) =>
+  `flex items-center justify-center rounded-xl border py-2.5 px-4 text-sm font-semibold transition ${
+    active
+      ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-300"
+      : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700/60"
+  }`
+
+export function PackageCreateForm({ onSuccess, onCancel }: PackageCreateFormProps) {
   const [name, setName] = useState("")
   const [packageType, setPackageType] = useState<PackageType>("sessions")
   const [sessionsCount, setSessionsCount] = useState<string>("10")
@@ -19,18 +26,11 @@ export const PackageCreateForm: React.FC<PackageCreateFormProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [createdPackage, setCreatedPackage] = useState<PackageItem | null>(null)
 
-  const formatVnd = (val: string) => {
-    const num = parseInt(val.replace(/\D/g, ""), 10)
-    if (isNaN(num)) return ""
-    return new Intl.NumberFormat("vi-VN").format(num)
+  function handlePriceChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setPrice(e.target.value.replace(/\D/g, ""))
   }
 
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/\D/g, "")
-    setPrice(raw)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setCreatedPackage(null)
@@ -77,15 +77,11 @@ export const PackageCreateForm: React.FC<PackageCreateFormProps> = ({
       })
 
       setCreatedPackage(pkg)
-      // Reset form fields
       setName("")
       setPrice("")
-      if (onSuccess) {
-        onSuccess(pkg)
-      }
+      onSuccess?.(pkg)
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Tạo gói thất bại"
-      setError(msg)
+      setError(err instanceof Error ? err.message : "Tạo gói thất bại")
     } finally {
       setLoading(false)
     }
@@ -113,7 +109,7 @@ export const PackageCreateForm: React.FC<PackageCreateFormProps> = ({
               </p>
               <p className="mt-1 text-sm text-emerald-800 dark:text-emerald-400">
                 <strong>{createdPackage.name}</strong> —{" "}
-                {new Intl.NumberFormat("vi-VN").format(createdPackage.price)} VNĐ (
+                {formatVndInput(String(createdPackage.price))} VNĐ (
                 {createdPackage.sessions_count
                   ? `${createdPackage.sessions_count} buổi`
                   : `${createdPackage.duration_days} ngày`}
@@ -138,20 +134,14 @@ export const PackageCreateForm: React.FC<PackageCreateFormProps> = ({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Tên gói */}
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            Tên gói <span className="text-rose-500">*</span>
-          </label>
-          <input
-            type="text"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Ví dụ: Gói 10 buổi Yoga, Thẻ tháng 30 ngày..."
-            className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-400"
-          />
-        </div>
+        <FormField
+          label="Tên gói"
+          required
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Ví dụ: Gói 10 buổi Yoga, Thẻ tháng 30 ngày..."
+        />
 
         {/* Loại gói (theo buổi / theo ngày) */}
         <div>
@@ -162,62 +152,43 @@ export const PackageCreateForm: React.FC<PackageCreateFormProps> = ({
             <button
               type="button"
               onClick={() => setPackageType("sessions")}
-              className={`flex items-center justify-center rounded-xl border py-2.5 px-4 text-sm font-semibold transition ${
-                packageType === "sessions"
-                  ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-300"
-                  : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700/60"
-              }`}
+              className={typeButtonClass(packageType === "sessions")}
             >
               Theo buổi
             </button>
             <button
               type="button"
               onClick={() => setPackageType("days")}
-              className={`flex items-center justify-center rounded-xl border py-2.5 px-4 text-sm font-semibold transition ${
-                packageType === "days"
-                  ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-300"
-                  : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700/60"
-              }`}
+              className={typeButtonClass(packageType === "days")}
             >
               Theo ngày
             </button>
           </div>
         </div>
 
-        {/* Số buổi hoặc Số ngày */}
         {packageType === "sessions" ? (
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Số buổi <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="number"
-              min="1"
-              required
-              value={sessionsCount}
-              onChange={(e) => setSessionsCount(e.target.value)}
-              placeholder="10"
-              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-400"
-            />
-          </div>
+          <FormField
+            label="Số buổi"
+            required
+            type="number"
+            min="1"
+            value={sessionsCount}
+            onChange={(e) => setSessionsCount(e.target.value)}
+            placeholder="10"
+          />
         ) : (
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Số ngày <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="number"
-              min="1"
-              required
-              value={durationDays}
-              onChange={(e) => setDurationDays(e.target.value)}
-              placeholder="30"
-              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-400"
-            />
-          </div>
+          <FormField
+            label="Số ngày"
+            required
+            type="number"
+            min="1"
+            value={durationDays}
+            onChange={(e) => setDurationDays(e.target.value)}
+            placeholder="30"
+          />
         )}
 
-        {/* Giá (VNĐ) */}
+        {/* Giá (VNĐ) — custom input with suffix, cannot use FormField directly */}
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
             Giá (VNĐ) <span className="text-rose-500">*</span>
@@ -226,10 +197,10 @@ export const PackageCreateForm: React.FC<PackageCreateFormProps> = ({
             <input
               type="text"
               required
-              value={price ? formatVnd(price) : ""}
+              value={price ? formatVndInput(price) : ""}
               onChange={handlePriceChange}
               placeholder="500.000"
-              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 pr-14 text-sm text-slate-900 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-400"
+              className={cn(FORM_CONTROL_CLASS, "pr-14")}
             />
             <span className="pointer-events-none absolute right-3.5 top-2.5 text-sm font-medium text-slate-400">
               VNĐ
@@ -237,7 +208,6 @@ export const PackageCreateForm: React.FC<PackageCreateFormProps> = ({
           </div>
         </div>
 
-        {/* Form buttons */}
         <div className="mt-6 flex items-center justify-end gap-3 pt-2">
           {onCancel && (
             <button

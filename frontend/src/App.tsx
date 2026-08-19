@@ -13,6 +13,13 @@ import {
 
 type AppView = "dashboard" | "checkin" | "packages" | "members"
 
+const NAV_ITEMS: { view: AppView; label: string }[] = [
+  { view: "dashboard", label: "Dashboard" },
+  { view: "checkin", label: "Check-in" },
+  { view: "members", label: "Hội viên" },
+  { view: "packages", label: "Gói dịch vụ" },
+]
+
 function App() {
   const [shop, setShop] = useState<Shop | null>(null)
   const [authLoading, setAuthLoading] = useState(() => getStoredToken() !== null)
@@ -65,50 +72,20 @@ function App() {
 
           <div className="flex items-center gap-3 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
             <nav className="flex flex-wrap rounded-xl border border-slate-200 p-1 dark:border-slate-700">
-              <button
-                type="button"
-                onClick={() => setView("dashboard")}
-                className={`rounded-lg px-3 py-1.5 font-semibold transition ${
-                  view === "dashboard"
-                    ? "bg-indigo-600 text-white"
-                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                }`}
-              >
-                Dashboard
-              </button>
-              <button
-                type="button"
-                onClick={() => setView("checkin")}
-                className={`rounded-lg px-3 py-1.5 font-semibold transition ${
-                  view === "checkin"
-                    ? "bg-indigo-600 text-white"
-                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                }`}
-              >
-                Check-in
-              </button>
-              <button
-                type="button"
-                onClick={() => setView("members")}
-                className={`rounded-lg px-3 py-1.5 font-semibold transition ${
-                  view === "members"
-                    ? "bg-indigo-600 text-white"
-                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                }`}
-              >
-                Hội viên
-              </button>
-              <button
-                type="button"
-                onClick={() => setView("packages")}
-                className={`rounded-lg px-3 py-1.5 font-semibold transition ${
-                  view === "packages"
-                    ? "bg-indigo-600 text-white"
-                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                }`}
-              >
-                Gói dịch vụ
-              </button>
+              {NAV_ITEMS.map(({ view: v, label }) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setView(v)}
+                  className={`rounded-lg px-3 py-1.5 font-semibold transition ${
+                    view === v
+                      ? "bg-indigo-600 text-white"
+                      : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </nav>
             <span>
               Plan:{" "}

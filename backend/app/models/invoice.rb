@@ -9,13 +9,6 @@ class Invoice < ApplicationRecord
   validates :status, presence: true, inclusion: { in: STATUSES }
 
   def as_api_json
-    as_json(
-      only: %i[id amount status payos_transaction_id payos_checkout_url created_at],
-      include: {
-        membership: {
-          only: %i[id customer_name phone]
-        }
-      }
-    )
+    InvoiceSerializer.new(self).as_api_json
   end
 end

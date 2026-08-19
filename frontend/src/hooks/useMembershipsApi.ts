@@ -9,7 +9,6 @@ import {
 /** Thin UI-layer wrappers around memberships REST helpers. */
 export function useMembershipsApi() {
   const [searchLoading, setSearchLoading] = useState(false)
-  const [checkInLoading, setCheckInLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const search = useCallback(async (query: string): Promise<Membership[]> => {
@@ -28,7 +27,6 @@ export function useMembershipsApi() {
 
   const checkIn = useCallback(
     async (id: string, staffId: string): Promise<CheckInResult> => {
-      setCheckInLoading(true)
       setError(null)
       try {
         return await checkInRequest(id, staffId)
@@ -36,13 +34,10 @@ export function useMembershipsApi() {
         const message = err instanceof Error ? err.message : "Request failed"
         setError(message)
         throw err
-      } finally {
-        setCheckInLoading(false)
       }
     },
     [],
   )
 
-  return { search, checkIn, searchLoading, checkInLoading, error }
+  return { search, checkIn, searchLoading, error }
 }
-
