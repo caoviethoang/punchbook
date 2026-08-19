@@ -19,6 +19,7 @@ import {
   isMembershipExhausted,
   type Membership,
 } from "../lib/memberships"
+import { formatDate } from "../lib/formatters"
 import { RenewalModal } from "./RenewalModal"
 
 interface CheckInScreenProps {
@@ -76,15 +77,10 @@ function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) {
 
   // Session-unlimited membership — show expiry date if available
   if (expiresAt) {
-    const formatted = new Date(expiresAt).toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    })
     return (
       <div className="flex min-w-20 flex-col items-center justify-center rounded-xl bg-indigo-50 px-4 py-3 text-center dark:bg-indigo-950/40">
         <span className="text-base font-bold leading-tight text-indigo-700 dark:text-indigo-300">
-          {formatted}
+          {formatDate(expiresAt)}
         </span>
         <span className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-indigo-500 dark:text-indigo-400">
           hạn dùng

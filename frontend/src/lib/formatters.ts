@@ -11,6 +11,16 @@ export function formatVnd(amount: number): string {
 }
 
 /**
+ * Formats digit-only input as a grouped VNĐ amount (no currency symbol).
+ * Example: "500000" → "500.000"
+ */
+export function formatVndInput(digits: string): string {
+  const num = parseInt(digits.replace(/\D/g, ""), 10)
+  if (Number.isNaN(num)) return ""
+  return new Intl.NumberFormat("vi-VN").format(num)
+}
+
+/**
  * Formats an ISO date string into Vietnamese date format (DD/MM/YYYY).
  */
 export function formatDate(isoDate: string): string {

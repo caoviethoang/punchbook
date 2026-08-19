@@ -1,10 +1,9 @@
-import { apiBaseUrl } from "./auth"
-import { authHeaders, parseApiResponse } from "./api"
-import type { BaseMembership } from "./memberships"
+import { apiGet } from "./api"
+import type { Membership } from "./memberships"
 
 export type MembershipStatus = "active" | "expiring" | "expired"
 
-export interface DashboardMembership extends BaseMembership {
+export interface DashboardMembership extends Membership {
   status: MembershipStatus
 }
 
@@ -31,8 +30,5 @@ export const STATUS_CLASS: Record<MembershipStatus, string> = {
 
 /** GET /dashboard — shop-scoped stats + membership list with status. */
 export async function fetchDashboard(): Promise<DashboardData> {
-  const response = await fetch(`${apiBaseUrl}/dashboard`, {
-    headers: authHeaders(),
-  })
-  return parseApiResponse<DashboardData>(response)
+  return apiGet<DashboardData>("/dashboard")
 }

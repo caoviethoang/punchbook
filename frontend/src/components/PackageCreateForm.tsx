@@ -1,6 +1,8 @@
 import { useState } from "react"
 import { createPackage, type PackageItem, type PackageType } from "../lib/packages"
-import { FormField } from "./ui/FormField"
+import { FormField, FORM_CONTROL_CLASS } from "./ui/FormField"
+import { formatVndInput } from "../lib/formatters"
+import { cn } from "../lib/utils"
 
 interface PackageCreateFormProps {
   onSuccess?: (pkg: PackageItem) => void
@@ -23,12 +25,6 @@ export function PackageCreateForm({ onSuccess, onCancel }: PackageCreateFormProp
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [createdPackage, setCreatedPackage] = useState<PackageItem | null>(null)
-
-  function formatVnd(val: string) {
-    const num = parseInt(val.replace(/\D/g, ""), 10)
-    if (isNaN(num)) return ""
-    return new Intl.NumberFormat("vi-VN").format(num)
-  }
 
   function handlePriceChange(e: React.ChangeEvent<HTMLInputElement>) {
     setPrice(e.target.value.replace(/\D/g, ""))
@@ -113,7 +109,7 @@ export function PackageCreateForm({ onSuccess, onCancel }: PackageCreateFormProp
               </p>
               <p className="mt-1 text-sm text-emerald-800 dark:text-emerald-400">
                 <strong>{createdPackage.name}</strong> —{" "}
-                {new Intl.NumberFormat("vi-VN").format(createdPackage.price)} VNĐ (
+                {formatVndInput(String(createdPackage.price))} VNĐ (
                 {createdPackage.sessions_count
                   ? `${createdPackage.sessions_count} buổi`
                   : `${createdPackage.duration_days} ngày`}
@@ -201,10 +197,10 @@ export function PackageCreateForm({ onSuccess, onCancel }: PackageCreateFormProp
             <input
               type="text"
               required
-              value={price ? formatVnd(price) : ""}
+              value={price ? formatVndInput(price) : ""}
               onChange={handlePriceChange}
               placeholder="500.000"
-              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 pr-14 text-sm text-slate-900 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-400"
+              className={cn(FORM_CONTROL_CLASS, "pr-14")}
             />
             <span className="pointer-events-none absolute right-3.5 top-2.5 text-sm font-medium text-slate-400">
               VNĐ

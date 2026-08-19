@@ -1,5 +1,4 @@
-import { apiBaseUrl } from "./auth"
-import { authHeaders, parseApiResponse } from "./api"
+import { apiGet, apiPost } from "./api"
 
 export interface PackageItem {
   id: string
@@ -19,28 +18,15 @@ export interface CreatePackagePayload {
   duration_days?: number
 }
 
-/**
- * GET /packages — shop-scoped package list for membership form select.
- */
+/** GET /packages — shop-scoped package list for membership form select. */
 export async function listPackages(): Promise<PackageItem[]> {
-  const response = await fetch(`${apiBaseUrl}/packages`, {
-    headers: authHeaders(),
-  })
-  const body = await parseApiResponse<{ packages: PackageItem[] }>(response)
+  const body = await apiGet<{ packages: PackageItem[] }>("/packages")
   return body.packages
 }
 
-/**
- * POST /packages
- * Creates a new package for the current shop.
- */
+/** POST /packages — creates a new package for the current shop. */
 export async function createPackage(
   payload: CreatePackagePayload,
 ): Promise<PackageItem> {
-  const response = await fetch(`${apiBaseUrl}/packages`, {
-    method: "POST",
-    headers: authHeaders(),
-    body: JSON.stringify({ package: payload }),
-  })
-  return parseApiResponse<PackageItem>(response)
+  return apiPost<PackageItem>("/packages", { package: payload })
 }

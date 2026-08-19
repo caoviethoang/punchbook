@@ -9,7 +9,7 @@ import {
   RefreshCw,
   X,
 } from "lucide-react"
-import { createInvoice, type PayosInvoiceResult } from "../lib/memberships"
+import { createInvoice, type PayosInvoiceResult } from "../lib/invoices"
 import { formatVnd } from "../lib/formatters"
 
 interface RenewalModalProps {

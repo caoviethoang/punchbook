@@ -1,12 +1,11 @@
-import { apiBaseUrl } from "./auth"
-import { authHeaders, parseApiResponse } from "./api"
+import { apiGet, apiPost } from "./api"
 
 export interface MembershipPackage {
   id: string
   name: string
 }
 
-export interface BaseMembership {
+export interface Membership {
   id: string
   customer_name: string
   phone: string
@@ -14,8 +13,6 @@ export interface BaseMembership {
   expires_at: string | null
   package: MembershipPackage
 }
-
-export type Membership = BaseMembership
 
 export interface CheckInRecord {
   id: string
@@ -29,7 +26,7 @@ export interface CheckInResult {
 
 /** True when the member has no sessions left or the day-based pass is past expires_at. */
 export function isMembershipExhausted(
-  membership: Pick<BaseMembership, "sessions_left" | "expires_at">,
+  membership: Pick<Membership, "sessions_left" | "expires_at">,
 ): boolean {
   if (membership.sessions_left === 0) return true
   if (membership.expires_at && new Date(membership.expires_at) < new Date()) {
@@ -40,18 +37,10 @@ export function isMembershipExhausted(
 
 /** GET /memberships?query=... — shop-scoped search (blank query returns limited list). */
 export async function searchMemberships(query: string): Promise<Membership[]> {
-  const params = new URLSearchParams()
   const trimmed = query.trim()
-  if (trimmed) {
-    params.set("query", trimmed)
-  }
-
-  const qs = params.toString()
-  const response = await fetch(
-    `${apiBaseUrl}/memberships${qs ? `?${qs}` : ""}`,
-    { headers: authHeaders() },
-  )
-  const body = await parseApiResponse<{ memberships: Membership[] }>(response)
+  const body = await apiGet<{ memberships: Membership[] }>("/memberships", {
+    query: trimmed ? { query: trimmed } : undefined,
+  })
   return body.memberships
 }
 
@@ -65,52 +54,10 @@ export interface CreateMembershipPayload {
 export async function createMembership(
   payload: CreateMembershipPayload,
 ): Promise<Membership> {
-  const response = await fetch(`${apiBaseUrl}/memberships`, {
-    method: "POST",
-    headers: authHeaders(),
-    body: JSON.stringify({ membership: payload }),
+  const body = await apiPost<{ membership: Membership }>("/memberships", {
+    membership: payload,
   })
-  const body = await parseApiResponse<{ membership: Membership }>(response)
   return body.membership
-}
-
-export interface Invoice {
-  id: string
-  membership_id: string
-  amount: number
-  status: "pending" | "paid" | "cancelled"
-  payos_transaction_id: string | null
-  payos_checkout_url: string | null
-  created_at: string
-}
-
-export interface PayosInvoiceResult {
-  invoice: Invoice
-  payos: {
-    checkout_url: string
-    qr_code?: string
-  }
-}
-
-/**
- * POST /memberships/:id/invoices
- * Creates a pending invoice and returns payOS checkout URL + QR code.
- */
-export async function createInvoice(
-  membershipId: string,
-  amount?: number,
-): Promise<PayosInvoiceResult> {
-  const response = await fetch(
-    `${apiBaseUrl}/memberships/${membershipId}/invoices`,
-    {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify({
-        invoice: amount ? { amount } : {},
-      }),
-    },
-  )
-  return parseApiResponse<PayosInvoiceResult>(response)
 }
 
 /**
@@ -121,10 +68,7 @@ export async function checkIn(
   id: string,
   staffId: string,
 ): Promise<CheckInResult> {
-  const response = await fetch(`${apiBaseUrl}/memberships/${id}/check_in`, {
-    method: "POST",
-    headers: authHeaders(),
-    body: JSON.stringify({ staff_id: staffId }),
+  return apiPost<CheckInResult>(`/memberships/${id}/check_in`, {
+    staff_id: staffId,
   })
-  return parseApiResponse<CheckInResult>(response)
 }

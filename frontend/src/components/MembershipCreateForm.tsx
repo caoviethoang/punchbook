@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { createMembership, type Membership } from "../lib/memberships"
 import { listPackages, type PackageItem } from "../lib/packages"
-import { FormField } from "./ui/FormField"
+import { FormField, FORM_CONTROL_CLASS } from "./ui/FormField"
 
 interface MembershipCreateFormProps {
   onSuccess?: (membership: Membership) => void
@@ -14,9 +14,6 @@ function packageLabel(pkg: PackageItem): string {
     : `${pkg.duration_days} ngày`
   return `${pkg.name} (${detail})`
 }
-
-const selectClass =
-  "w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-400"
 
 export function MembershipCreateForm({ onSuccess, onCancel }: MembershipCreateFormProps) {
   const [customerName, setCustomerName] = useState("")
@@ -163,7 +160,7 @@ export function MembershipCreateForm({ onSuccess, onCancel }: MembershipCreateFo
             value={packageId}
             onChange={(e) => setPackageId(e.target.value)}
             disabled={packagesLoading || packages.length === 0}
-            className={selectClass}
+            className={FORM_CONTROL_CLASS}
           >
             <option value="">
               {packagesLoading
