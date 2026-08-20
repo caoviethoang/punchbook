@@ -62,7 +62,21 @@ class Membership < ApplicationRecord
     end
   end
 
+  def renew!
+    if package.session_based?
+      self.sessions_left = sessions_left.to_i + package.sessions_count.to_i
+    elsif package.day_based?
+      self.expires_at = calculate_renewal_expires_at
+    end
+    save!
+  end
+
   private
+
+  def calculate_renewal_expires_at
+    base_date = expires_at.present? && expires_at >= Date.current ? expires_at : Date.current
+    base_date + package.duration_days.days
+  end
 
   def status_expired?
     if package.session_based?

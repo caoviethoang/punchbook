@@ -15,6 +15,21 @@ class PayosService
     new.create_payment_link(...)
   end
 
+  def self.verify_webhook_signature?(payload_data, received_signature)
+    new.verify_webhook_signature?(payload_data, received_signature)
+  end
+
+  def verify_webhook_signature?(payload_data, received_signature)
+    return false if received_signature.blank? || payload_data.nil?
+
+    hash_data = extract_hash_data(payload_data)
+    return false unless hash_data.is_a?(Hash)
+
+    data_string = build_signature_data_string(hash_data)
+    computed = OpenSSL::HMAC.hexdigest('sha256', ENV.fetch('PAYOS_CHECKSUM_KEY', ''), data_string)
+    ActiveSupport::SecurityUtils.secure_compare(computed, received_signature.to_s)
+  end
+
   def create_payment_link(order_code:, amount:, description:, cancel_url:, return_url:)
     payload = build_payload(order_code, amount, description, cancel_url, return_url)
     response = connection.post('/v2/payment-requests', payload.to_json)
@@ -24,6 +39,17 @@ class PayosService
   end
 
   private
+
+  def extract_hash_data(payload_data)
+    payload_data.respond_to?(:to_unsafe_h) ? payload_data.to_unsafe_h : payload_data.to_h
+  end
+
+  def build_signature_data_string(hash_data)
+    hash_data.keys.map(&:to_s).sort.map do |key|
+      val = hash_data[key] || hash_data[key.to_sym]
+      "#{key}=#{val}"
+    end.join('&')
+  end
 
   def build_payload(order_code, amount, description, cancel_url, return_url)
     payload = {
