@@ -141,5 +141,39 @@ RSpec.describe 'PayOS Webhook API', type: :request do
         expect(response.parsed_body['status']).to eq('success')
       end
     end
+
+    context 'when invoice is not found' do
+      it 'returns 422 unprocessable_content' do
+        data = { orderCode: 999_999, amount: 500_000, code: '00' }
+        signature = compute_signature(data)
+
+        payload = { code: '00', desc: 'success', data: data, signature: signature }
+
+        post '/webhooks/payos', params: payload, as: :json
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.parsed_body['error']).to eq('Webhook processing failed')
+      end
+    end
+
+    context 'when signature is valid but payment response code indicates failure' do
+      it 'does not mark invoice as paid or renew membership' do
+        membership, invoice = create_session_fixture
+        data = { orderCode: invoice.id, amount: 500_000, code: '01' }
+        signature = compute_signature(data)
+
+        payload = { code: '01', desc: 'failed', data: data, signature: signature }
+
+        post '/webhooks/payos', params: payload, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['status']).to eq('success')
+
+        invoice.reload
+        membership.reload
+        expect(invoice.status).to eq('pending')
+        expect(membership.sessions_left).to eq(2)
+      end
+    end
   end
 end
