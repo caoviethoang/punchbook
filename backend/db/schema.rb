@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_17_141000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_25_091614) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -34,6 +34,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_17_141000) do
     t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
     t.index ["membership_id"], name: "index_invoices_on_membership_id"
+  end
+
+  create_table "membership_reminders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "membership_id", null: false
+    t.string "reminder_type", default: "expiring", null: false
+    t.datetime "sent_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["membership_id", "sent_at"], name: "index_membership_reminders_on_membership_id_and_sent_at"
+    t.index ["membership_id"], name: "index_membership_reminders_on_membership_id"
   end
 
   create_table "memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -83,6 +93,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_17_141000) do
   add_foreign_key "check_ins", "memberships"
   add_foreign_key "check_ins", "staffs"
   add_foreign_key "invoices", "memberships"
+  add_foreign_key "membership_reminders", "memberships"
   add_foreign_key "memberships", "packages"
   add_foreign_key "memberships", "shops"
   add_foreign_key "packages", "shops"

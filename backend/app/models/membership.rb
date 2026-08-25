@@ -11,6 +11,7 @@ class Membership < ApplicationRecord
   belongs_to :package
   has_many :check_ins, dependent: :destroy
   has_many :invoices, dependent: :destroy
+  has_many :membership_reminders, dependent: :destroy
 
   validates :customer_name, :phone, presence: true
   validates :sessions_left, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
@@ -29,6 +30,10 @@ class Membership < ApplicationRecord
 
   def no_sessions_left?
     package.session_based? && sessions_left.to_i <= 0
+  end
+
+  def reminder_sent_today?
+    membership_reminders.exists?(sent_at: Time.current.all_day)
   end
 
   # Single source of truth for dashboard + member tables.
