@@ -11,4 +11,6 @@ class Shop < ApplicationRecord
 
   validates :plan, presence: true, inclusion: { in: PLANS }
   validates :name, presence: true
+
+  scope :paid, -> { where(plan: 'paid') }
 end

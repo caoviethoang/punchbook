@@ -23,6 +23,7 @@ class Membership < ApplicationRecord
     pattern = "%#{sanitize_sql_like(query.to_s.strip)}%"
     where('memberships.customer_name ILIKE :q OR memberships.phone ILIKE :q', q: pattern)
   }
+  scope :needing_reminder, -> { PaidShopMembershipsNeedingReminderQuery.call(self) }
 
   def expired?
     expires_at.present? && expires_at < Date.current
