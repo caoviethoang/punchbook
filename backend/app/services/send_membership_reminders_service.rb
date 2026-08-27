@@ -26,6 +26,6 @@ class SendMembershipRemindersService
   private
 
   def expiring_memberships
-    Membership.includes(:package).find_each.select { |m| m.status == 'expiring' }
+    Membership.needing_reminder.includes(:package, :shop)
   end
 end

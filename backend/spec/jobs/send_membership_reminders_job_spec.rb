@@ -5,12 +5,12 @@ require 'rails_helper'
 RSpec.describe SendMembershipRemindersJob, type: :job do
   include ActiveSupport::Testing::TimeHelpers
 
-  let(:shop) { create_shop }
+  let(:shop) { create_shop(plan: 'paid') }
 
   describe '#perform' do
     let!(:memberships) { setup_memberships(shop) }
 
-    it 'sends reminders for expiring memberships on the first run' do
+    it 'sends reminders for expiring memberships on the first run for paid shops' do
       expect { described_class.new.perform }
         .to change(MembershipReminder, :count).by(2)
 
@@ -18,6 +18,14 @@ RSpec.describe SendMembershipRemindersJob, type: :job do
       expect(memberships[:expiring_day].reload).to be_reminder_sent_today
       expect(memberships[:active].reload).not_to be_reminder_sent_today
       expect(memberships[:expired].reload).not_to be_reminder_sent_today
+    end
+
+    it 'ignores memberships from free shops even if expiring' do
+      free_shop = create_shop(plan: 'free')
+      setup_memberships(free_shop)
+
+      expect { described_class.new.perform }
+        .to change(MembershipReminder, :count).by(2) # Only the paid shop memberships
     end
 
     it 'deduplicates reminders when run multiple times on the same day' do
