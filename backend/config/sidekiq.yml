@@ -1,0 +1,12 @@
+:concurrency: 5
+:queues:
+  - default
+
+:schedule:
+  send_membership_reminders_daily:
+    cron: "0 8 * * *"
+    class: "SendMembershipRemindersJob"
+    queue: default
+    timezone: "Asia/Ho_Chi_Minh"
+    description: "Send Zalo reminders to expiring paid memberships daily at 8:00 AM VN time"
+

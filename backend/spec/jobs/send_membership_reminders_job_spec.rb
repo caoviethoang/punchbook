@@ -2,10 +2,48 @@
 
 require 'rails_helper'
 
+# rubocop:disable RSpec/MessageSpies
 RSpec.describe SendMembershipRemindersJob, type: :job do
   include ActiveSupport::Testing::TimeHelpers
 
   let(:shop) { create_shop(plan: 'paid') }
+  let(:payos_result) do
+    PayosService::Result.new(
+      payment_link_id: 'payos_link_123',
+      checkout_url: 'https://pay.payos.vn/web/checkout_123',
+      qr_code: 'qr_code_data'
+    )
+  end
+
+  before do
+    allow(PayosService).to receive(:create_payment_link).and_return(payos_result)
+
+    # Stub Zalo OAuth Token Refresh
+    stub_request(:post, 'https://oauth.zaloapp.com/v4/oa/access_token')
+      .to_return(
+        status: 200,
+        body: { access_token: 'mock_access_token', refresh_token: 'mock_refresh_token', expires_in: 90_000 }.to_json,
+        headers: { 'Content-Type' => 'application/json' }
+      )
+
+    # Stub Zalo Send Template Message
+    stub_request(:post, 'https://business.openapi.zalo.me/message/template')
+      .to_return(
+        status: 200,
+        body: { error: 0, message: 'Success', data: { msg_id: 'mock_msg_id' } }.to_json,
+        headers: { 'Content-Type' => 'application/json' }
+      )
+
+    # Mock memory cache store
+    allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache.lookup_store(:memory_store))
+    Rails.cache.clear
+    Rails.cache.write('zalo_access_token', 'mock_access_token')
+    Rails.cache.write('zalo_refresh_token', 'mock_refresh_token')
+
+    allow(ENV).to receive(:fetch).and_call_original
+    allow(ENV).to receive(:fetch).with('ZALO_REFRESH_TOKEN', nil).and_return('mock_refresh_token')
+    allow(ENV).to receive(:fetch).with('ZALO_TEMPLATE_ID_MEMBERSHIP_REMINDER', '').and_return('mock_template_id')
+  end
 
   describe '#perform' do
     let!(:memberships) { setup_memberships(shop) }
@@ -18,6 +56,8 @@ RSpec.describe SendMembershipRemindersJob, type: :job do
       expect(memberships[:expiring_day].reload).to be_reminder_sent_today
       expect(memberships[:active].reload).not_to be_reminder_sent_today
       expect(memberships[:expired].reload).not_to be_reminder_sent_today
+
+      expect(WebMock).to have_requested(:post, 'https://business.openapi.zalo.me/message/template').twice
     end
 
     it 'ignores memberships from free shops even if expiring' do
@@ -45,6 +85,31 @@ RSpec.describe SendMembershipRemindersJob, type: :job do
           .to change(MembershipReminder, :count).by(2)
       end
     end
+
+    it 'reuses an existing pending invoice and does not create a new one' do
+      membership = memberships[:expiring_session]
+      # Pre-create a pending invoice with checkout url
+      Invoice.create!(membership: membership, amount: 100_000, status: 'pending', payos_checkout_url: 'https://pay.payos.vn/web/existing_checkout')
+
+      expect(CreateInvoice).not_to receive(:call).with(hash_including(membership_id: membership.id))
+      allow(CreateInvoice).to receive(:call).and_call_original
+
+      described_class.new.perform
+
+      expect(WebMock).to(have_requested(:post, 'https://business.openapi.zalo.me/message/template')
+        .with do |req|
+          body = JSON.parse(req.body)
+          body['phone'] == '84901111111' && body['template_data']['payment_url'] == 'https://pay.payos.vn/web/existing_checkout'
+        end)
+    end
+
+    it 'creates a new invoice if no pending invoice exists' do
+      membership = memberships[:expiring_session]
+      expect(CreateInvoice).to receive(:call).with(hash_including(membership_id: membership.id)).and_call_original
+      allow(CreateInvoice).to receive(:call).with(hash_excluding(membership_id: membership.id)).and_call_original
+
+      described_class.new.perform
+    end
   end
 
   def setup_memberships(shop)
@@ -67,3 +132,4 @@ RSpec.describe SendMembershipRemindersJob, type: :job do
     }
   end
 end
+# rubocop:enable RSpec/MessageSpies

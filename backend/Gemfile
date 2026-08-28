@@ -18,6 +18,7 @@ gem 'graphql', '~> 2.4'
 # Redis & Sidekiq background jobs
 gem 'redis', '~> 5.0'
 gem 'sidekiq', '~> 7.0'
+gem 'sidekiq-cron', '~> 1.12'
 
 # JWT Authentication
 gem 'jwt', '~> 2.9'
