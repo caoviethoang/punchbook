@@ -42,4 +42,3 @@ RSpec.describe 'Reports Export', type: :request do
     end
   end
 end
-

@@ -25,4 +25,3 @@ class ReportsController < ApiController
     }, status: :forbidden
   end
 end
-

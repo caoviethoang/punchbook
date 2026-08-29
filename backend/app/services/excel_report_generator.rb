@@ -114,4 +114,3 @@ class ExcelReportGenerator
     end
   end
 end
-

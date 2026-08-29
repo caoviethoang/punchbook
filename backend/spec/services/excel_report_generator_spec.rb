@@ -25,4 +25,3 @@ RSpec.describe ExcelReportGenerator do
     end
   end
 end
-
