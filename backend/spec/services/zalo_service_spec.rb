@@ -2,6 +2,7 @@
 
 require 'rails_helper'
 
+# rubocop:disable RSpec/MultipleMemoizedHelpers
 RSpec.describe ZaloService do
   subject(:service) { described_class.new }
 
@@ -82,7 +83,6 @@ RSpec.describe ZaloService do
     end
   end
 
-  # rubocop:disable RSpec/MultipleMemoizedHelpers
   describe '#send_template_message' do
     let(:phone) { '0912345678' }
     let(:template_data) { { 'customer_name' => 'John Doe' } }
@@ -188,5 +188,5 @@ RSpec.describe ZaloService do
       end
     end
   end
-  # rubocop:enable RSpec/MultipleMemoizedHelpers
 end
+# rubocop:enable RSpec/MultipleMemoizedHelpers

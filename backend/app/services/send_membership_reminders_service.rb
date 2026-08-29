@@ -2,12 +2,12 @@
 
 # Service to process and send reminders to members whose memberships are expiring.
 # Ensures deduplication by skipping memberships that have already been reminded today.
+# rubocop:disable Metrics/MethodLength
 class SendMembershipRemindersService
   def self.call
     new.call
   end
 
-  # rubocop:disable Metrics/MethodLength
   def call
     sent_reminders = []
 
@@ -30,7 +30,6 @@ class SendMembershipRemindersService
 
     sent_reminders
   end
-  # rubocop:enable Metrics/MethodLength
 
   private
 
@@ -38,7 +37,6 @@ class SendMembershipRemindersService
     Membership.needing_reminder.includes(:package, :shop)
   end
 
-  # rubocop:disable Metrics/MethodLength
   def get_or_create_payment_link(membership)
     pending_invoice = membership.invoices
                                 .where(status: 'pending')
@@ -57,9 +55,7 @@ class SendMembershipRemindersService
       invoice.payos_checkout_url
     end
   end
-  # rubocop:enable Metrics/MethodLength
 
-  # rubocop:disable Metrics/MethodLength
   def send_zalo_reminder(membership, payment_url)
     zalo_service = ZaloService.new
     template_id = ENV.fetch('ZALO_TEMPLATE_ID_MEMBERSHIP_REMINDER', '')
@@ -79,5 +75,5 @@ class SendMembershipRemindersService
       tracking_id: tracking_id
     )
   end
-  # rubocop:enable Metrics/MethodLength
 end
+# rubocop:enable Metrics/MethodLength
