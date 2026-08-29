@@ -4,6 +4,7 @@ require 'faraday'
 
 # Service to interact with the Zalo ZBS Open API (Zalo Notification Service - ZNS).
 # Manages access token and refresh token storage in Rails.cache, and refreshes them atomically.
+# rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
 class ZaloService
   class Error < StandardError; end
 
@@ -12,7 +13,6 @@ class ZaloService
     cleaned.sub(/\A0/, '84')
   end
 
-  # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
   def send_template_message(phone:, template_id:, template_data:, tracking_id: nil)
     normalized_phone = normalize_phone(phone)
     token = access_token || refresh_access_token!
@@ -40,7 +40,6 @@ class ZaloService
 
     body
   end
-  # rubocop:enable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
 
   def access_token
     Rails.cache.read('zalo_access_token')
@@ -50,7 +49,6 @@ class ZaloService
     Rails.cache.fetch('zalo_refresh_token') { ENV.fetch('ZALO_REFRESH_TOKEN', nil) }
   end
 
-  # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
   def refresh_access_token!
     current_refresh_token = refresh_token
     raise Error, 'No refresh token available to refresh Zalo access token' if current_refresh_token.blank?
@@ -83,7 +81,6 @@ class ZaloService
     Rails.cache.write('zalo_refresh_token', body['refresh_token'])
     body['access_token']
   end
-  # rubocop:enable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
 
   private
 
@@ -104,3 +101,4 @@ class ZaloService
     {}
   end
 end
+# rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity

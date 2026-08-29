@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react"
-import { AlertCircle, CalendarClock, Loader2, RefreshCw, Users, Wallet } from "lucide-react"
+import { AlertCircle, CalendarClock, FileSpreadsheet, Loader2, RefreshCw, Users, Wallet } from "lucide-react"
 import { useDashboard } from "../hooks/useDashboard"
 import {
   STATUS_CLASS,
@@ -7,6 +7,7 @@ import {
   type DashboardMembership,
 } from "../lib/dashboard"
 import { formatVnd, remainingLabel } from "../lib/formatters"
+import { downloadExcelReport } from "../lib/reports"
 import { RenewalModal } from "./RenewalModal"
 
 function Metric({
@@ -35,12 +36,28 @@ export function DashboardScreen() {
   const { data, loading, error, load } = useDashboard()
   const [selectedMembershipForRenewal, setSelectedMembershipForRenewal] =
     useState<DashboardMembership | null>(null)
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
 
   useEffect(() => {
     void load().catch(() => {
       // Error surfaced via hook state.
     })
   }, [load])
+
+  const handleExport = async () => {
+    try {
+      setExporting(true)
+      setExportError(null)
+      await downloadExcelReport()
+    } catch (err) {
+      setExportError(
+        err instanceof Error ? err.message : "Xuất báo cáo thất bại."
+      )
+    } finally {
+      setExporting(false)
+    }
+  }
 
   if (loading && !data) {
     return (
@@ -72,13 +89,38 @@ export function DashboardScreen() {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-          Dashboard
-        </h2>
-        <p className="mt-1 text-base text-slate-500 dark:text-slate-400">
-          Tình hình shop trong tháng này
-        </p>
+      {exportError && (
+        <div className="rounded-xl bg-amber-50 p-4 text-sm font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <span>{exportError}</span>
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+            Dashboard
+          </h2>
+          <p className="mt-1 text-base text-slate-500 dark:text-slate-400">
+            Tình hình shop trong tháng này
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => void handleExport()}
+          disabled={exporting}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+        >
+          {exporting ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <FileSpreadsheet className="h-4 w-4" />
+          )}
+          <span>{exporting ? "Đang xuất..." : "Xuất Excel"}</span>
+        </button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

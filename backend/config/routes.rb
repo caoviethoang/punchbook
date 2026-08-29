@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   get '/auth/me', to: 'auth#me'
 
   get '/dashboard', to: 'dashboard#show'
+  get '/reports/export', to: 'reports#export'
 
   resources :packages, only: %i[index create]
 
