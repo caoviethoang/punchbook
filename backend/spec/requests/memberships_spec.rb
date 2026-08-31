@@ -76,6 +76,32 @@ RSpec.describe 'Memberships', type: :request do
       expect(response.parsed_body['memberships'].pluck('id')).to eq([lan.id])
     end
 
+    it 'searches by partial phone number (last digits)' do
+      get '/memberships', params: { query: '0000' }, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
+    end
+
+    it 'handles query string with surrounding whitespace' do
+      get '/memberships', params: { query: '  0902000000  ' }, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
+    end
+
+    it 'searches by formatted phone number with spaces or dashes' do
+      get '/memberships', params: { query: '090 200 0000' }, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
+
+      get '/memberships', params: { query: '090-200-0000' }, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
+    end
+
     it 'does not return another shop membership even when name/phone match' do
       other_shop = create_shop(name: 'Other Spa', email: 'other@example.com')
       other_package = Package.create!(shop: other_shop, name: 'Secret package', sessions_count: 5, price: 500_000)

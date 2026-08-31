@@ -20,8 +20,18 @@ class Membership < ApplicationRecord
   scope :search_by_query, lambda { |query|
     return all if query.blank?
 
-    pattern = "%#{sanitize_sql_like(query.to_s.strip)}%"
-    where('memberships.customer_name ILIKE :q OR memberships.phone ILIKE :q', q: pattern)
+    raw_query = query.to_s.strip
+    name_pattern = "%#{sanitize_sql_like(raw_query)}%"
+    digits_only = raw_query.gsub(/\D/, '')
+
+    if digits_only.present?
+      phone_pattern = "%#{sanitize_sql_like(digits_only)}%"
+      sql = 'memberships.customer_name ILIKE :q OR memberships.phone ILIKE :q OR ' \
+            "regexp_replace(memberships.phone, '\\D', '', 'g') ILIKE :pq"
+      where(sql, q: name_pattern, pq: phone_pattern)
+    else
+      where('memberships.customer_name ILIKE :q OR memberships.phone ILIKE :q', q: name_pattern)
+    end
   }
   scope :needing_reminder, -> { PaidShopMembershipsNeedingReminderQuery.call(self) }
 
