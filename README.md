@@ -1,142 +1,145 @@
-# PunchBook
+# 🥊 PunchBook
 
-> Replace the customer notebook with one tap.
+> **Thay thế sổ quản lý hội viên truyền thống chỉ với 1 chạm.**  
+> *Replace traditional customer notebooks in seconds.*
 
-PunchBook is a digital membership app for small service shops in Vietnam — spas, nail salons, gyms, massage studios, and clinics — that still track customers with paper notebooks, Excel, or memory.
+[![Ruby on Rails](https://img.shields.io/badge/Ruby_on_Rails-8.0-CC0000?style=for-the-badge&logo=ruby-on-rails&logoColor=white)](https://rubyonrails.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![payOS](https://img.shields.io/badge/payOS-Integrated-0052CC?style=for-the-badge)](https://payos.vn/)
+[![Zalo ZBS](https://img.shields.io/badge/Zalo_ZBS-Automated-0068FF?style=for-the-badge)](https://zalo.me)
 
-## Purpose
+---
 
-Small shops sell prepaid packages (e.g. “10 massage sessions” or “30-day gym access”). Staff need to know, in seconds:
+## 📌 Tổng quan về Sản phẩm (Product Overview)
 
-- Does this customer still have sessions (or days) left?
-- Can we check them in right now?
-- Who is about to expire and needs a renewal?
+**PunchBook** là giải pháp phần mềm quản lý gói hội viên đơn giản, chuyên biệt dành cho các mô hình dịch vụ vừa & nhỏ tại Việt Nam (**Spa, Salon Nail, Gym, Massage, Phòng khám...**) — những nơi vẫn đang quản lý bằng sổ tay giấy, file Excel hoặc ghi nhớ thủ công.
 
-Today that usually means flipping through a notebook, arguing over remaining sessions, and forgetting renewals — which loses revenue and trust.
+Sản phẩm tập trung giải quyết **ĐÚNG 1 BÀI TOÁN CỐT LÕI**: 
+> **Quản lý khách hàng, gói dịch vụ và check-in NHAU NHẤT — ĐƠN GIẢN NHẤT — CHÍNH XÁC NHẤT.**
 
-**PunchBook’s job is narrow on purpose:** manage customers, packages, check-ins, renewals, and simple payments accurately — not become a CRM, ERP, booking system, or full POS.
+---
 
-If a shop can throw away its membership notebook, PunchBook has done its job.
+## ✨ Tính năng nổi bật (Key Features)
 
-## Who it’s for
+### 1. ⚡ Màn hình Check-in Siêu tốc (Staff UX)
+- **Check-in 1-click**: Thao tác hoàn tất trong chưa đầy 3 giây.
+- **Smart Phone & Name Search**: Tìm kiếm linh hoạt theo Tên hoặc Số điện thoại (tự động loại bỏ dấu cách, dấu chấm, dấu gạch ngang bất kể định dạng).
+- **Phản hồi tức thì (Optimistic Update)**: Trừ số buổi ngay trên giao diện UI, tự động rollback nếu gặp lỗi API.
+- **Race-Condition Safe**: Tự động khóa luồng dữ liệu bằng Pessimistic Locking (`with_lock`) tránh tranh chấp khi 2 nhân viên check-in cùng lúc.
 
-| Role | What they need |
-|------|----------------|
-| **Staff** (front desk) | Find a customer and check in in under ~5 seconds, with large clear UI |
-| **Owner** | See today’s/month revenue, who’s active, and who’s about to expire |
+### 2. 💳 Thanh toán & Gia hạn gói qua payOS
+- **Tạo mã QR thanh toán tức thì**: Tự động tạo link thanh toán VietQR chuyển khoản ngân hàng qua cổng payOS.
+- **Bảo mật tuyệt đối**: Xác thực chữ ký HMAC cho Webhooks (`/webhooks/payos`) trước khi gia hạn gói cước.
+- **Đảm bảo Idempotency**: Xử lý hóa đơn chính xác 1 lần duy nhất, chống ghi trùng số buổi.
 
-Typical shop size: 1 location, 2–10 staff, ~100–1000 customers. Owners are often not tech-savvy; the product assumes phone/tablet use and almost no training.
+### 3. 📲 Nhắc nhở tự động qua Zalo ZBS (Paid Plan)
+- **Daily Sidekiq Cron Job**: Tự động quét các hội viên còn `<= 3 buổi` hoặc hết hạn trong `7 ngày` đối với các cửa hàng gói Trả phí (`paid`).
+- **Gửi tin nhắn Zalo kèm Payment Link**: Tự động gửi thông báo nhắc gia hạn kèm link thanh toán trực tuyến đến Zalo của khách hàng.
 
-## Core capabilities (MVP direction)
+### 4. 📊 Dashboard Chủ tiệm & Báo cáo Excel Đa sheet
+- **Metric Tổng quan**: Doanh thu tháng, Số hội viên đang hoạt động, Hội viên sắp hết hạn.
+- **Xuất file Excel chuyên nghiệp**: Tải báo cáo Multi-sheet Excel (Tổng quan, Chi tiết hóa đơn, Danh sách hội viên) chỉ với 1 click.
 
-- Create service packages (by session count or by duration in days)
-- Add members and track remaining sessions / expiry
-- Fast check-in with automatic session deduction (and race-safe locking)
-- Owner dashboard: revenue and expiring members
-- Renewal payments via payOS (planned)
-- Optional paid-plan reminders via Zalo (planned)
-- Installable PWA for tablet/desktop use (planned)
+### 5. 📱 Progressive Web App (PWA)
+- Hỗ trợ cài đặt trực tiếp (**Installable Web App**) trên Chrome, Edge & Safari cho máy tính bảng/laptop tại quầy thu ngân.
 
-**Out of scope for MVP:** booking, multi-branch, loyalty/marketing CRM, native mobile apps.
+---
 
-## Repository layout
+## 🏗 Kiến trúc Hệ thống (Architecture & Monorepo Layout)
 
-This monorepo contains:
+```text
+punchbook/
+├── backend/            # Rails 8 API (PostgreSQL, Redis, Sidekiq, Devise Auth, GraphQL)
+├── frontend/           # React 19 + TypeScript + Vite + Tailwind CSS v4 + Apollo Client
+├── docs/               # Tài liệu thiết kế sản phẩm, Business Rules, Steps & New Issues
+```
 
-- `backend/` — Rails 8 API (PostgreSQL, Redis, Sidekiq, JWT; GraphQL today)
-- `frontend/` — React + TypeScript + Vite + Tailwind CSS v4 + Apollo Client
-- `docs/` — product vision, steps, and build phases
+### Stack Công nghệ:
 
-## Setup and Running
+| Hợp phần | Công nghệ sử dụng |
+|---|---|
+| **Backend API** | Ruby on Rails 8, PostgreSQL 16, Redis 7, Sidekiq, Devise, JWT, RSpec |
+| **Frontend UI** | React 19, TypeScript, Vite, Tailwind CSS v4, Lucide Icons, Apollo Client |
+| **Integrations** | Cổng thanh toán **payOS**, Dịch vụ tin nhắn **Zalo ZBS** |
 
-The easiest way to run the entire project is using Docker Compose.
+---
 
-### Prerequisites
+## 🚀 Hướng dẫn Cài đặt & Khởi chạy (Getting Started)
 
-- Docker and Docker Compose installed.
+### Cách 1: Khởi chạy nhanh bằng Docker Compose (Khuyên dùng)
 
-### Start the Services
+1. Clone repository và truy cập vào thư mục dự án:
+   ```bash
+   git clone https://github.com/caoviethoang/punchbook.git
+   cd punchbook
+   ```
 
-1. Clone the repository and navigate to the directory.
-2. Build and start the containers in the background:
-
+2. Khởi chạy tất cả các dịch vụ (PostgreSQL, Redis, Backend, Frontend):
    ```bash
    docker compose up --build -d
    ```
 
-3. Initialize the database:
-
+3. Khởi tạo Cơ sở dữ liệu:
    ```bash
-   docker compose exec backend bundle exec rails db:create db:migrate
+   docker compose exec backend bundle exec rails db:create db:migrate db:seed
    ```
 
-Now you can access:
-
+📍 **Địa chỉ truy cập:**
 - **Frontend App**: [http://localhost:5173](http://localhost:5173)
-- **API / GraphQL**: [http://localhost:3000/graphql](http://localhost:3000/graphql)
+- **Backend API**: [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## Development
+### Cách 2: Khởi chạy thủ công (Development Mode)
 
-### Backend (Rails)
-
-- **Run tests**:
-
-  ```bash
-  docker compose exec backend bundle exec rspec
-  ```
-
-- **Lint code**:
-
-  ```bash
-  docker compose exec backend bundle exec rubocop
-  ```
-
-### Frontend (React)
-
-- **Build**:
-
-  ```bash
-  docker compose exec frontend npm run build
-  ```
-
-- **Lint**:
-
-  ```bash
-  docker compose exec frontend npm run lint
-  ```
-
-## Working Hello GraphQL Query
-
-The project includes a dummy `hello` query to test end-to-end integration.
-
-Query:
-
-```graphql
-query {
-  hello {
-    message
-  }
-}
+#### 1. Backend (Rails API)
+```bash
+cd backend
+bundle install
+rails db:create db:migrate db:seed
+bin/dev # Hoặc rails server -p 3000
 ```
 
-Response:
-
-```json
-{
-  "data": {
-    "hello": {
-      "message": "Hello PunchBook"
-    }
-  }
-}
+#### 2. Frontend (React + Vite)
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
-This query is consumed by Apollo Client on the frontend, and the message `Hello PunchBook` is displayed on the main page.
+---
 
-## Further reading
+## 🧪 Kiểm thử & Quản lý Chất lượng Code (Quality Assurance)
 
-- [`docs/README.md`](docs/README.md) — product overview and principles
-- [`docs/steps.md`](docs/steps.md) — phased build guide
-- [`docs/product.md`](docs/product.md) — product vision
+Dự án tuân thủ nghiêm ngặt quy trình kiểm thử tự động trên CI/CD GitHub Actions:
+
+### Backend Tests & Linting
+```bash
+cd backend
+bundle exec rubocop    # Kiểm tra chuẩn Code Style (0 offenses requirement)
+bundle exec rspec      # Chạy 137+ bộ test cases tự động (100% pass)
+```
+
+### Frontend Type-check & Linting
+```bash
+cd frontend
+npm run lint           # ESLint check
+npm run build          # TypeScript type-check & Vite production build
+```
+
+---
+
+## 🗺 Tài liệu Kỹ thuật & Issue backlog
+
+- 📄 [`docs/product.md`](docs/product.md) — Tầm nhìn sản phẩm & Triết lý thiết kế.
+- 📄 [`docs/business-rules.md`](docs/business-rules.md) — Quy tắc nghiệp vụ kinh doanh.
+- 📄 [`docs/new_issues.md`](docs/new_issues.md) — Danh sách 8 Issue mở rộng sau MVP (QR Code Check-in, Import Excel, Audit Logs, v.v.).
+
+---
+
+## 📜 License & Owner
+
+Developed by **Louis Cao** — Dedicated to replacing paper notebooks for small businesses in Vietnam.
