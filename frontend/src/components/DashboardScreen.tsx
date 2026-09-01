@@ -1,5 +1,14 @@
 import { useEffect, useState, type ReactNode } from "react"
-import { AlertCircle, CalendarClock, FileSpreadsheet, Loader2, RefreshCw, Users, Wallet } from "lucide-react"
+import {
+  AlertCircle,
+  CalendarClock,
+  FileSpreadsheet,
+  Loader2,
+  RefreshCw,
+  Upload,
+  Users,
+  Wallet,
+} from "lucide-react"
 import { useDashboard } from "../hooks/useDashboard"
 import {
   STATUS_CLASS,
@@ -8,6 +17,7 @@ import {
 } from "../lib/dashboard"
 import { formatVnd, remainingLabel } from "../lib/formatters"
 import { downloadExcelReport } from "../lib/reports"
+import { ImportMembershipsModal } from "./ImportMembershipsModal"
 import { RenewalModal } from "./RenewalModal"
 
 function Metric({
@@ -36,6 +46,7 @@ export function DashboardScreen() {
   const { data, loading, error, load } = useDashboard()
   const [selectedMembershipForRenewal, setSelectedMembershipForRenewal] =
     useState<DashboardMembership | null>(null)
+  const [showImportModal, setShowImportModal] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
 
@@ -108,19 +119,30 @@ export function DashboardScreen() {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => void handleExport()}
-          disabled={exporting}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-500"
-        >
-          {exporting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <FileSpreadsheet className="h-4 w-4" />
-          )}
-          <span>{exporting ? "Đang xuất..." : "Xuất Excel"}</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setShowImportModal(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 shadow-sm hover:bg-indigo-100 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-900/60"
+          >
+            <Upload className="h-4 w-4" />
+            <span>Import Excel</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => void handleExport()}
+            disabled={exporting}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+          >
+            {exporting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="h-4 w-4" />
+            )}
+            <span>{exporting ? "Đang xuất..." : "Xuất Excel"}</span>
+          </button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -143,12 +165,23 @@ export function DashboardScreen() {
 
       <div>
         <div className="mb-3 flex items-end justify-between gap-3">
-          <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
-            Hội viên
-          </h3>
-          <span className="text-sm text-slate-400 dark:text-slate-500">
-            {data.memberships.length} hội viên
-          </span>
+          <div className="flex items-center gap-3">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
+              Hội viên
+            </h3>
+            <span className="text-sm text-slate-400 dark:text-slate-500">
+              {data.memberships.length} hội viên
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowImportModal(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            <Upload className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+            <span>Import Excel</span>
+          </button>
         </div>
 
         {data.memberships.length === 0 ? (
@@ -215,6 +248,13 @@ export function DashboardScreen() {
         <RenewalModal
           membership={selectedMembershipForRenewal}
           onClose={() => setSelectedMembershipForRenewal(null)}
+        />
+      )}
+
+      {showImportModal && (
+        <ImportMembershipsModal
+          onClose={() => setShowImportModal(false)}
+          onSuccess={() => void load()}
         />
       )}
     </div>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
+import { FileSpreadsheet } from "lucide-react"
 import { createMembership, type Membership } from "../lib/memberships"
 import { listPackages, type PackageItem } from "../lib/packages"
+import { ImportMembershipsModal } from "./ImportMembershipsModal"
 import { FormField, FORM_CONTROL_CLASS } from "./ui/FormField"
 
 interface MembershipCreateFormProps {
@@ -22,6 +24,7 @@ export function MembershipCreateForm({ onSuccess, onCancel }: MembershipCreateFo
   const [packages, setPackages] = useState<PackageItem[]>([])
   const [packagesLoading, setPackagesLoading] = useState(true)
   const [loading, setLoading] = useState(false)
+  const [showImportModal, setShowImportModal] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [created, setCreated] = useState<Membership | null>(null)
 
@@ -89,13 +92,24 @@ export function MembershipCreateForm({ onSuccess, onCancel }: MembershipCreateFo
 
   return (
     <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div className="mb-5">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-          Thêm hội viên
-        </h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          Nhập tên, SĐT và chọn gói — sau đó có thể tìm ở màn Check-in
-        </p>
+      <div className="mb-5 flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+            Thêm hội viên
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Nhập tên, SĐT và chọn gói — sau đó có thể tìm ở màn Check-in
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowImportModal(true)}
+          className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-900/60"
+        >
+          <FileSpreadsheet className="h-3.5 w-3.5" />
+          <span>Import Excel</span>
+        </button>
       </div>
 
       {created && (
@@ -204,6 +218,15 @@ export function MembershipCreateForm({ onSuccess, onCancel }: MembershipCreateFo
           </button>
         </div>
       </form>
+
+      {showImportModal && (
+        <ImportMembershipsModal
+          onClose={() => setShowImportModal(false)}
+          onSuccess={() => {
+            onSuccess?.(null as unknown as Membership)
+          }}
+        />
+      )}
     </div>
   )
 }
