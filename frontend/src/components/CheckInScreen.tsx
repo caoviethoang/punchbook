@@ -21,6 +21,7 @@ import {
 } from "../lib/memberships"
 import { formatDate } from "../lib/formatters"
 import { RenewalModal } from "./RenewalModal"
+import { Toast } from "./ui/Toast"
 
 interface CheckInScreenProps {
   /** Optional staff ID to perform check-ins. */
