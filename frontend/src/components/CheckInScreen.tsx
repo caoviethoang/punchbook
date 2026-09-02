@@ -242,6 +242,10 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
     type: "success" | "error"
     text: string
   } | null>(null)
+  const [toast, setToast] = useState<{
+    message: string
+    type?: "success" | "error"
+  } | null>(null)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const { search, checkIn, searchLoading, error: apiError } = useMembershipsApi()
@@ -272,6 +276,19 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
     setQuery("")
     if (inputRef.current) {
       inputRef.current.focus()
+    }
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      const firstAvailable = memberships.find((m) => !isMembershipExhausted(m))
+      if (firstAvailable && checkingInId !== firstAvailable.id) {
+        void handleCheckIn(firstAvailable.id)
+      }
+    } else if (e.key === "Escape") {
+      e.preventDefault()
+      handleClear()
     }
   }
 
@@ -319,6 +336,10 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
         type: "success",
         text: `Check-in thành công! (Còn lại ${result.membership.sessions_left ?? "không giới hạn"} buổi)`,
       })
+      setToast({
+        message: `Đã check-in thành công cho ${membership.customer_name}`,
+        type: "success",
+      })
     } catch (err) {
       // Rollback to the state before the optimistic update
       setMemberships((prev) =>
@@ -345,6 +366,14 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       {/* Header */}
       <div>
         <h2 className="flex items-center gap-2.5 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
@@ -372,6 +401,7 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Gõ tên hoặc số điện thoại hội viên..."
             autoFocus
             aria-label="Tìm kiếm hội viên"
