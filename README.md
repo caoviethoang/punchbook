@@ -1,7 +1,6 @@
-# 🥊 PunchBook
+# PunchBook
 
-> **Thay thế sổ quản lý hội viên truyền thống chỉ với 1 chạm.**  
-> *Replace traditional customer notebooks in seconds.*
+> **Replace traditional customer management notebooks in seconds.**
 
 [![Ruby on Rails](https://img.shields.io/badge/Ruby_on_Rails-8.0-CC0000?style=for-the-badge&logo=ruby-on-rails&logoColor=white)](https://rubyonrails.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
@@ -13,94 +12,94 @@
 
 ---
 
-## 📌 Tổng quan về Sản phẩm (Product Overview)
+## Product Overview
 
-**PunchBook** là giải pháp phần mềm quản lý gói hội viên đơn giản, chuyên biệt dành cho các mô hình dịch vụ vừa & nhỏ tại Việt Nam (**Spa, Salon Nail, Gym, Massage, Phòng khám...**) — những nơi vẫn đang quản lý bằng sổ tay giấy, file Excel hoặc ghi nhớ thủ công.
+**PunchBook** is a simple, specialized membership package management software solution designed for small and medium-sized service businesses (**Spas, Nail Salons, Gyms, Massages, Clinics...**) that still manage operations using paper notebooks, Excel files, or manual tracking.
 
-Sản phẩm tập trung giải quyết **ĐÚNG 1 BÀI TOÁN CỐT LÕI**: 
-> **Quản lý khách hàng, gói dịch vụ và check-in NHAU NHẤT — ĐƠN GIẢN NHẤT — CHÍNH XÁC NHẤT.**
-
----
-
-## ✨ Tính năng nổi bật (Key Features)
-
-### 1. ⚡ Màn hình Check-in Siêu tốc (Staff UX)
-- **Check-in 1-click**: Thao tác hoàn tất trong chưa đầy 3 giây.
-- **Smart Phone & Name Search**: Tìm kiếm linh hoạt theo Tên hoặc Số điện thoại (tự động loại bỏ dấu cách, dấu chấm, dấu gạch ngang bất kể định dạng).
-- **Phản hồi tức thì (Optimistic Update)**: Trừ số buổi ngay trên giao diện UI, tự động rollback nếu gặp lỗi API.
-- **Race-Condition Safe**: Tự động khóa luồng dữ liệu bằng Pessimistic Locking (`with_lock`) tránh tranh chấp khi 2 nhân viên check-in cùng lúc.
-
-### 2. 💳 Thanh toán & Gia hạn gói qua payOS
-- **Tạo mã QR thanh toán tức thì**: Tự động tạo link thanh toán VietQR chuyển khoản ngân hàng qua cổng payOS.
-- **Bảo mật tuyệt đối**: Xác thực chữ ký HMAC cho Webhooks (`/webhooks/payos`) trước khi gia hạn gói cước.
-- **Đảm bảo Idempotency**: Xử lý hóa đơn chính xác 1 lần duy nhất, chống ghi trùng số buổi.
-
-### 3. 📲 Nhắc nhở tự động qua Zalo ZBS (Paid Plan)
-- **Daily Sidekiq Cron Job**: Tự động quét các hội viên còn `<= 3 buổi` hoặc hết hạn trong `7 ngày` đối với các cửa hàng gói Trả phí (`paid`).
-- **Gửi tin nhắn Zalo kèm Payment Link**: Tự động gửi thông báo nhắc gia hạn kèm link thanh toán trực tuyến đến Zalo của khách hàng.
-
-### 4. 📊 Dashboard Chủ tiệm & Báo cáo Excel Đa sheet
-- **Metric Tổng quan**: Doanh thu tháng, Số hội viên đang hoạt động, Hội viên sắp hết hạn.
-- **Xuất file Excel chuyên nghiệp**: Tải báo cáo Multi-sheet Excel (Tổng quan, Chi tiết hóa đơn, Danh sách hội viên) chỉ với 1 click.
-
-### 5. 📱 Progressive Web App (PWA)
-- Hỗ trợ cài đặt trực tiếp (**Installable Web App**) trên Chrome, Edge & Safari cho máy tính bảng/laptop tại quầy thu ngân.
+The product focuses on solving **ONE CORE PROBLEM**: 
+> **Manage customers, service packages, and check-ins FASTEST — SIMPLEST — MOST ACCURATELY.**
 
 ---
 
-## 🏗 Kiến trúc Hệ thống (Architecture & Monorepo Layout)
+## Key Features
+
+### 1. Ultra-fast Check-in Screen (Staff UX)
+- **1-Click Check-in**: Complete check-in in under 3 seconds.
+- **Smart Phone & Name Search**: Flexible search by name or phone number (automatically stripping spaces, dots, and hyphens regardless of format).
+- **Instant Response (Optimistic Update)**: Deduct sessions immediately on the UI, with automatic rollback if an API error occurs.
+- **Race-Condition Safe**: Automatic data stream locking via Pessimistic Locking (`with_lock`) to prevent conflicts when two staff members check in concurrently.
+
+### 2. Payment & Package Renewal via payOS
+- **Instant Payment QR Generation**: Automatically create VietQR bank transfer payment links via the payOS gateway.
+- **Absolute Security**: HMAC signature verification for Webhooks (`/webhooks/payos`) before package renewal.
+- **Idempotency Guarantee**: Process invoices exactly once to prevent duplicate session additions.
+
+### 3. Automated Reminders via Zalo ZBS (Paid Plan)
+- **Daily Sidekiq Cron Job**: Automatically scan members with `<= 3 sessions` remaining or expiring within `7 days` for shops on the `paid` plan.
+- **Send Zalo Message with Payment Link**: Automatically send renewal reminders with online payment links to customers' Zalo accounts.
+
+### 4. Owner Dashboard & Multi-sheet Excel Reports
+- **Overview Metrics**: Monthly revenue, active members, members nearing expiration.
+- **Professional Excel Export**: Download multi-sheet Excel reports (Overview, Invoice Details, Member List) with a single click.
+
+### 5. Progressive Web App (PWA)
+- Supports direct installation (**Installable Web App**) on Chrome, Edge & Safari for tablets/laptops at checkout counters.
+
+---
+
+## System Architecture & Monorepo Layout
 
 ```text
 punchbook/
 ├── backend/            # Rails 8 API (PostgreSQL, Redis, Sidekiq, Devise Auth, GraphQL)
 ├── frontend/           # React 19 + TypeScript + Vite + Tailwind CSS v4 + Apollo Client
-├── docs/               # Tài liệu thiết kế sản phẩm, Business Rules, Steps & New Issues
+├── docs/               # Product design documents, Business Rules, Steps & New Issues
 ```
 
-### Stack Công nghệ:
+### Technology Stack:
 
-| Hợp phần | Công nghệ sử dụng |
+| Component | Technology |
 |---|---|
 | **Backend API** | Ruby on Rails 8, PostgreSQL 16, Redis 7, Sidekiq, Devise, JWT, RSpec |
 | **Frontend UI** | React 19, TypeScript, Vite, Tailwind CSS v4, Lucide Icons, Apollo Client |
-| **Integrations** | Cổng thanh toán **payOS**, Dịch vụ tin nhắn **Zalo ZBS** |
+| **Integrations** | **payOS** Payment Gateway, **Zalo ZBS** Messaging Service |
 
 ---
 
-## 🚀 Hướng dẫn Cài đặt & Khởi chạy (Getting Started)
+## Getting Started
 
-### Cách 1: Khởi chạy nhanh bằng Docker Compose (Khuyên dùng)
+### Option 1: Quick Start with Docker Compose (Recommended)
 
-1. Clone repository và truy cập vào thư mục dự án:
+1. Clone the repository and navigate to the project directory:
    ```bash
    git clone https://github.com/caoviethoang/punchbook.git
    cd punchbook
    ```
 
-2. Khởi chạy tất cả các dịch vụ (PostgreSQL, Redis, Backend, Frontend):
+2. Start all services (PostgreSQL, Redis, Backend, Frontend):
    ```bash
    docker compose up --build -d
    ```
 
-3. Khởi tạo Cơ sở dữ liệu:
+3. Initialize the Database:
    ```bash
    docker compose exec backend bundle exec rails db:create db:migrate db:seed
    ```
 
-📍 **Địa chỉ truy cập:**
+**Access URLs:**
 - **Frontend App**: [http://localhost:5173](http://localhost:5173)
 - **Backend API**: [http://localhost:3000](http://localhost:3000)
 
 ---
 
-### Cách 2: Khởi chạy thủ công (Development Mode)
+### Option 2: Manual Start (Development Mode)
 
 #### 1. Backend (Rails API)
 ```bash
 cd backend
 bundle install
 rails db:create db:migrate db:seed
-bin/dev # Hoặc rails server -p 3000
+bin/dev # Or rails server -p 3000
 ```
 
 #### 2. Frontend (React + Vite)
@@ -112,15 +111,15 @@ npm run dev
 
 ---
 
-## 🧪 Kiểm thử & Quản lý Chất lượng Code (Quality Assurance)
+## Quality Assurance & Testing
 
-Dự án tuân thủ nghiêm ngặt quy trình kiểm thử tự động trên CI/CD GitHub Actions:
+The project strictly follows automated testing workflows on GitHub Actions CI/CD:
 
 ### Backend Tests & Linting
 ```bash
 cd backend
-bundle exec rubocop    # Kiểm tra chuẩn Code Style (0 offenses requirement)
-bundle exec rspec      # Chạy 137+ bộ test cases tự động (100% pass)
+bundle exec rubocop    # Check Code Style standards (0 offenses requirement)
+bundle exec rspec      # Run 137+ automated test cases (100% pass)
 ```
 
 ### Frontend Type-check & Linting
@@ -132,14 +131,14 @@ npm run build          # TypeScript type-check & Vite production build
 
 ---
 
-## 🗺 Tài liệu Kỹ thuật & Issue backlog
+## Technical Documentation & Issue Backlog
 
-- 📄 [`docs/product.md`](docs/product.md) — Tầm nhìn sản phẩm & Triết lý thiết kế.
-- 📄 [`docs/business-rules.md`](docs/business-rules.md) — Quy tắc nghiệp vụ kinh doanh.
-- 📄 [`docs/new_issues.md`](docs/new_issues.md) — Danh sách 8 Issue mở rộng sau MVP (QR Code Check-in, Import Excel, Audit Logs, v.v.).
+- [`docs/product.md`](docs/product.md) — Product vision & design philosophy.
+- [`docs/business-rules.md`](docs/business-rules.md) — Business logic rules.
+- [`docs/new_issues.md`](docs/new_issues.md) — List of 8 post-MVP feature expansion issues (QR Code Check-in, Excel Import, Audit Logs, etc.).
 
 ---
 
-## 📜 License & Owner
+## License & Owner
 
 Developed by **Louis Cao** — Dedicated to replacing paper notebooks for small businesses in Vietnam.
