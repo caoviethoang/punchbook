@@ -14,6 +14,7 @@
     "@hookform/resolvers": "^5.5.7",
     "clsx": "^2.1.1",
     "graphql": "^16.14.2",
+    "html5-qrcode": "^2.3.8",
     "lucide-react": "^1.27.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
