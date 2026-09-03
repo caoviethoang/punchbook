@@ -6,6 +6,7 @@ import {
   Clock,
   Loader2,
   Package as PackageIcon,
+  QrCode,
   RefreshCw,
   Search,
   User,
@@ -21,6 +22,7 @@ import {
 } from "../lib/memberships"
 import { formatDate } from "../lib/formatters"
 import { RenewalModal } from "./RenewalModal"
+import { QRScannerModal } from "./QRScannerModal"
 import { Toast } from "./ui/Toast"
 
 interface CheckInScreenProps {
@@ -230,6 +232,25 @@ function MembershipResultList({
   )
 }
 
+function extractMembershipIdFromQR(scannedText: string): string {
+  const trimmed = scannedText.trim()
+  if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+    try {
+      const parsed = JSON.parse(trimmed) as Record<string, unknown>
+      if (parsed.membership_id) return String(parsed.membership_id).trim()
+      if (parsed.id) return String(parsed.id).trim()
+    } catch {
+      // Fallback
+    }
+  }
+  if (trimmed.includes("/memberships/")) {
+    const parts = trimmed.split("/memberships/")
+    const id = parts[1]?.split("?")[0]?.split("/")[0]
+    if (id) return id.trim()
+  }
+  return trimmed
+}
+
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
@@ -247,6 +268,7 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
     message: string
     type?: "success" | "error"
   } | null>(null)
+  const [isQRScannerOpen, setIsQRScannerOpen] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const { search, checkIn, searchLoading, error: apiError } = useMembershipsApi()
@@ -360,6 +382,40 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
     }
   }
 
+  async function handleQRScan(scannedText: string) {
+    setIsQRScannerOpen(false)
+    const targetId = extractMembershipIdFromQR(scannedText)
+
+    // 1. Search locally in `memberships` list
+    const existing = memberships.find((m) => m.id === targetId || m.phone === targetId)
+    if (existing) {
+      void handleCheckIn(existing.id)
+      return
+    }
+
+    // 2. Search via API with targetId
+    try {
+      const results = await search(targetId)
+      if (results.length > 0) {
+        setMemberships(results)
+        const matched = results.find((m) => m.id === targetId || m.phone === targetId) ?? results[0]
+        if (matched && !isMembershipExhausted(matched)) {
+          void handleCheckIn(matched.id)
+        }
+      } else {
+        setToast({
+          message: `Không tìm thấy hội viên nào cho mã QR: "${targetId}"`,
+          type: "error",
+        })
+      }
+    } catch (err) {
+      setToast({
+        message: `Lỗi quét mã QR: ${toCheckInError(err)}`,
+        type: "error",
+      })
+    }
+  }
+
   const [selectedMembershipForRenewal, setSelectedMembershipForRenewal] =
     useState<Membership | null>(null)
 
@@ -382,43 +438,56 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
           Check-in Hội Viên
         </h2>
         <p className="mt-1 text-base text-slate-500 dark:text-slate-400">
-          Tra cứu nhanh theo tên hoặc số điện thoại hội viên
+          Tra cứu nhanh theo tên, số điện thoại hoặc quét mã QR hội viên
         </p>
       </div>
 
-      {/* Search Box */}
+      {/* Search Box & QR Button */}
       <div>
-        <div className="relative flex items-center">
-          <div className="pointer-events-none absolute left-5 flex items-center">
-            {showLoading || isDebouncing ? (
-              <Loader2 className="h-7 w-7 animate-spin text-indigo-600 dark:text-indigo-400" />
-            ) : (
-              <Search className="h-7 w-7 text-slate-400 dark:text-slate-500" />
+        <div className="flex gap-3">
+          <div className="relative flex-1 flex items-center">
+            <div className="pointer-events-none absolute left-5 flex items-center">
+              {showLoading || isDebouncing ? (
+                <Loader2 className="h-7 w-7 animate-spin text-indigo-600 dark:text-indigo-400" />
+              ) : (
+                <Search className="h-7 w-7 text-slate-400 dark:text-slate-500" />
+              )}
+            </div>
+
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Gõ tên hoặc số điện thoại hội viên..."
+              autoFocus
+              aria-label="Tìm kiếm hội viên"
+              className="w-full rounded-2xl border-2 border-slate-200 bg-white py-5 pl-16 pr-14 text-xl font-medium text-slate-900 placeholder-slate-400 shadow-sm transition focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50 dark:placeholder-slate-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-950/50"
+            />
+
+            {query && (
+              <button
+                type="button"
+                onClick={handleClear}
+                aria-label="Xóa từ khóa"
+                className="absolute right-4 rounded-xl p-2.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+              >
+                <X className="h-6 w-6" />
+              </button>
             )}
           </div>
 
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Gõ tên hoặc số điện thoại hội viên..."
-            autoFocus
-            aria-label="Tìm kiếm hội viên"
-            className="w-full rounded-2xl border-2 border-slate-200 bg-white py-5 pl-16 pr-14 text-xl font-medium text-slate-900 placeholder-slate-400 shadow-sm transition focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50 dark:placeholder-slate-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-950/50"
-          />
-
-          {query && (
-            <button
-              type="button"
-              onClick={handleClear}
-              aria-label="Xóa từ khóa"
-              className="absolute right-4 rounded-xl p-2.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setIsQRScannerOpen(true)}
+            title="Quét mã QR Check-in"
+            aria-label="Quét mã QR Check-in"
+            className="flex items-center gap-2.5 rounded-2xl bg-indigo-600 px-6 py-5 text-lg font-bold text-white shadow-sm transition hover:bg-indigo-500 active:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 shrink-0"
+          >
+            <QrCode className="h-7 w-7" />
+            <span className="hidden sm:inline">Quét QR</span>
+          </button>
         </div>
 
         {/* Status bar */}
@@ -517,6 +586,12 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
           onClose={() => setSelectedMembershipForRenewal(null)}
         />
       )}
+
+      <QRScannerModal
+        isOpen={isQRScannerOpen}
+        onClose={() => setIsQRScannerOpen(false)}
+        onScanSuccess={(scannedText) => void handleQRScan(scannedText)}
+      />
     </div>
   )
 }
