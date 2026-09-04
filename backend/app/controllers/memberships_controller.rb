@@ -13,6 +13,11 @@ class MembershipsController < ApiController
     render json: { memberships: memberships.map(&:as_api_json) }
   end
 
+  def show
+    membership = find_shop_membership(params.expect(:id))
+    render json: { membership: membership.as_detail_json }
+  end
+
   def create
     membership = CreateMembership.call(
       shop: current_shop,

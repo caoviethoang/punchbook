@@ -70,6 +70,10 @@ class Membership < ApplicationRecord
     MembershipSerializer.new(self).as_dashboard_json
   end
 
+  def as_detail_json
+    MembershipSerializer.new(self).as_detail_json
+  end
+
   def apply_package_init
     if package.session_based?
       self.sessions_left = package.sessions_count

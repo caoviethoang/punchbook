@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react"
-import { AlertCircle, CalendarClock, FileSpreadsheet, Loader2, RefreshCw, Upload, Users, Wallet } from "lucide-react"
+import { AlertCircle, CalendarClock, Eye, FileSpreadsheet, Loader2, RefreshCw, Upload, Users, Wallet } from "lucide-react"
 import { useDashboard } from "../hooks/useDashboard"
 import {
   STATUS_CLASS,
@@ -9,6 +9,7 @@ import {
 import { formatVnd, remainingLabel } from "../lib/formatters"
 import { downloadExcelReport } from "../lib/reports"
 import { ImportMembersModal } from "./ImportMembersModal"
+import { MembershipDetailModal } from "./MembershipDetailModal"
 import { RenewalModal } from "./RenewalModal"
 
 function Metric({
@@ -37,6 +38,8 @@ export function DashboardScreen() {
   const { data, loading, error, load } = useDashboard()
   const [selectedMembershipForRenewal, setSelectedMembershipForRenewal] =
     useState<DashboardMembership | null>(null)
+  const [selectedMembershipIdForDetail, setSelectedMembershipIdForDetail] =
+    useState<string | null>(null)
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
@@ -186,12 +189,18 @@ export function DashboardScreen() {
                     className="border-b border-slate-100 last:border-0 dark:border-slate-800"
                   >
                     <td className="px-4 py-3">
-                      <p className="font-semibold text-slate-900 dark:text-slate-50">
-                        {membership.customer_name}
-                      </p>
-                      <p className="text-slate-500 dark:text-slate-400">
-                        {membership.phone}
-                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMembershipIdForDetail(membership.id)}
+                        className="text-left group/btn focus:outline-none"
+                      >
+                        <p className="font-semibold text-slate-900 group-hover/btn:text-indigo-600 dark:text-slate-50 dark:group-hover/btn:text-indigo-400">
+                          {membership.customer_name}
+                        </p>
+                        <p className="text-slate-500 dark:text-slate-400">
+                          {membership.phone}
+                        </p>
+                      </button>
                     </td>
                     <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
                       {membership.package.name}
@@ -207,14 +216,26 @@ export function DashboardScreen() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedMembershipForRenewal(membership)}
-                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                      >
-                        <RefreshCw className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                        <span>Gia hạn</span>
-                      </button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedMembershipIdForDetail(membership.id)}
+                          title="Xem chi tiết & lịch sử"
+                          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                        >
+                          <Eye className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
+                          <span>Chi tiết</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedMembershipForRenewal(membership)}
+                          title="Gia hạn gói"
+                          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                          <span>Gia hạn</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -223,6 +244,13 @@ export function DashboardScreen() {
           </div>
         )}
       </div>
+
+      {selectedMembershipIdForDetail && (
+        <MembershipDetailModal
+          membershipId={selectedMembershipIdForDetail}
+          onClose={() => setSelectedMembershipIdForDetail(null)}
+        />
+      )}
 
       {selectedMembershipForRenewal && (
         <RenewalModal

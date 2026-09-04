@@ -3,6 +3,9 @@ import { apiBaseUrl, apiGet, apiPost, authHeaders, parseApiResponse } from "./ap
 export interface MembershipPackage {
   id: string
   name: string
+  price?: number
+  sessions_count?: number | null
+  duration_days?: number | null
 }
 
 export interface Membership {
@@ -12,6 +15,31 @@ export interface Membership {
   sessions_left: number | null
   expires_at: string | null
   package: MembershipPackage
+}
+
+export interface MembershipDetailCheckIn {
+  id: string
+  checked_in_at: string
+  staff: {
+    id: string
+    name: string
+  }
+}
+
+export interface MembershipDetailInvoice {
+  id: string
+  amount: number
+  status: string
+  payos_transaction_id: string | null
+  payos_checkout_url: string | null
+  created_at: string
+}
+
+export interface MembershipDetail extends Membership {
+  status: "active" | "expiring" | "expired"
+  created_at?: string
+  check_ins: MembershipDetailCheckIn[]
+  invoices: MembershipDetailInvoice[]
 }
 
 export interface CheckInRecord {
@@ -121,4 +149,10 @@ export async function checkIn(
   return apiPost<CheckInResult>(`/memberships/${id}/check_in`, {
     staff_id: staffId,
   })
+}
+
+/** GET /memberships/:id — fetch membership detail with check-in & invoice history. */
+export async function getMembershipDetail(id: string): Promise<MembershipDetail> {
+  const body = await apiGet<{ membership: MembershipDetail }>(`/memberships/${id}`)
+  return body.membership
 }

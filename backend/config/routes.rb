@@ -12,7 +12,7 @@ Rails.application.routes.draw do
 
   resources :packages, only: %i[index create]
 
-  resources :memberships, only: %i[index create] do
+  resources :memberships, only: %i[index create show] do
     collection do
       get :import_template
       post :import
