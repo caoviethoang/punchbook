@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react"
-import { AlertCircle, CalendarClock, FileSpreadsheet, Loader2, RefreshCw, Users, Wallet } from "lucide-react"
+import { AlertCircle, CalendarClock, FileSpreadsheet, Loader2, RefreshCw, Upload, Users, Wallet } from "lucide-react"
 import { useDashboard } from "../hooks/useDashboard"
 import {
   STATUS_CLASS,
@@ -8,6 +8,7 @@ import {
 } from "../lib/dashboard"
 import { formatVnd, remainingLabel } from "../lib/formatters"
 import { downloadExcelReport } from "../lib/reports"
+import { ImportMembersModal } from "./ImportMembersModal"
 import { RenewalModal } from "./RenewalModal"
 
 function Metric({
@@ -38,6 +39,7 @@ export function DashboardScreen() {
     useState<DashboardMembership | null>(null)
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
 
   useEffect(() => {
     void load().catch(() => {
@@ -108,19 +110,30 @@ export function DashboardScreen() {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => void handleExport()}
-          disabled={exporting}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-500"
-        >
-          {exporting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <FileSpreadsheet className="h-4 w-4" />
-          )}
-          <span>{exporting ? "Đang xuất..." : "Xuất Excel"}</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsImportModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            <Upload className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <span>Import Excel</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => void handleExport()}
+            disabled={exporting}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+          >
+            {exporting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="h-4 w-4" />
+            )}
+            <span>{exporting ? "Đang xuất..." : "Xuất Excel"}</span>
+          </button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -217,6 +230,12 @@ export function DashboardScreen() {
           onClose={() => setSelectedMembershipForRenewal(null)}
         />
       )}
+
+      <ImportMembersModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => void load()}
+      />
     </div>
   )
 }

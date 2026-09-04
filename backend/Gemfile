@@ -29,8 +29,9 @@ gem 'devise', '~> 5.0'
 # HTTP client for external integrations (payOS, etc.)
 gem 'faraday', '~> 2.12'
 
-# Excel Report Export
+# Excel Report Export & Import
 gem 'caxlsx', '~> 4.0'
+gem 'roo', '~> 2.10'
 
 group :development, :test do
   gem 'debug', platforms: %i[mri windows], require: 'debug/prelude'

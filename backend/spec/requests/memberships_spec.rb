@@ -375,4 +375,61 @@ RSpec.describe 'Memberships', type: :request do
       expect(hoa.reload.sessions_left).to eq(3)
     end
   end
+
+  describe 'GET /memberships/import_template' do
+    it 'returns 401 when unauthenticated' do
+      get '/memberships/import_template'
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'returns Excel template binary stream' do
+      get '/memberships/import_template', headers: auth_headers(shop)
+
+      expect(response.headers['Content-Type']).to include(
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      )
+      expect(response.headers['Content-Disposition']).to include('filename="template_import_memberships.xlsx"')
+      expect(response.body.bytesize).to be > 0
+    end
+  end
+
+  describe 'POST /memberships/import' do
+    it 'returns 401 when unauthenticated' do
+      post '/memberships/import'
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'returns 422 when file parameter is missing' do
+      post '/memberships/import', headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body['error']).to eq('Vui lòng chọn file để import')
+    end
+
+    it 'imports members from uploaded Excel file and returns json report' do
+      Package.create!(shop: shop, name: 'Gói 10 buổi', sessions_count: 10, price: 100_000)
+      xlsx_package = Axlsx::Package.new
+      xlsx_package.workbook.add_worksheet(name: 'Members') do |sheet|
+        sheet.add_row ['Tên hội viên', 'Số điện thoại', 'Gói cước']
+        sheet.add_row ['Imported User', '0988776655', 'Gói 10 buổi']
+      end
+      temp_file = Tempfile.new(['import', '.xlsx'])
+      xlsx_package.serialize(temp_file.path)
+
+      file = fixture_file_upload(temp_file.path, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+      expect do
+        post '/memberships/import', params: { file: file }, headers: auth_headers(shop)
+      end.to change(Membership, :count).by(1)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['total_rows']).to eq(1)
+      expect(body['success_count']).to eq(1)
+      expect(body['failed_count']).to eq(0)
+      expect(body['errors']).to be_empty
+    end
+  end
 end

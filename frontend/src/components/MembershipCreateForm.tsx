@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
+import { FileSpreadsheet } from "lucide-react"
 import { createMembership, type Membership } from "../lib/memberships"
 import { listPackages, type PackageItem } from "../lib/packages"
+import { ImportMembersModal } from "./ImportMembersModal"
 import { FormField, FORM_CONTROL_CLASS } from "./ui/FormField"
 
 interface MembershipCreateFormProps {
@@ -24,6 +26,7 @@ export function MembershipCreateForm({ onSuccess, onCancel }: MembershipCreateFo
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [created, setCreated] = useState<Membership | null>(null)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -177,33 +180,54 @@ export function MembershipCreateForm({ onSuccess, onCancel }: MembershipCreateFo
           </select>
         </div>
 
-        <div className="mt-6 flex items-center justify-end gap-3 pt-2">
-          {onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              disabled={loading}
-              className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-            >
-              Hủy
-            </button>
-          )}
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 pt-2">
           <button
-            type="submit"
-            disabled={loading || packagesLoading || packages.length === 0}
-            className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:opacity-50"
+            type="button"
+            onClick={() => setIsImportModalOpen(true)}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
-            {loading ? (
-              <>
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                Đang thêm...
-              </>
-            ) : (
-              "Thêm hội viên"
-            )}
+            <FileSpreadsheet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <span>Import từ Excel / CSV</span>
           </button>
+
+          <div className="flex items-center gap-3">
+            {onCancel && (
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={loading}
+                className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                Hủy
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={loading || packagesLoading || packages.length === 0}
+              className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Đang thêm...
+                </>
+              ) : (
+                "Thêm hội viên"
+              )}
+            </button>
+          </div>
         </div>
       </form>
+
+      <ImportMembersModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => {
+          if (onSuccess && created) {
+            onSuccess(created)
+          }
+        }}
+      />
     </div>
   )
 }
