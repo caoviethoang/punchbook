@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from "./api"
+import { apiBaseUrl, apiGet, apiPost, authHeaders, parseApiResponse } from "./api"
 
 export interface MembershipPackage {
   id: string
@@ -58,6 +58,56 @@ export async function createMembership(
     membership: payload,
   })
   return body.membership
+}
+
+export interface ImportErrorDetail {
+  row: number
+  customer_name: string
+  phone: string
+  error: string
+}
+
+export interface ImportMembershipsResult {
+  total_rows: number
+  success_count: number
+  failed_count: number
+  errors: ImportErrorDetail[]
+}
+
+/** GET /memberships/import_template — download template .xlsx file. */
+export async function downloadImportTemplate(): Promise<void> {
+  const response = await fetch(`${apiBaseUrl}/memberships/import_template`, {
+    headers: authHeaders(),
+  })
+  if (!response.ok) {
+    throw new Error("Không thể tải file mẫu Excel.")
+  }
+
+  const blob = await response.blob()
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = url
+  a.download = "template_import_memberships.xlsx"
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  window.URL.revokeObjectURL(url)
+}
+
+/** POST /memberships/import — upload Excel/CSV file to batch create memberships. */
+export async function importMemberships(file: File): Promise<ImportMembershipsResult> {
+  const formData = new FormData()
+  formData.append("file", file)
+
+  const response = await fetch(`${apiBaseUrl}/memberships/import`, {
+    method: "POST",
+    headers: {
+      Authorization: authHeaders()["Authorization" as keyof HeadersInit] as string,
+    },
+    body: formData,
+  })
+
+  return parseApiResponse<ImportMembershipsResult>(response)
 }
 
 /**

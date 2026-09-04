@@ -23,6 +23,30 @@ class MembershipsController < ApiController
     render json: { membership: membership.as_api_json }, status: :created
   end
 
+  def import_template
+    excel_data = ImportMembershipTemplateGenerator.call
+    send_data(
+      excel_data,
+      filename: 'template_import_memberships.xlsx',
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      disposition: 'attachment'
+    )
+  end
+
+  def import
+    if params[:file].blank?
+      return render json: { error: 'Vui lòng chọn file để import' }, status: :unprocessable_content
+    end
+
+    result = ImportMembershipsService.call(shop: current_shop, file: params[:file])
+    render json: {
+      total_rows: result.total_rows,
+      success_count: result.success_count,
+      failed_count: result.failed_count,
+      errors: result.errors
+    }
+  end
+
   # staff_id is required (shop JWT has no staff identity yet). Must belong to current_shop.
   def check_in
     membership = find_shop_membership(params.expect(:id))
