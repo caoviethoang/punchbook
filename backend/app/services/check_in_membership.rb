@@ -36,6 +36,7 @@ class CheckInMembership
   def process_check_in!
     membership.update!(sessions_left: membership.sessions_left - 1) if membership.package.session_based?
 
+    AuditLog.log_check_in!(shop: membership.shop, staff: staff, membership: membership, checked_in_at: Time.current)
     CheckIn.create!(
       membership: membership,
       staff: staff,
@@ -43,3 +44,4 @@ class CheckInMembership
     )
   end
 end
+
