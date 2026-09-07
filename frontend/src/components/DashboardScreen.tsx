@@ -1,5 +1,16 @@
-import { useEffect, useState, type ReactNode } from "react"
-import { AlertCircle, CalendarClock, Eye, FileSpreadsheet, Loader2, RefreshCw, Upload, Users, Wallet } from "lucide-react"
+import { useCallback, useEffect, useState, type ReactNode } from "react"
+import {
+  AlertCircle,
+  CalendarClock,
+  Eye,
+  FileSpreadsheet,
+  Loader2,
+  RefreshCw,
+  Search,
+  Upload,
+  Users,
+  Wallet,
+} from "lucide-react"
 import { useDashboard } from "../hooks/useDashboard"
 import {
   STATUS_CLASS,
@@ -7,6 +18,11 @@ import {
   type DashboardMembership,
 } from "../lib/dashboard"
 import { formatVnd, remainingLabel } from "../lib/formatters"
+import {
+  fetchMemberships,
+  type PaginationMeta,
+  type StatusFilterType,
+} from "../lib/memberships"
 import { downloadExcelReport } from "../lib/reports"
 import { ImportMembersModal } from "./ImportMembersModal"
 import { MembershipDetailModal } from "./MembershipDetailModal"
@@ -34,6 +50,13 @@ function Metric({
   )
 }
 
+const STATUS_TABS: { key: StatusFilterType; label: string }[] = [
+  { key: "all", label: "Tất cả" },
+  { key: "active", label: "Còn hạn" },
+  { key: "expiring", label: "Sắp hết" },
+  { key: "expired", label: "Đã hết" },
+]
+
 export function DashboardScreen() {
   const { data, loading, error, load } = useDashboard()
   const [selectedMembershipForRenewal, setSelectedMembershipForRenewal] =
@@ -44,11 +67,63 @@ export function DashboardScreen() {
   const [exportError, setExportError] = useState<string | null>(null)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
 
+  // Pagination & Filtering state
+  const [memberships, setMemberships] = useState<DashboardMembership[]>([])
+  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState<StatusFilterType>("all")
+  const [page, setPage] = useState(1)
+  const [listLoading, setListLoading] = useState(false)
+
   useEffect(() => {
     void load().catch(() => {
-      // Error surfaced via hook state.
+      // Ignored
     })
   }, [load])
+
+  useEffect(() => {
+    let active = true
+    fetchMemberships({
+      query: searchQuery,
+      status: statusFilter,
+      page,
+      per_page: 20,
+    })
+      .then((res) => {
+        if (!active) return
+        setMemberships(res.memberships as DashboardMembership[])
+        if (res.meta) {
+          setPaginationMeta(res.meta)
+        }
+      })
+      .catch(() => {
+        // Ignored
+      })
+      .finally(() => {
+        if (active) {
+          setListLoading(false)
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [searchQuery, statusFilter, page])
+
+  const refreshList = useCallback(() => {
+    setListLoading(true)
+    fetchMemberships({
+      query: searchQuery,
+      status: statusFilter,
+      page,
+      per_page: 20,
+    })
+      .then((res) => {
+        setMemberships(res.memberships as DashboardMembership[])
+        if (res.meta) setPaginationMeta(res.meta)
+      })
+      .finally(() => setListLoading(false))
+  }, [searchQuery, statusFilter, page])
 
   const handleExport = async () => {
     try {
@@ -157,19 +232,56 @@ export function DashboardScreen() {
         />
       </div>
 
-      <div>
-        <div className="mb-3 flex items-end justify-between gap-3">
+      <div className="space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
-            Hội viên
+            Danh sách Hội viên
           </h3>
-          <span className="text-sm text-slate-400 dark:text-slate-500">
-            {data.memberships.length} hội viên
-          </span>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Tìm tên hoặc sđt..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  setPage(1)
+                }}
+                className="w-48 sm:w-60 rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+              />
+            </div>
+
+            <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-800 dark:bg-slate-900/60">
+              {STATUS_TABS.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => {
+                    setStatusFilter(tab.key)
+                    setPage(1)
+                  }}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-semibold whitespace-nowrap transition-colors ${
+                    statusFilter === tab.key
+                      ? "bg-white text-indigo-600 shadow-sm dark:bg-slate-800 dark:text-indigo-400"
+                      : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {data.memberships.length === 0 ? (
+        {listLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-indigo-600 dark:text-indigo-400" />
+          </div>
+        ) : memberships.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-10 text-center text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-            Chưa có hội viên nào.
+            Không tìm thấy hội viên nào.
           </div>
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
@@ -180,10 +292,11 @@ export function DashboardScreen() {
                   <th className="px-4 py-3 font-semibold">Gói</th>
                   <th className="px-4 py-3 font-semibold">Còn lại</th>
                   <th className="px-4 py-3 font-semibold">Trạng thái</th>
+                  <th className="px-4 py-3 font-semibold text-right">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
-                {data.memberships.map((membership) => (
+                {memberships.map((membership) => (
                   <tr
                     key={membership.id}
                     className="border-b border-slate-100 last:border-0 dark:border-slate-800"
@@ -203,7 +316,7 @@ export function DashboardScreen() {
                       </button>
                     </td>
                     <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
-                      {membership.package.name}
+                      {membership.package?.name}
                     </td>
                     <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
                       {remainingLabel(membership)}
@@ -243,6 +356,32 @@ export function DashboardScreen() {
             </table>
           </div>
         )}
+
+        {paginationMeta && paginationMeta.total_pages > 1 && (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-1 py-2">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              Trang {paginationMeta.page} / {paginationMeta.total_pages} (Tổng {paginationMeta.total} hội viên)
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={page <= 1 || listLoading}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                Trang trước
+              </button>
+              <button
+                type="button"
+                disabled={page >= paginationMeta.total_pages || listLoading}
+                onClick={() => setPage((p) => p + 1)}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                Trang sau
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {selectedMembershipIdForDetail && (
@@ -255,14 +394,20 @@ export function DashboardScreen() {
       {selectedMembershipForRenewal && (
         <RenewalModal
           membership={selectedMembershipForRenewal}
-          onClose={() => setSelectedMembershipForRenewal(null)}
+          onClose={() => {
+            setSelectedMembershipForRenewal(null)
+            refreshList()
+          }}
         />
       )}
 
       <ImportMembersModal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
-        onSuccess={() => void load()}
+        onSuccess={() => {
+          void load()
+          refreshList()
+        }}
       />
     </div>
   )

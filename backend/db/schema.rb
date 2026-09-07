@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_07_094500) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_07_112000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -56,6 +56,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_094500) do
     t.uuid "shop_id", null: false
     t.datetime "updated_at", null: false
     t.index ["package_id"], name: "index_memberships_on_package_id"
+    t.index ["shop_id", "customer_name"], name: "index_memberships_on_shop_id_and_customer_name"
+    t.index ["shop_id", "expires_at"], name: "index_memberships_on_shop_id_and_expires_at"
+    t.index ["shop_id", "phone"], name: "index_memberships_on_shop_id_and_phone"
+    t.index ["shop_id", "sessions_left"], name: "index_memberships_on_shop_id_and_sessions_left"
     t.index ["shop_id"], name: "index_memberships_on_shop_id"
   end
 

@@ -63,13 +63,46 @@ export function isMembershipExhausted(
   return false
 }
 
-/** GET /memberships?query=... — shop-scoped search (blank query returns limited list). */
-export async function searchMemberships(query: string): Promise<Membership[]> {
-  const trimmed = query.trim()
-  const body = await apiGet<{ memberships: Membership[] }>("/memberships", {
-    query: trimmed ? { query: trimmed } : undefined,
+export interface PaginationMeta {
+  total: number
+  page: number
+  per_page: number
+  total_pages: number
+}
+
+export type StatusFilterType = "all" | "active" | "expiring" | "expired"
+
+export interface FetchMembershipsParams {
+  query?: string
+  status?: StatusFilterType
+  page?: number
+  per_page?: number
+}
+
+export interface PaginatedMembershipsResult {
+  memberships: Membership[]
+  meta?: PaginationMeta
+}
+
+/** GET /memberships — shop-scoped search, status filter, and pagination. */
+export async function fetchMemberships(
+  params: FetchMembershipsParams = {},
+): Promise<PaginatedMembershipsResult> {
+  const queryParams: Record<string, string> = {}
+  if (params.query?.trim()) queryParams.query = params.query.trim()
+  if (params.status && params.status !== "all") queryParams.status = params.status
+  if (params.page && params.page > 1) queryParams.page = params.page.toString()
+  if (params.per_page && params.per_page !== 20) queryParams.per_page = params.per_page.toString()
+
+  return apiGet<PaginatedMembershipsResult>("/memberships", {
+    query: Object.keys(queryParams).length > 0 ? queryParams : undefined,
   })
-  return body.memberships
+}
+
+/** Legacy helper: searchMemberships calls fetchMemberships. */
+export async function searchMemberships(query: string): Promise<Membership[]> {
+  const res = await fetchMemberships({ query })
+  return res.memberships
 }
 
 export interface CreateMembershipPayload {
