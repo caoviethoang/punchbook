@@ -4,6 +4,7 @@ import { DashboardScreen } from "./components/DashboardScreen"
 import { LoginScreen } from "./components/LoginScreen"
 import { MembershipCreateForm } from "./components/MembershipCreateForm"
 import { PackageCreateForm } from "./components/PackageCreateForm"
+import { SettingsScreen } from "./components/SettingsScreen"
 import {
   clearStoredToken,
   fetchCurrentShop,
@@ -11,13 +12,14 @@ import {
   type Shop,
 } from "./lib/auth"
 
-type AppView = "dashboard" | "checkin" | "packages" | "members"
+type AppView = "dashboard" | "checkin" | "packages" | "members" | "settings"
 
 const NAV_ITEMS: { view: AppView; label: string }[] = [
   { view: "dashboard", label: "Dashboard" },
   { view: "checkin", label: "Check-in" },
   { view: "members", label: "Hội viên" },
   { view: "packages", label: "Gói dịch vụ" },
+  { view: "settings", label: "Cài đặt" },
 ]
 
 function App() {
@@ -113,10 +115,12 @@ function App() {
           <div className="flex justify-center">
             <MembershipCreateForm />
           </div>
-        ) : (
+        ) : view === "packages" ? (
           <div className="flex justify-center">
             <PackageCreateForm />
           </div>
+        ) : (
+          <SettingsScreen shop={shop} onShopUpdated={setShop} />
         )}
       </main>
     </div>

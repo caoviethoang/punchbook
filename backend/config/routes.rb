@@ -10,6 +10,10 @@ Rails.application.routes.draw do
   get '/dashboard', to: 'dashboard#show'
   get '/reports/export', to: 'reports#export'
 
+  get '/settings', to: 'settings#show'
+  patch '/settings/profile', to: 'settings#update_profile'
+  patch '/settings/password', to: 'settings#update_password'
+
   resources :packages, only: %i[index create]
 
   resources :memberships, only: %i[index create show] do

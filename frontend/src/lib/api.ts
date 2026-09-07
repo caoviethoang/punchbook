@@ -81,3 +81,16 @@ export async function apiPost<T>(
   })
   return parseApiResponse<T>(response)
 }
+
+export async function apiPatch<T>(
+  path: string,
+  body?: unknown,
+  options?: { auth?: boolean },
+): Promise<T> {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    method: "PATCH",
+    headers: jsonHeaders(options?.auth !== false),
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  })
+  return parseApiResponse<T>(response)
+}

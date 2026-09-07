@@ -4,8 +4,10 @@ export interface Shop {
   id: string
   name: string
   phone: string | null
+  address?: string | null
   email: string
   plan: string
+  plan_expires_at?: string | null
 }
 
 export interface AuthResponse {
