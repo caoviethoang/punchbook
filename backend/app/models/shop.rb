@@ -8,6 +8,7 @@ class Shop < ApplicationRecord
   has_many :staffs, dependent: :destroy
   has_many :packages, dependent: :destroy
   has_many :memberships, dependent: :destroy
+  has_many :audit_logs, dependent: :destroy
 
   validates :plan, presence: true, inclusion: { in: PLANS }
   validates :name, presence: true
