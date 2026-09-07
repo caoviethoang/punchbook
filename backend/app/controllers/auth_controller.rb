@@ -44,6 +44,6 @@ class AuthController < ApplicationController
   end
 
   def shop_json(shop)
-    shop.as_json(only: %i[id name phone email plan])
+    shop.as_json(only: %i[id name phone address email plan plan_expires_at])
   end
 end
