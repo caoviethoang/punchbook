@@ -4,6 +4,7 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  Eye,
   Loader2,
   Package as PackageIcon,
   QrCode,
@@ -21,6 +22,7 @@ import {
   type Membership,
 } from "../lib/memberships"
 import { formatDate } from "../lib/formatters"
+import { MembershipDetailModal } from "./MembershipDetailModal"
 import { RenewalModal } from "./RenewalModal"
 import { QRScannerModal } from "./QRScannerModal"
 import { Toast } from "./ui/Toast"
@@ -110,6 +112,7 @@ interface MembershipResultListProps {
   checkInMessage: { id: string; type: "success" | "error"; text: string } | null
   onCheckIn: (id: string) => void
   onRenew: (membership: Membership) => void
+  onViewDetail: (id: string) => void
 }
 
 function MembershipResultList({
@@ -118,6 +121,7 @@ function MembershipResultList({
   checkInMessage,
   onCheckIn,
   onRenew,
+  onViewDetail,
 }: MembershipResultListProps) {
   return (
     <div role="list" aria-label="Danh sách hội viên" className="grid gap-4">
@@ -136,12 +140,18 @@ function MembershipResultList({
           >
             {/* Col 1: Customer name + phone */}
             <div className="min-w-0 flex-1">
-              <p className="truncate text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">
-                {membership.customer_name}
-              </p>
-              <p className="mt-0.5 text-base text-slate-500 dark:text-slate-400">
-                {membership.phone}
-              </p>
+              <button
+                type="button"
+                onClick={() => onViewDetail(membership.id)}
+                className="text-left group/btn focus:outline-none"
+              >
+                <p className="truncate text-2xl font-bold tracking-tight text-slate-900 group-hover/btn:text-indigo-600 dark:text-slate-50 dark:group-hover/btn:text-indigo-400 sm:text-3xl">
+                  {membership.customer_name}
+                </p>
+                <p className="mt-0.5 text-base text-slate-500 dark:text-slate-400">
+                  {membership.phone}
+                </p>
+              </button>
               {currentMessage && (
                 <div
                   className={`mt-2 flex items-center gap-1.5 text-sm font-medium ${
@@ -178,8 +188,19 @@ function MembershipResultList({
               />
             </div>
 
-            {/* Col 4: Action buttons (Gia hạn + Check-in) */}
+            {/* Col 4: Action buttons (Chi tiết + Gia hạn + Check-in) */}
             <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onViewDetail(membership.id)}
+                title="Xem chi tiết & lịch sử"
+                aria-label={`Xem chi tiết cho ${membership.customer_name}`}
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-3.5 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                <Eye className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+                <span className="hidden sm:inline">Chi tiết</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => onRenew(membership)}
@@ -418,6 +439,8 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
 
   const [selectedMembershipForRenewal, setSelectedMembershipForRenewal] =
     useState<Membership | null>(null)
+  const [selectedMembershipIdForDetail, setSelectedMembershipIdForDetail] =
+    useState<string | null>(null)
 
   const showLoading = searchLoading
 
@@ -576,9 +599,17 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
             checkInMessage={checkInMessage}
             onCheckIn={handleCheckIn}
             onRenew={(membership) => setSelectedMembershipForRenewal(membership)}
+            onViewDetail={(id) => setSelectedMembershipIdForDetail(id)}
           />
         )}
       </div>
+
+      {selectedMembershipIdForDetail && (
+        <MembershipDetailModal
+          membershipId={selectedMembershipIdForDetail}
+          onClose={() => setSelectedMembershipIdForDetail(null)}
+        />
+      )}
 
       {selectedMembershipForRenewal && (
         <RenewalModal

@@ -32,6 +32,23 @@ export function formatDate(isoDate: string): string {
 }
 
 /**
+ * Formats an ISO datetime string into Vietnamese date & time format (HH:MM - DD/MM/YYYY).
+ */
+export function formatDateTime(isoDateTime: string): string {
+  const date = new Date(isoDateTime)
+  const timeStr = date.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+  const dateStr = date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
+  return `${timeStr} - ${dateStr}`
+}
+
+/**
  * Returns a human-readable "remaining" label for a membership:
  * - "X buổi" for session-based
  * - Formatted date for day-based
