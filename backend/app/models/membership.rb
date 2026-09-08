@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ClassLength, Metrics/BlockLength
 class Membership < ApplicationRecord
   STATUSES = %w[active expiring expired].freeze
   EXPIRING_SESSIONS_THRESHOLD = 3
@@ -34,6 +35,39 @@ class Membership < ApplicationRecord
     end
   }
   scope :needing_reminder, -> { PaidShopMembershipsNeedingReminderQuery.call(self) }
+
+  scope :by_status, lambda { |status|
+    return all if status.blank? || status.to_s == 'all'
+
+    today = Date.current
+    expiring_date = today + EXPIRING_DAYS_WINDOW.days
+
+    case status.to_s
+    when 'expired'
+      joins(:package).where(
+        '(packages.sessions_count IS NOT NULL AND memberships.sessions_left <= 0) OR ' \
+        '(packages.duration_days IS NOT NULL AND (memberships.expires_at IS NULL OR memberships.expires_at < :today))',
+        today: today
+      )
+    when 'expiring'
+      joins(:package).where(
+        '(packages.sessions_count IS NOT NULL AND memberships.sessions_left > 0 AND ' \
+        'memberships.sessions_left <= :threshold) OR ' \
+        '(packages.duration_days IS NOT NULL AND memberships.expires_at IS NOT NULL AND ' \
+        'memberships.expires_at >= :today AND memberships.expires_at <= :expiring_date)',
+        threshold: EXPIRING_SESSIONS_THRESHOLD, today: today, expiring_date: expiring_date
+      )
+    when 'active'
+      joins(:package).where(
+        '(packages.sessions_count IS NOT NULL AND memberships.sessions_left > :threshold) OR ' \
+        '(packages.duration_days IS NOT NULL AND memberships.expires_at IS NOT NULL AND ' \
+        'memberships.expires_at > :expiring_date)',
+        threshold: EXPIRING_SESSIONS_THRESHOLD, expiring_date: expiring_date
+      )
+    else
+      all
+    end
+  }
 
   def expired?
     expires_at.present? && expires_at < Date.current
@@ -123,3 +157,4 @@ class Membership < ApplicationRecord
     errors.add(:base, 'Gói Free chỉ được tạo tối đa 15 hội viên. Vui lòng nâng cấp gói trả phí để tạo thêm hội viên.')
   end
 end
+# rubocop:enable Metrics/ClassLength, Metrics/BlockLength
