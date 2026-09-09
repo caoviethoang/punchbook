@@ -16,6 +16,12 @@ class PackagesController < ApiController
     end
   end
 
+  def destroy
+    package = current_shop.packages.find(params.expect(:id))
+    package.discard
+    render json: { message: 'Đã xóa gói dịch vụ thành công' }
+  end
+
   private
 
   def package_params
