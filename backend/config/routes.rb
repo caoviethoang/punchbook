@@ -14,9 +14,9 @@ Rails.application.routes.draw do
   patch '/settings/profile', to: 'settings#update_profile'
   patch '/settings/password', to: 'settings#update_password'
 
-  resources :packages, only: %i[index create]
+  resources :packages, only: %i[index create destroy]
 
-  resources :memberships, only: %i[index create show] do
+  resources :memberships, only: %i[index create show destroy] do
     collection do
       get :import_template
       post :import

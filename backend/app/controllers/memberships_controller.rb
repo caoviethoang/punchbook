@@ -30,6 +30,12 @@ class MembershipsController < ApiController
     render json: { membership: membership.as_api_json }, status: :created
   end
 
+  def destroy
+    membership = find_shop_membership(params.expect(:id))
+    membership.discard
+    render json: { message: 'Đã xóa hội viên thành công' }
+  end
+
   def import_template
     excel_data = ImportMembershipTemplateGenerator.call
     send_data(

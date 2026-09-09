@@ -88,18 +88,18 @@ class ExcelReportGenerator
   # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
   def invoices
-    Invoice.joins(:membership)
+    Invoice.joins('INNER JOIN memberships ON memberships.id = invoices.membership_id')
            .where(memberships: { shop_id: shop.id })
            .includes(membership: :package)
            .order(created_at: :desc)
   end
 
   def memberships
-    shop.memberships.includes(:package).order(created_at: :desc)
+    shop.memberships.with_discarded.includes(:package).order(created_at: :desc)
   end
 
   def check_ins
-    CheckIn.joins(:membership)
+    CheckIn.joins('INNER JOIN memberships ON memberships.id = check_ins.membership_id')
            .where(memberships: { shop_id: shop.id })
            .includes(:staff, membership: :package)
            .order(created_at: :desc)

@@ -3,7 +3,7 @@
 class Invoice < ApplicationRecord
   STATUSES = %w[pending paid failed cancelled].freeze
 
-  belongs_to :membership
+  belongs_to :membership, -> { with_discarded }, inverse_of: :invoices
 
   validates :amount, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :status, presence: true, inclusion: { in: STATUSES }
