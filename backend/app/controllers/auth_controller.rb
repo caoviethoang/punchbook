@@ -6,12 +6,12 @@ class AuthController < ApplicationController
   before_action :authenticate_shop!, only: :me
 
   def register
-    shop = Shop.new(register_params)
+    result = RegisterShopService.call(register_params)
 
-    if shop.save
-      render json: auth_payload(shop), status: :created
+    if result.success?
+      render json: { token: result.token, shop: ShopSerializer.new(result.shop).as_json }, status: :created
     else
-      render json: { errors: shop.errors.full_messages }, status: :unprocessable_content
+      render json: { errors: result.errors }, status: :unprocessable_content
     end
   end
 
@@ -26,7 +26,7 @@ class AuthController < ApplicationController
   end
 
   def me
-    render json: { shop: shop_json(current_shop) }
+    render json: { shop: ShopSerializer.new(current_shop).as_json }
   end
 
   private
@@ -39,11 +39,7 @@ class AuthController < ApplicationController
   def auth_payload(shop)
     {
       token: JsonWebToken.encode({ shop_id: shop.id }),
-      shop: shop_json(shop)
+      shop: ShopSerializer.new(shop).as_json
     }
-  end
-
-  def shop_json(shop)
-    shop.as_json(only: %i[id name phone address email plan plan_expires_at])
   end
 end
