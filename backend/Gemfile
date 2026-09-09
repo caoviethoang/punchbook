@@ -12,6 +12,9 @@ gem 'puma', '>= 5.0'
 # CORS configuration
 gem 'rack-cors'
 
+# Rate limiting
+gem 'rack-attack'
+
 # GraphQL configuration
 gem 'graphql', '~> 2.4'
 
