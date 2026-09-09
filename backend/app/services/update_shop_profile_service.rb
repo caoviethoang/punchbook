@@ -1,11 +1,7 @@
 # frozen_string_literal: true
 
 class UpdateShopProfileService
-  Result = Struct.new(:success, :shop, :errors, keyword_init: true) do
-    def success?
-      success == true
-    end
-  end
+  Result = Struct.new(:success?, :shop, :errors, keyword_init: true)
 
   def initialize(shop, params)
     @shop = shop
@@ -16,9 +12,9 @@ class UpdateShopProfileService
     permitted_params = @params.slice(:name, :phone, :address)
 
     if @shop.update(permitted_params)
-      Result.new(success: true, shop: @shop)
+      Result.new(success?: true, shop: @shop)
     else
-      Result.new(success: false, shop: @shop, errors: @shop.errors.full_messages)
+      Result.new(success?: false, shop: @shop, errors: @shop.errors.full_messages)
     end
   end
 end
