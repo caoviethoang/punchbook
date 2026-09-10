@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react"
 import { Building2, KeyRound, ShieldCheck, Sparkles } from "lucide-react"
 import type { Shop } from "../lib/auth"
+import { toApiError } from "../lib/errors"
+import { formatDate } from "../lib/formatters"
 import { changeShopPassword, updateShopProfile } from "../lib/settings"
 import { FormField } from "./ui/FormField"
 import { Toast } from "./ui/Toast"
@@ -39,7 +41,7 @@ export function SettingsScreen({ shop, onShopUpdated }: SettingsScreenProps) {
       })
     } catch (err) {
       setToast({
-        message: err instanceof Error ? err.message : "Cập nhật thất bại",
+        message: toApiError(err, "Cập nhật thất bại."),
         type: "error",
       })
     } finally {
@@ -76,7 +78,7 @@ export function SettingsScreen({ shop, onShopUpdated }: SettingsScreenProps) {
       })
     } catch (err) {
       setToast({
-        message: err instanceof Error ? err.message : "Đổi mật khẩu thất bại",
+        message: toApiError(err, "Đổi mật khẩu thất bại."),
         type: "error",
       })
     } finally {
@@ -84,19 +86,8 @@ export function SettingsScreen({ shop, onShopUpdated }: SettingsScreenProps) {
     }
   }
 
-  const formatExpirationDate = (dateStr?: string | null) => {
-    if (!dateStr) return "Không thời hạn"
-    try {
-      const date = new Date(dateStr)
-      return date.toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
-    } catch {
-      return dateStr
-    }
-  }
+  const formatExpirationDate = (dateStr?: string | null) =>
+    dateStr ? formatDate(dateStr) : "Không thời hạn"
 
   return (
     <div className="space-y-8">

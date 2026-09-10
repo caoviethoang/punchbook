@@ -12,11 +12,8 @@ import {
   Wallet,
 } from "lucide-react"
 import { useDashboard } from "../hooks/useDashboard"
-import {
-  STATUS_CLASS,
-  STATUS_LABEL,
-  type DashboardMembership,
-} from "../lib/dashboard"
+import type { DashboardMembership } from "../lib/dashboard"
+import { toApiError } from "../lib/errors"
 import { formatVnd, remainingLabel } from "../lib/formatters"
 import {
   fetchMemberships,
@@ -27,6 +24,7 @@ import { downloadExcelReport } from "../lib/reports"
 import { ImportMembersModal } from "./ImportMembersModal"
 import { MembershipDetailModal } from "./MembershipDetailModal"
 import { RenewalModal } from "./RenewalModal"
+import { StatusBadge } from "./ui/StatusBadge"
 
 function Metric({
   label,
@@ -131,9 +129,7 @@ export function DashboardScreen() {
       setExportError(null)
       await downloadExcelReport()
     } catch (err) {
-      setExportError(
-        err instanceof Error ? err.message : "Xuất báo cáo thất bại."
-      )
+      setExportError(toApiError(err, "Xuất báo cáo thất bại."))
     } finally {
       setExporting(false)
     }
@@ -322,11 +318,7 @@ export function DashboardScreen() {
                       {remainingLabel(membership)}
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_CLASS[membership.status]}`}
-                      >
-                        {STATUS_LABEL[membership.status]}
-                      </span>
+                      <StatusBadge status={membership.status} type="membership" />
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
