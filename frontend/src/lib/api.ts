@@ -8,16 +8,24 @@ export const apiBaseUrl =
   graphqlUrl.replace(/\/graphql\/?$/, "")
 
 /**
- * Builds the Authorization + Content-Type headers for authenticated requests.
+ * Returns the raw stored token string.
  * Throws if no token is stored (user not logged in).
  */
-export function authHeaders(): HeadersInit {
+export function authToken(): string {
   const token = getStoredToken()
   if (!token) {
     throw new Error("Unauthorized")
   }
+  return token
+}
+
+/**
+ * Builds the Authorization + Content-Type headers for authenticated requests.
+ * Throws if no token is stored (user not logged in).
+ */
+export function authHeaders(): HeadersInit {
   return {
-    Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${authToken()}`,
     "Content-Type": "application/json",
   }
 }
@@ -39,6 +47,49 @@ export async function parseApiResponse<T>(response: Response): Promise<T> {
     throw new Error(message)
   }
   return body as T
+}
+
+/**
+ * Downloads an authenticated binary resource and triggers a browser file download.
+ * Reads `Content-Disposition` header for filename if available.
+ */
+export async function downloadBlob(
+  path: string,
+  fallbackFilename: string,
+): Promise<void> {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    headers: authHeaders(),
+  })
+
+  if (!response.ok) {
+    let errorMessage = "Không thể tải file."
+    try {
+      const data = (await response.json()) as { error?: string }
+      if (data.error) errorMessage = data.error
+    } catch {
+      // non-JSON response body — use default message
+    }
+    throw new Error(errorMessage)
+  }
+
+  const blob = await response.blob()
+  const contentDisposition = response.headers.get("Content-Disposition")
+  let filename = fallbackFilename
+  if (contentDisposition) {
+    const match = contentDisposition.match(/filename="?([^"]+)"?/)
+    if (match && match[1]) {
+      filename = match[1]
+    }
+  }
+
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  window.URL.revokeObjectURL(url)
 }
 
 function jsonHeaders(authenticated: boolean): HeadersInit {
@@ -91,6 +142,17 @@ export async function apiPatch<T>(
     method: "PATCH",
     headers: jsonHeaders(options?.auth !== false),
     body: body !== undefined ? JSON.stringify(body) : undefined,
+  })
+  return parseApiResponse<T>(response)
+}
+
+export async function apiDelete<T>(
+  path: string,
+  options?: { auth?: boolean },
+): Promise<T> {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    method: "DELETE",
+    headers: jsonHeaders(options?.auth !== false),
   })
   return parseApiResponse<T>(response)
 }
