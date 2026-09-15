@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_07_112000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_09_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -49,12 +49,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_112000) do
   create_table "memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "customer_name"
+    t.datetime "discarded_at"
     t.date "expires_at"
     t.uuid "package_id", null: false
     t.string "phone"
     t.integer "sessions_left"
     t.uuid "shop_id", null: false
     t.datetime "updated_at", null: false
+    t.index ["discarded_at"], name: "index_memberships_on_discarded_at"
     t.index ["package_id"], name: "index_memberships_on_package_id"
     t.index ["shop_id", "customer_name"], name: "index_memberships_on_shop_id_and_customer_name"
     t.index ["shop_id", "expires_at"], name: "index_memberships_on_shop_id_and_expires_at"
@@ -65,12 +67,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_112000) do
 
   create_table "packages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.datetime "discarded_at"
     t.integer "duration_days"
     t.string "name"
     t.integer "price"
     t.integer "sessions_count"
     t.uuid "shop_id", null: false
     t.datetime "updated_at", null: false
+    t.index ["discarded_at"], name: "index_packages_on_discarded_at"
     t.index ["shop_id"], name: "index_packages_on_shop_id"
   end
 
