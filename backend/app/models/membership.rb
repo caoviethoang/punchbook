@@ -2,6 +2,10 @@
 
 # rubocop:disable Metrics/ClassLength, Metrics/BlockLength
 class Membership < ApplicationRecord
+  include Discard::Model
+
+  default_scope { kept }
+
   STATUSES = %w[active expiring expired].freeze
   EXPIRING_SESSIONS_THRESHOLD = 3
   EXPIRING_DAYS_WINDOW = 7
@@ -9,7 +13,7 @@ class Membership < ApplicationRecord
   MAX_FREE_MEMBERSHIPS = 15
 
   belongs_to :shop
-  belongs_to :package
+  belongs_to :package, -> { with_discarded }, inverse_of: :memberships
   has_many :check_ins, dependent: :destroy
   has_many :invoices, dependent: :destroy
   has_many :membership_reminders, dependent: :destroy
