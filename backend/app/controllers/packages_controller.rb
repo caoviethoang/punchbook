@@ -7,13 +7,8 @@ class PackagesController < ApiController
   end
 
   def create
-    package = current_shop.packages.build(package_params)
-
-    if package.save
-      render json: PackageSerializer.new(package).as_json, status: :created
-    else
-      render_unprocessable(package.errors.full_messages)
-    end
+    package = current_shop.packages.create!(package_params)
+    render json: PackageSerializer.new(package).as_json, status: :created
   end
 
   def destroy
