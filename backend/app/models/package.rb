@@ -5,8 +5,8 @@ class Package < ApplicationRecord
 
   default_scope { kept }
 
-  belongs_to :shop
-  has_many :memberships, dependent: :destroy
+  belongs_to :shop, inverse_of: :packages
+  has_many :memberships, dependent: :destroy, inverse_of: :package
 
   validates :name, presence: true
   validates :price, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
