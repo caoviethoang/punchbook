@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
 class Membership < ApplicationRecord
+  include Discard::Model
   include MembershipStatusable
+
+  default_scope { kept }
 
   MAX_FREE_MEMBERSHIPS = 15
 
   belongs_to :shop, inverse_of: :memberships
-  belongs_to :package, inverse_of: :memberships
+  belongs_to :package, -> { with_discarded }, inverse_of: :memberships
   has_many :check_ins, dependent: :destroy, inverse_of: :membership
   has_many :invoices, dependent: :destroy, inverse_of: :membership
   has_many :membership_reminders, dependent: :destroy, inverse_of: :membership

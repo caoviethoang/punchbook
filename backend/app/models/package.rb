@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class Package < ApplicationRecord
+  include Discard::Model
+
+  default_scope { kept }
+
   belongs_to :shop, inverse_of: :packages
   has_many :memberships, dependent: :destroy, inverse_of: :package
 
