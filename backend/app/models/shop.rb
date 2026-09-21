@@ -5,9 +5,9 @@ class Shop < ApplicationRecord
 
   devise :database_authenticatable, :registerable, :validatable
 
-  has_many :staffs, dependent: :destroy
-  has_many :packages, dependent: :destroy
-  has_many :memberships, dependent: :destroy
+  has_many :staffs, dependent: :destroy, inverse_of: :shop
+  has_many :packages, dependent: :destroy, inverse_of: :shop
+  has_many :memberships, dependent: :destroy, inverse_of: :shop
 
   validates :plan, presence: true, inclusion: { in: PLANS }
   validates :name, presence: true
