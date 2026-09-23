@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class SettingsController < ApiController
+  before_action :require_owner!
   def show
     render json: { shop: ShopSerializer.new(current_shop).as_json }
   end

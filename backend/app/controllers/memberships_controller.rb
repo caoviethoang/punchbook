@@ -3,6 +3,8 @@
 class MembershipsController < ApiController
   include Paginatable
 
+  before_action :require_owner!, only: %i[create destroy import import_template]
+
   def index
     page, per_page = parse_pagination_params
     relation = current_shop.memberships.search_by_query(params[:query]).by_status(params[:status])
