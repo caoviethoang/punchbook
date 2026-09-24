@@ -7,6 +7,7 @@ import {
   History,
   Loader2,
   Package as PackageIcon,
+  Printer,
   Receipt,
   User,
   UserCheck,
@@ -18,6 +19,7 @@ import {
 import { formatDate, formatDateTime, formatVnd, remainingLabel } from "../lib/formatters"
 import { Modal } from "./ui/Modal"
 import { StatusBadge } from "./ui/StatusBadge"
+import { ThermalReceiptModal, type ReceiptData } from "./ThermalReceiptModal"
 
 interface MembershipDetailModalProps {
   membershipId: string
@@ -34,6 +36,7 @@ export function MembershipDetailModal({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<TabType>("check_ins")
+  const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null)
 
   useEffect(() => {
     let isCancelled = false
@@ -64,6 +67,20 @@ export function MembershipDetailModal({
       isCancelled = true
     }
   }, [membershipId])
+
+  const handlePrintReceipt = (checkedInAt: string, staffName?: string | null) => {
+    if (!detail) return
+    setSelectedReceipt({
+      shopName: "PunchBook Spa",
+      customerName: detail.customer_name,
+      customerPhone: detail.phone,
+      packageName: detail.package.name,
+      sessionsLeft: detail.sessions_left,
+      expiresAt: detail.expires_at,
+      checkedInAt,
+      staffName,
+    })
+  }
 
   return (
     <Modal isOpen={true} onClose={onClose} maxWidthClass="max-w-2xl">
@@ -169,6 +186,7 @@ export function MembershipDetailModal({
                         <tr>
                           <th className="px-4 py-3">Thời gian Check-in</th>
                           <th className="px-4 py-3">Nhân viên thực hiện</th>
+                          <th className="px-4 py-3 text-right">In phiếu</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -188,6 +206,17 @@ export function MembershipDetailModal({
                                 <User className="h-4 w-4 text-slate-400" />
                                 <span>{item.staff?.name ?? "Nhân viên"}</span>
                               </div>
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <button
+                                type="button"
+                                onClick={() => handlePrintReceipt(item.checked_in_at, item.staff?.name)}
+                                title="In phiếu check-in"
+                                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                              >
+                                <Printer className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                                In phiếu
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -253,6 +282,13 @@ export function MembershipDetailModal({
           </div>
         )}
       </div>
+
+      {selectedReceipt && (
+        <ThermalReceiptModal
+          receipt={selectedReceipt}
+          onClose={() => setSelectedReceipt(null)}
+        />
+      )}
     </Modal>
   )
 }
