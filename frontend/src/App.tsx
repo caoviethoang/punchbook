@@ -110,7 +110,11 @@ function App() {
         {view === "dashboard" ? (
           <DashboardScreen />
         ) : view === "checkin" ? (
-          <CheckInScreen />
+          <CheckInScreen
+            shopName={shop.name}
+            shopAddress={shop.address}
+            shopPhone={shop.phone}
+          />
         ) : view === "members" ? (
           <div className="flex justify-center">
             <MembershipCreateForm />
