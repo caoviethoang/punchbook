@@ -1,11 +1,7 @@
 # frozen_string_literal: true
 
 class ChangeShopPasswordService
-  Result = Struct.new(:success, :shop, :errors, keyword_init: true) do
-    def success?
-      success == true
-    end
-  end
+  Result = Struct.new(:success?, :shop, :errors, keyword_init: true)
 
   def initialize(shop, params)
     @shop = shop
@@ -14,7 +10,7 @@ class ChangeShopPasswordService
 
   def call
     error = validate_current_password
-    return Result.new(success: false, shop: @shop, errors: [error]) if error
+    return Result.new(success?: false, shop: @shop, errors: [error]) if error
 
     update_password
   end
@@ -31,9 +27,9 @@ class ChangeShopPasswordService
 
   def update_password
     if @shop.update(password: @params[:password], password_confirmation: @params[:password_confirmation])
-      Result.new(success: true, shop: @shop)
+      Result.new(success?: true, shop: @shop)
     else
-      Result.new(success: false, shop: @shop, errors: @shop.errors.full_messages)
+      Result.new(success?: false, shop: @shop, errors: @shop.errors.full_messages)
     end
   end
 end

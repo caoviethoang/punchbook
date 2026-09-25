@@ -39,11 +39,11 @@ class MembershipSerializer
   attr_reader :membership
 
   def serialized_check_ins
-    membership.check_ins.includes(:staff).order(checked_in_at: :desc).map do |c|
+    membership.check_ins.includes(:staff).order(checked_in_at: :desc).map do |check_in|
       {
-        'id' => c.id,
-        'checked_in_at' => c.checked_in_at,
-        'staff' => { 'id' => c.staff.id, 'name' => c.staff.name }
+        'id' => check_in.id,
+        'checked_in_at' => check_in.checked_in_at,
+        'staff' => { 'id' => check_in.staff.id, 'name' => check_in.staff.name }
       }
     end
   end
