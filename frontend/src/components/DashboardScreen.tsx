@@ -21,6 +21,7 @@ import {
   type StatusFilterType,
 } from "../lib/memberships"
 import { downloadExcelReport } from "../lib/reports"
+import { AnalyticsCharts } from "./AnalyticsCharts"
 import { ImportMembersModal } from "./ImportMembersModal"
 import { MembershipDetailModal } from "./MembershipDetailModal"
 import { RenewalModal } from "./RenewalModal"
@@ -227,6 +228,13 @@ export function DashboardScreen() {
           icon={<CalendarClock className="h-4 w-4" />}
         />
       </div>
+
+      {/* Analytics Charts (30-day Revenue & 24h Check-in Frequency) */}
+      <AnalyticsCharts
+        dailyRevenue={data.daily_revenue_30_days}
+        checkInFrequency={data.check_in_frequency_by_hour}
+        peakHour={data.peak_check_in_hour}
+      />
 
       <div className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
