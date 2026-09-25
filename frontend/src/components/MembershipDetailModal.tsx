@@ -10,14 +10,14 @@ import {
   Receipt,
   User,
   UserCheck,
-  X,
 } from "lucide-react"
 import {
   getMembershipDetail,
   type MembershipDetail,
 } from "../lib/memberships"
-import { STATUS_CLASS, STATUS_LABEL } from "../lib/dashboard"
 import { formatDate, formatDateTime, formatVnd, remainingLabel } from "../lib/formatters"
+import { Modal } from "./ui/Modal"
+import { StatusBadge } from "./ui/StatusBadge"
 
 interface MembershipDetailModalProps {
   membershipId: string
@@ -65,54 +65,9 @@ export function MembershipDetailModal({
     }
   }, [membershipId])
 
-  const renderInvoiceStatusBadge = (status: string) => {
-    switch (status) {
-      case "paid":
-        return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
-            Đã thanh toán
-          </span>
-        )
-      case "pending":
-        return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
-            Chờ thanh toán
-          </span>
-        )
-      case "failed":
-      case "cancelled":
-        return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-700 dark:bg-red-950/50 dark:text-red-300">
-            {status === "failed" ? "Thất bại" : "Đã hủy"}
-          </span>
-        )
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-            {status}
-          </span>
-        )
-    }
-  }
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in duration-200"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
-      <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
-        {/* Close Button */}
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Đóng modal"
-          className="absolute right-4 top-4 z-10 rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
-        >
-          <X className="h-5 w-5" />
-        </button>
-
+    <Modal isOpen={true} onClose={onClose} maxWidthClass="max-w-2xl">
+      <div className="flex max-h-[90vh] flex-col overflow-hidden">
         {/* Modal Header */}
         <div className="border-b border-slate-100 p-6 dark:border-slate-800 sm:p-7">
           {loading ? (
@@ -138,11 +93,7 @@ export function MembershipDetailModal({
                     {detail.phone}
                   </p>
                 </div>
-                <span
-                  className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${STATUS_CLASS[detail.status]}`}
-                >
-                  {STATUS_LABEL[detail.status]}
-                </span>
+                <StatusBadge status={detail.status} type="membership" />
               </div>
 
               {/* Package & Remaining Info */}
@@ -282,7 +233,9 @@ export function MembershipDetailModal({
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex flex-col gap-1">
-                              <div>{renderInvoiceStatusBadge(inv.status)}</div>
+                              <div>
+                                <StatusBadge status={inv.status} type="invoice" />
+                              </div>
                               {inv.payos_transaction_id && (
                                 <span className="font-mono text-xs text-slate-400 dark:text-slate-500">
                                   Tx: {inv.payos_transaction_id}
@@ -300,6 +253,6 @@ export function MembershipDetailModal({
           </div>
         )}
       </div>
-    </div>
+    </Modal>
   )
 }
