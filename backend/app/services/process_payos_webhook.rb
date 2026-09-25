@@ -54,14 +54,25 @@ class ProcessPayosWebhook
   end
 
   def process_payment(invoice)
-    if response_code == '00'
-      Invoice.transaction do
-        invoice.update!(status: 'paid')
-        invoice.membership.renew!
-      end
-      [true, :success]
-    else
-      [true, :payment_not_successful]
+    return [true, :payment_not_successful] unless response_code == '00'
+
+    Invoice.transaction do
+      execute_renewal_and_log!(invoice)
     end
+    [true, :success]
+  end
+
+  def execute_renewal_and_log!(invoice)
+    membership = invoice.membership
+    sessions_before = membership.sessions_left
+    expires_at_before = membership.expires_at
+
+    invoice.update!(status: 'paid')
+    membership.renew!
+
+    AuditLog.log_membership_renewed!(
+      shop: membership.shop, staff: nil, membership: membership,
+      sessions_before: sessions_before, expires_at_before: expires_at_before
+    )
   end
 end

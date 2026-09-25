@@ -10,10 +10,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_09_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_21_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
+
+  create_table "audit_logs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "action", null: false
+    t.datetime "created_at", null: false
+    t.jsonb "details", default: {}, null: false
+    t.uuid "shop_id", null: false
+    t.uuid "staff_id"
+    t.uuid "target_id"
+    t.string "target_type"
+    t.datetime "updated_at", null: false
+    t.index ["shop_id", "action"], name: "index_audit_logs_on_shop_id_and_action"
+    t.index ["shop_id", "created_at"], name: "index_audit_logs_on_shop_id_and_created_at"
+    t.index ["shop_id", "staff_id"], name: "index_audit_logs_on_shop_id_and_staff_id"
+    t.index ["shop_id"], name: "index_audit_logs_on_shop_id"
+    t.index ["staff_id"], name: "index_audit_logs_on_staff_id"
+  end
 
   create_table "check_ins", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "checked_in_at"
@@ -100,6 +116,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_09_100000) do
     t.index ["shop_id"], name: "index_staffs_on_shop_id"
   end
 
+  add_foreign_key "audit_logs", "shops", on_delete: :cascade
+  add_foreign_key "audit_logs", "staffs", on_delete: :nullify
   add_foreign_key "check_ins", "memberships"
   add_foreign_key "check_ins", "staffs"
   add_foreign_key "invoices", "memberships"

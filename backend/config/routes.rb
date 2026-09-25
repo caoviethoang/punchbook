@@ -27,6 +27,8 @@ Rails.application.routes.draw do
     resources :invoices, only: %i[create]
   end
 
+  resources :audit_logs, only: [:index]
+
   namespace :webhooks do
     post :payos, to: 'payos#create'
   end
