@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class ReportsController < ApiController
+  before_action :require_owner!
   before_action :ensure_paid_plan!
 
   def export
