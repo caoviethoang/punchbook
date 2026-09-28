@@ -89,4 +89,17 @@ RSpec.describe 'Settings API', type: :request do
       expect(response.parsed_body['errors']).to include('Mật khẩu hiện tại không đúng')
     end
   end
+
+  describe 'POST /settings/upgrade_plan' do
+    it 'upgrades plan to paid and sets plan_expires_at' do
+      post '/settings/upgrade_plan', params: { months: 6 }, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['message']).to eq('Nâng cấp gói Premium thành công!')
+      expect(body.dig('shop', 'plan')).to eq('paid')
+      expect(shop.reload.plan).to eq('paid')
+      expect(shop.plan_expires_at).to be > Time.current
+    end
+  end
 end

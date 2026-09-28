@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   get '/settings', to: 'settings#show'
   patch '/settings/profile', to: 'settings#update_profile'
   patch '/settings/password', to: 'settings#update_password'
+  post '/settings/upgrade_plan', to: 'settings#upgrade_plan'
 
   resources :package_categories, only: %i[index create update destroy]
   resources :packages, only: %i[index create update destroy]

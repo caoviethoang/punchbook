@@ -1,11 +1,12 @@
 import { useState, type FormEvent } from "react"
-import { Building2, CreditCard, KeyRound, ShieldCheck, Sparkles } from "lucide-react"
+import { Building2, CreditCard, KeyRound, ShieldCheck, Sparkles, Zap } from "lucide-react"
 import type { Shop } from "../lib/auth"
 import { toApiError } from "../lib/errors"
 import { formatDate } from "../lib/formatters"
 import { changeShopPassword, updateShopProfile } from "../lib/settings"
 import { FormField, FORM_CONTROL_CLASS } from "./ui/FormField"
 import { Toast } from "./ui/Toast"
+import { UpgradePlanModal } from "./UpgradePlanModal"
 
 const POPULAR_BANKS = [
   { code: "MBBank", name: "MBBank (Ngân hàng Quân Đội)" },
@@ -44,6 +45,9 @@ export function SettingsScreen({ shop, onShopUpdated }: SettingsScreenProps) {
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [passwordLoading, setPasswordLoading] = useState(false)
+
+  // Upgrade Modal state
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
 
   // Toast feedback state
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
@@ -285,7 +289,7 @@ export function SettingsScreen({ shop, onShopUpdated }: SettingsScreenProps) {
         </section>
       </div>
 
-      {/* Section 3: Subscription Plan Info */}
+      {/* Section 3: Subscription Plan Info & Upgrade CTA */}
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4 dark:border-slate-800">
           <div className="flex items-center gap-3">
@@ -302,18 +306,26 @@ export function SettingsScreen({ shop, onShopUpdated }: SettingsScreenProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 dark:text-slate-400">Gói hiện tại:</span>
+          <div className="flex items-center gap-3">
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${
+              className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-bold uppercase tracking-wider ${
                 shop.plan === "paid"
-                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                  ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
                   : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
               }`}
             >
-              {shop.plan === "paid" && <Sparkles className="h-3.5 w-3.5 fill-current" />}
-              Gói {shop.plan}
+              {shop.plan === "paid" && <Sparkles className="h-3.5 w-3.5 fill-current text-amber-500" />}
+              Gói {shop.plan === "paid" ? "Premium (Paid)" : "Miễn phí (Free)"}
             </span>
+
+            <button
+              type="button"
+              onClick={() => setShowUpgradeModal(true)}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md transition hover:from-amber-600 hover:to-indigo-700"
+            >
+              <Zap className="h-3.5 w-3.5 fill-current" />
+              <span>{shop.plan === "paid" ? "Gia hạn Premium" : "Nâng cấp Premium"}</span>
+            </button>
           </div>
         </div>
 
@@ -337,7 +349,44 @@ export function SettingsScreen({ shop, onShopUpdated }: SettingsScreenProps) {
             </p>
           </div>
         </div>
+
+        {/* Upgrade Banner for Free Plan */}
+        {shop.plan !== "paid" && (
+          <div className="mt-6 flex flex-col items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 p-5 text-white shadow-md sm:flex-row">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-400 fill-current" />
+                <h4 className="text-base font-extrabold text-white">Nâng cấp lên PunchBook Premium</h4>
+              </div>
+              <p className="mt-1 text-xs text-slate-300">
+                Mở khóa không giới hạn hội viên, báo cáo doanh thu chi tiết và tự động nhắc nợ Zalo/SMS.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowUpgradeModal(true)}
+              className="shrink-0 rounded-xl bg-amber-400 px-5 py-2.5 text-xs font-extrabold text-slate-950 shadow transition hover:bg-amber-300"
+            >
+              Nâng cấp ngay - Chỉ từ 199.000đ/tháng
+            </button>
+          </div>
+        )}
       </section>
+
+      {/* Upgrade Plan Modal */}
+      <UpgradePlanModal
+        shop={shop}
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onSuccess={(updatedShop) => {
+          onShopUpdated(updatedShop)
+          setToast({
+            message: "Chúc mừng! Cửa hàng đã được nâng cấp lên gói Premium thành công.",
+            type: "success",
+          })
+        }}
+      />
     </div>
   )
 }
+

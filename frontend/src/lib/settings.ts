@@ -1,4 +1,4 @@
-import { apiGet, apiPatch } from "./api"
+import { apiGet, apiPatch, apiPost } from "./api"
 import type { Shop } from "./auth"
 
 export interface UpdateProfileInput {
@@ -35,4 +35,8 @@ export async function changeShopPassword(
   input: ChangePasswordInput,
 ): Promise<SettingsResponse> {
   return apiPatch<SettingsResponse>("/settings/password", input)
+}
+
+export async function upgradeShopPlan(months: number = 1): Promise<SettingsResponse> {
+  return apiPost<SettingsResponse>("/settings/upgrade_plan", { months })
 }
