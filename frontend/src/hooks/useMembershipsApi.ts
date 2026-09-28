@@ -26,7 +26,7 @@ export function useMembershipsApi() {
   }, [])
 
   const checkIn = useCallback(
-    async (id: string, staffId: string): Promise<CheckInResult> => {
+    async (id: string, staffId?: string): Promise<CheckInResult> => {
       setError(null)
       try {
         return await checkInRequest(id, staffId)
