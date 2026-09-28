@@ -1,11 +1,25 @@
 import { useState, type FormEvent } from "react"
-import { Building2, KeyRound, ShieldCheck, Sparkles } from "lucide-react"
+import { Building2, CreditCard, KeyRound, ShieldCheck, Sparkles } from "lucide-react"
 import type { Shop } from "../lib/auth"
 import { toApiError } from "../lib/errors"
 import { formatDate } from "../lib/formatters"
 import { changeShopPassword, updateShopProfile } from "../lib/settings"
-import { FormField } from "./ui/FormField"
+import { FormField, FORM_CONTROL_CLASS } from "./ui/FormField"
 import { Toast } from "./ui/Toast"
+
+const POPULAR_BANKS = [
+  { code: "MBBank", name: "MBBank (Ngân hàng Quân Đội)" },
+  { code: "Vietcombank", name: "Vietcombank (VCB)" },
+  { code: "Techcombank", name: "Techcombank (TCB)" },
+  { code: "VPBank", name: "VPBank" },
+  { code: "ACB", name: "ACB" },
+  { code: "VietinBank", name: "VietinBank (CTG)" },
+  { code: "BIDV", name: "BIDV" },
+  { code: "TPBank", name: "TPBank" },
+  { code: "VIB", name: "VIB" },
+  { code: "Sacombank", name: "Sacombank" },
+  { code: "Agribank", name: "Agribank" },
+]
 
 interface SettingsScreenProps {
   shop: Shop
@@ -17,6 +31,12 @@ export function SettingsScreen({ shop, onShopUpdated }: SettingsScreenProps) {
   const [name, setName] = useState(shop.name || "")
   const [phone, setPhone] = useState(shop.phone || "")
   const [address, setAddress] = useState(shop.address || "")
+
+  // Bank Account Settings state
+  const [bankName, setBankName] = useState(shop.bank_name || "MBBank")
+  const [bankAccountNo, setBankAccountNo] = useState(shop.bank_account_no || "")
+  const [bankAccountName, setBankAccountName] = useState(shop.bank_account_name || "")
+
   const [profileLoading, setProfileLoading] = useState(false)
 
   // Password form state
@@ -33,10 +53,17 @@ export function SettingsScreen({ shop, onShopUpdated }: SettingsScreenProps) {
     setProfileLoading(true)
 
     try {
-      const res = await updateShopProfile({ name, phone, address })
+      const res = await updateShopProfile({
+        name,
+        phone,
+        address,
+        bank_name: bankName,
+        bank_account_no: bankAccountNo,
+        bank_account_name: bankAccountName,
+      })
       onShopUpdated(res.shop)
       setToast({
-        message: res.message || "Cập nhật thông tin tiệm thành công!",
+        message: res.message || "Cập nhật thông tin tiệm & tài khoản thành công!",
         type: "success",
       })
     } catch (err) {
@@ -146,13 +173,58 @@ export function SettingsScreen({ shop, onShopUpdated }: SettingsScreenProps) {
               placeholder="VD: 123 Đường Nguyễn Trãi, Quận 1, TP.HCM"
             />
 
+            {/* Bank Account Settings for VietQR */}
+            <div className="mt-6 border-t border-slate-100 pt-4 dark:border-slate-800">
+              <div className="mb-3 flex items-center gap-2">
+                <CreditCard className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                  Tài khoản Ngân hàng (Xuất QR Chuyển khoản)
+                </h4>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700 dark:text-slate-300">
+                    Ngân hàng
+                  </label>
+                  <select
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                    className={FORM_CONTROL_CLASS}
+                  >
+                    {POPULAR_BANKS.map((b) => (
+                      <option key={b.code} value={b.code}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <FormField
+                  label="Số tài khoản ngân hàng"
+                  type="text"
+                  value={bankAccountNo}
+                  onChange={(e) => setBankAccountNo(e.target.value.replace(/\s/g, ""))}
+                  placeholder="VD: 0123456789"
+                />
+
+                <FormField
+                  label="Tên chủ tài khoản"
+                  type="text"
+                  value={bankAccountName}
+                  onChange={(e) => setBankAccountName(e.target.value.toUpperCase())}
+                  placeholder="VD: CAO VIET HOANG"
+                />
+              </div>
+            </div>
+
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={profileLoading}
                 className="inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
               >
-                {profileLoading ? "Đang lưu..." : "Lưu thông tin tiệm"}
+                {profileLoading ? "Đang lưu..." : "Lưu thông tin tiệm & ngân hàng"}
               </button>
             </div>
           </form>

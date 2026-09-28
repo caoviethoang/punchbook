@@ -36,7 +36,14 @@ RSpec.describe 'Settings API', type: :request do
   describe 'PATCH /settings/profile' do
     it 'updates profile info successfully' do
       patch '/settings/profile',
-            params: { name: 'PunchBook Gym', phone: '0988776655', address: '200 Lê Lợi' },
+            params: {
+              name: 'PunchBook Gym',
+              phone: '0988776655',
+              address: '200 Lê Lợi',
+              bank_name: 'MBBank',
+              bank_account_no: '0123456789',
+              bank_account_name: 'HOANG CAO VIET'
+            },
             headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
@@ -44,6 +51,9 @@ RSpec.describe 'Settings API', type: :request do
       expect(body['message']).to eq('Cập nhật thông tin tiệm thành công')
       expect(body.dig('shop', 'name')).to eq('PunchBook Gym')
       expect(body.dig('shop', 'address')).to eq('200 Lê Lợi')
+      expect(body.dig('shop', 'bank_name')).to eq('MBBank')
+      expect(body.dig('shop', 'bank_account_no')).to eq('0123456789')
+      expect(body.dig('shop', 'bank_account_name')).to eq('HOANG CAO VIET')
     end
 
     it 'returns unprocessable when params are invalid' do

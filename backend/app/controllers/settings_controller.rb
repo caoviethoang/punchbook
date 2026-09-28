@@ -28,7 +28,7 @@ class SettingsController < ApiController
   private
 
   def profile_params
-    params.permit(:name, :phone, :address)
+    params.permit(:name, :phone, :address, :bank_name, :bank_account_no, :bank_account_name)
   end
 
   def password_params

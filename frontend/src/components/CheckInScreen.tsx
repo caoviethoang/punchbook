@@ -145,12 +145,12 @@ function MembershipResultList({
                 onClick={() => onViewDetail(membership.id)}
                 className="w-full text-left group/btn focus:outline-none"
               >
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
-                  <p className="truncate text-2xl font-bold tracking-tight text-slate-900 group-hover/btn:text-indigo-600 dark:text-slate-50 dark:group-hover/btn:text-indigo-400 sm:text-3xl">
+                <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+                  <p className="truncate text-xl font-bold tracking-tight text-slate-900 group-hover/btn:text-indigo-600 dark:text-slate-50 dark:group-hover/btn:text-indigo-400 sm:text-2xl">
                     {membership.customer_name}
                   </p>
-                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                    <PackageIcon className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                    <PackageIcon className="h-3.5 w-3.5 shrink-0 text-indigo-600 dark:text-indigo-400" />
                     <span>{membership.package.name}</span>
                   </span>
                 </div>

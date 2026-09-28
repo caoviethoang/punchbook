@@ -5,6 +5,9 @@ export interface UpdateProfileInput {
   name: string
   phone: string
   address: string
+  bank_name?: string
+  bank_account_no?: string
+  bank_account_name?: string
 }
 
 export interface ChangePasswordInput {

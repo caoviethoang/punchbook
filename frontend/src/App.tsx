@@ -113,7 +113,7 @@ function App() {
           <CheckInScreen />
         ) : view === "members" ? (
           <div className="flex justify-center">
-            <MembershipCreateForm />
+            <MembershipCreateForm shop={shop} />
           </div>
         ) : view === "packages" ? (
           <PackagesScreen />
