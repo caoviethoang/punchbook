@@ -322,6 +322,50 @@ RSpec.describe 'Memberships', type: :request do
     end
   end
 
+  describe 'PATCH /memberships/:id' do
+    it 'returns 401 when unauthenticated' do
+      patch "/memberships/#{hoa.id}", params: { membership: { customer_name: 'Hoa Updated' } }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'updates customer_name, phone, and sessions_left successfully' do
+      patch "/memberships/#{hoa.id}",
+            params: {
+              membership: {
+                customer_name: 'Hoa Nguyen Updated',
+                phone: '0999888777',
+                sessions_left: 5
+              }
+            },
+            headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body['membership']
+      expect(body['customer_name']).to eq('Hoa Nguyen Updated')
+      expect(body['phone']).to eq('0999888777')
+      expect(body['sessions_left']).to eq(5)
+      expect(body['qr_code_value']).to eq("PUNCHBOOK:#{hoa.id}")
+
+      hoa.reload
+      expect(hoa.customer_name).to eq('Hoa Nguyen Updated')
+      expect(hoa.phone).to eq('0999888777')
+      expect(hoa.sessions_left).to eq(5)
+    end
+
+    it 'returns 404 when membership belongs to another shop' do
+      other_shop = create_shop(name: 'Other Spa', email: 'other@example.com')
+      other_pkg = Package.create!(shop: other_shop, name: 'Pkg', sessions_count: 5, price: 100_000)
+      other_member = Membership.create!(shop: other_shop, package: other_pkg, customer_name: 'Other', phone: '0900000000')
+
+      patch "/memberships/#{other_member.id}",
+            params: { membership: { customer_name: 'Hacked' } },
+            headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
   describe 'POST /memberships/:id/check_in' do
     let!(:staff) { Staff.create!(shop: shop, name: 'Mai', role: 'staff') }
 

@@ -29,6 +29,15 @@ class MembershipsController < ApiController
     render json: { membership: membership.as_api_json }, status: :created
   end
 
+  def update
+    membership = find_shop_membership(params.expect(:id))
+    if membership.update(update_membership_params)
+      render json: { membership: membership.as_api_json }
+    else
+      render json: { errors: membership.errors.full_messages }, status: :unprocessable_content
+    end
+  end
+
   def destroy
     membership = find_shop_membership(params.expect(:id))
     membership.discard
@@ -74,6 +83,10 @@ class MembershipsController < ApiController
 
   def membership_params
     params.expect(membership: %i[customer_name phone package_id])
+  end
+
+  def update_membership_params
+    params.expect(membership: %i[customer_name phone package_id sessions_left expires_at])
   end
 
   def find_staff
