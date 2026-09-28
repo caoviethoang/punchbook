@@ -43,6 +43,14 @@ function App() {
     setView("dashboard")
   }
 
+  useEffect(() => {
+    if (shop?.name) {
+      document.title = `${shop.name} - PunchBook`
+    } else {
+      document.title = "PunchBook"
+    }
+  }, [shop?.name])
+
   if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
@@ -63,13 +71,10 @@ function App() {
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <h1 className="text-2xl font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400">
-              PunchBook
-            </h1>
-            <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
               {shop.name}
-            </span>
+            </h1>
           </div>
 
           <div className="flex items-center gap-3 text-xs text-slate-500 sm:text-sm dark:text-slate-400">

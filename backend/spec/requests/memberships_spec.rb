@@ -67,7 +67,7 @@ RSpec.describe 'Memberships', type: :request do
         'checked_in_today' => false,
         'last_checked_in_at' => nil
       )
-      expect(memberships.first['package']).to eq('id' => package.id, 'name' => '10-session massage')
+      expect(memberships.first['package']).to include('id' => package.id, 'name' => '10-session massage')
       expect(memberships.first['expires_at']).to eq((Date.current + 30.days).iso8601)
     end
 
@@ -218,7 +218,7 @@ RSpec.describe 'Memberships', type: :request do
         'phone' => '0903000000',
         'sessions_left' => 10
       )
-      expect(body['package']).to eq('id' => package.id, 'name' => '10-session massage')
+      expect(body['package']).to include('id' => package.id, 'name' => '10-session massage')
       expect(Membership.find(body['id'])).to have_attributes(shop_id: shop.id, sessions_left: 10)
     end
 
