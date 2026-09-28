@@ -340,15 +340,6 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
     const membership = memberships.find((m) => m.id === membershipId)
     if (!membership || isMembershipExhausted(membership)) return
 
-    if (!currentStaffId) {
-      setCheckInMessage({
-        id: membershipId,
-        type: "error",
-        text: "Vui lòng chọn nhân viên thực hiện check-in.",
-      })
-      return
-    }
-
     // Snapshot for rollback
     const previousSessionsLeft = membership.sessions_left
 

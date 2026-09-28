@@ -161,14 +161,14 @@ export async function importMemberships(file: File): Promise<ImportMembershipsRe
 
 /**
  * POST /memberships/:id/check_in
- * staffId is required — shop JWT has no staff identity yet (see backend MembershipsController).
+ * staffId is optional — backend defaults to current shop staff if omitted.
  */
 export async function checkIn(
   id: string,
-  staffId: string,
+  staffId?: string,
 ): Promise<CheckInResult> {
   return apiPost<CheckInResult>(`/memberships/${id}/check_in`, {
-    staff_id: staffId,
+    staff_id: staffId || undefined,
   })
 }
 
