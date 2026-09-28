@@ -1,4 +1,4 @@
-import { apiGet, apiPost, authToken, downloadBlob, parseApiResponse, apiBaseUrl } from "./api"
+import { apiGet, apiPost, apiPatch, apiDelete, authToken, downloadBlob, parseApiResponse, apiBaseUrl } from "./api"
 
 export interface MembershipPackage {
   id: string
@@ -17,6 +17,7 @@ export interface Membership {
   package: MembershipPackage
   checked_in_today?: boolean
   last_checked_in_at?: string | null
+  qr_code_value?: string
 }
 
 export interface MembershipDetailCheckIn {
@@ -113,6 +114,14 @@ export interface CreateMembershipPayload {
   package_id: string
 }
 
+export interface UpdateMembershipPayload {
+  customer_name?: string
+  phone?: string
+  package_id?: string
+  sessions_left?: number | null
+  expires_at?: string | null
+}
+
 /** POST /memberships — create member; backend inits sessions_left / expires_at from package. */
 export async function createMembership(
   payload: CreateMembershipPayload,
@@ -121,6 +130,22 @@ export async function createMembership(
     membership: payload,
   })
   return body.membership
+}
+
+/** PATCH /memberships/:id — update member. */
+export async function updateMembership(
+  id: string,
+  payload: UpdateMembershipPayload,
+): Promise<Membership> {
+  const body = await apiPatch<{ membership: Membership }>(`/memberships/${id}`, {
+    membership: payload,
+  })
+  return body.membership
+}
+
+/** DELETE /memberships/:id — discard member. */
+export async function deleteMembership(id: string): Promise<void> {
+  await apiDelete<{ message: string }>(`/memberships/${id}`)
 }
 
 export interface ImportErrorDetail {

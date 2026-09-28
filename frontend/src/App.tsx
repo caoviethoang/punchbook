@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { CheckInScreen } from "./components/CheckInScreen"
 import { DashboardScreen } from "./components/DashboardScreen"
 import { LoginScreen } from "./components/LoginScreen"
-import { MembershipCreateForm } from "./components/MembershipCreateForm"
+import { MembershipsScreen } from "./components/MembershipsScreen"
 import { PackagesScreen } from "./components/PackagesScreen"
 import { SettingsScreen } from "./components/SettingsScreen"
 import {
@@ -112,9 +112,7 @@ function App() {
         ) : view === "checkin" ? (
           <CheckInScreen />
         ) : view === "members" ? (
-          <div className="flex justify-center">
-            <MembershipCreateForm shop={shop} />
-          </div>
+          <MembershipsScreen shop={shop} />
         ) : view === "packages" ? (
           <PackagesScreen />
         ) : (

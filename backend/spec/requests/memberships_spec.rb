@@ -370,7 +370,9 @@ RSpec.describe 'Memberships', type: :request do
     it 'returns 404 when membership belongs to another shop' do
       other_shop = create_shop(name: 'Other Spa', email: 'other@example.com')
       other_pkg = Package.create!(shop: other_shop, name: 'Pkg', sessions_count: 5, price: 100_000)
-      other_member = Membership.create!(shop: other_shop, package: other_pkg, customer_name: 'Other', phone: '0900000000')
+      other_member = Membership.create!(
+        shop: other_shop, package: other_pkg, customer_name: 'Other', phone: '0900000000'
+      )
 
       patch "/memberships/#{other_member.id}",
             params: { membership: { customer_name: 'Hacked' } },
