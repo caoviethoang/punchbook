@@ -12,14 +12,24 @@ class RegisterShopService
   end
 
   def call
-    shop = Shop.new(params)
+    ActiveRecord::Base.transaction do
+      shop = Shop.new(params)
+      unless shop.save
+        return Result.new(success?: false, errors: shop.errors.full_messages)
+      end
 
-    if shop.save
-      token = JsonWebToken.encode({ shop_id: shop.id })
+      admin_staff = shop.staffs.create!(
+        name: shop.name || 'Admin',
+        username: shop.email,
+        password: params[:password],
+        role: 'admin'
+      )
+
+      token = JsonWebToken.encode({ shop_id: shop.id, staff_id: admin_staff.id, role: 'admin' })
       Result.new(success?: true, shop: shop, token: token)
-    else
-      Result.new(success?: false, errors: shop.errors.full_messages)
     end
+  rescue ActiveRecord::RecordInvalid => e
+    Result.new(success?: false, errors: [e.message])
   end
 
   private

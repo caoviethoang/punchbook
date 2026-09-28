@@ -9,24 +9,45 @@ class AuthController < ApplicationController
     result = RegisterShopService.call(register_params)
 
     if result.success?
-      render json: { token: result.token, shop: ShopSerializer.new(result.shop).as_json }, status: :created
+      admin_staff = result.shop.staffs.find_by(role: 'admin')
+      render json: {
+        token: result.token,
+        shop: ShopSerializer.new(result.shop).as_json,
+        staff: StaffSerializer.new(admin_staff).as_json
+      }, status: :created
     else
       render json: { errors: result.errors }, status: :unprocessable_content
     end
   end
 
   def login
-    shop = Shop.find_for_database_authentication(email: params[:email])
+    login_input = params[:email] || params[:username]
+    password = params[:password]
 
-    if shop&.valid_password?(params[:password])
-      render json: auth_payload(shop)
-    else
-      render json: { error: 'Invalid email or password' }, status: :unauthorized
+    shop = Shop.find_for_database_authentication(email: login_input)
+    if shop&.valid_password?(password)
+      staff = shop.staffs.find_by(role: 'admin') || shop.staffs.create!(
+        name: shop.name || 'Admin',
+        username: shop.email,
+        password: password,
+        role: 'admin'
+      )
+      return render json: auth_payload(shop, staff)
     end
+
+    staff = Staff.find_by(username: login_input)
+    if staff&.authenticate(password)
+      return render json: auth_payload(staff.shop, staff)
+    end
+
+    render json: { error: 'Invalid username/email or password' }, status: :unauthorized
   end
 
   def me
-    render json: { shop: ShopSerializer.new(current_shop).as_json }
+    render json: {
+      shop: ShopSerializer.new(current_shop).as_json,
+      staff: StaffSerializer.new(current_staff).as_json
+    }
   end
 
   private
@@ -36,10 +57,11 @@ class AuthController < ApplicationController
     params.permit(:name, :phone, :email, :password, :password_confirmation)
   end
 
-  def auth_payload(shop)
+  def auth_payload(shop, staff)
     {
-      token: JsonWebToken.encode({ shop_id: shop.id }),
-      shop: ShopSerializer.new(shop).as_json
+      token: JsonWebToken.encode({ shop_id: shop.id, staff_id: staff.id, role: staff.role }),
+      shop: ShopSerializer.new(shop).as_json,
+      staff: StaffSerializer.new(staff).as_json
     }
   end
 end

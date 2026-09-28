@@ -47,7 +47,7 @@ RSpec.describe 'Auth', type: :request do
       post '/auth/login', params: { email: 'owner@example.com', password: 'wrong' }
 
       expect(response).to have_http_status(:unauthorized)
-      expect(response.parsed_body['error']).to eq('Invalid email or password')
+      expect(response.parsed_body['error']).to eq('Invalid username/email or password')
     end
   end
 

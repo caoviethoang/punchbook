@@ -1,11 +1,11 @@
 import { useState } from "react"
-import { login, register, setStoredToken, type Shop } from "../lib/auth"
+import { login, register, setStoredToken, type Shop, type Staff } from "../lib/auth"
 import { FormField } from "./ui/FormField"
 
 type Mode = "login" | "register"
 
 interface LoginScreenProps {
-  onSuccess: (shop: Shop) => void
+  onSuccess: (shop: Shop, staff?: Staff | null) => void
 }
 
 export function LoginScreen({ onSuccess }: LoginScreenProps) {
@@ -35,7 +35,7 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
             })
 
       setStoredToken(result.token)
-      onSuccess(result.shop)
+      onSuccess(result.shop, result.staff)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong")
     } finally {
@@ -73,10 +73,10 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
         )}
 
         <FormField
-          label="Email"
-          type="email"
+          label={mode === "login" ? "Email hoặc Tên đăng nhập" : "Email"}
+          type={mode === "login" ? "text" : "email"}
           required
-          autoComplete="email"
+          autoComplete={mode === "login" ? "username" : "email"}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
