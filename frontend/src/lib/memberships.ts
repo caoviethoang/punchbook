@@ -66,6 +66,25 @@ export function isMembershipExhausted(
   return false
 }
 
+export function extractMembershipIdFromQR(scannedText: string): string {
+  const trimmed = scannedText.trim()
+  if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+    try {
+      const parsed = JSON.parse(trimmed) as Record<string, unknown>
+      if (parsed.membership_id) return String(parsed.membership_id).trim()
+      if (parsed.id) return String(parsed.id).trim()
+    } catch {
+      // Fallback
+    }
+  }
+  if (trimmed.includes("/memberships/")) {
+    const parts = trimmed.split("/memberships/")
+    const id = parts[1]?.split("?")[0]?.split("/")[0]
+    if (id) return id.trim()
+  }
+  return trimmed
+}
+
 export interface PaginationMeta {
   total: number
   page: number
