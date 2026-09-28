@@ -47,7 +47,16 @@ RSpec.describe 'Auth', type: :request do
       post '/auth/login', params: { email: 'owner@example.com', password: 'wrong' }
 
       expect(response).to have_http_status(:unauthorized)
-      expect(response.parsed_body['error']).to eq('Invalid username/email or password')
+      expect(response.parsed_body['error']).to eq('Invalid username/email, shop context, or password')
+    end
+
+    it 'logs in staff with shop_email context' do
+      staff = Staff.create!(shop: shop, name: 'Mai Reception', username: 'mai_letan', password: 'password123', role: 'staff')
+
+      post '/auth/login', params: { username: 'mai_letan', shop_email: 'owner@example.com', password: 'password123' }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.dig('staff', 'id')).to eq(staff.id)
     end
   end
 

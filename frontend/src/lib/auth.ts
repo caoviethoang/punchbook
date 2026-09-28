@@ -41,8 +41,12 @@ export function clearStoredToken(): void {
   localStorage.removeItem(TOKEN_KEY)
 }
 
-export async function login(loginInput: string, password: string): Promise<AuthResponse> {
-  return apiPost<AuthResponse>("/auth/login", { email: loginInput, username: loginInput, password }, { auth: false })
+export async function login(loginInput: string, password: string, shopEmail?: string): Promise<AuthResponse> {
+  return apiPost<AuthResponse>(
+    "/auth/login",
+    { email: loginInput, username: loginInput, password, shop_email: shopEmail },
+    { auth: false }
+  )
 }
 
 export async function register(input: {

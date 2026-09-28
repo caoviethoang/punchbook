@@ -3,6 +3,7 @@
 # API auth for Shop owners.
 # Devise handles password hashing / validation; JWT (existing gem) is the API session.
 class AuthController < ApplicationController
+  wrap_parameters format: []
   before_action :authenticate_shop!, only: :me
 
   def register
@@ -21,9 +22,11 @@ class AuthController < ApplicationController
   end
 
   def login
-    login_input = params[:email] || params[:username]
+    login_input = (params[:email] || params[:username]).to_s.strip
     password = params[:password]
+    shop_context = params[:shop_email].to_s.strip.presence
 
+    # 1. Check if login_input is a Shop Owner Email directly
     shop = Shop.find_for_database_authentication(email: login_input)
     if shop&.valid_password?(password)
       staff = shop.staffs.find_by(role: 'admin') || shop.staffs.create!(
@@ -35,12 +38,37 @@ class AuthController < ApplicationController
       return render json: auth_payload(shop, staff)
     end
 
-    staff = Staff.find_by(username: login_input)
-    if staff&.authenticate(password)
+    # 2. Check if username contains shop email in 'username@shop_email' format (e.g. 'letan_a@studio1@punchbook.test')
+    if login_input.include?('@') && shop_context.blank?
+      parts = login_input.split('@')
+      if parts.size >= 2
+        possible_username = parts[0]
+        possible_shop_email = parts[1..].join('@')
+        target_shop = Shop.find_by(email: possible_shop_email)
+        if target_shop
+          staff = target_shop.staffs.find_by(username: possible_username)
+          return render json: auth_payload(target_shop, staff) if staff&.authenticate(password)
+        end
+      end
+    end
+
+    # 3. Check if explicit shop_email context was provided
+    if shop_context.present?
+      target_shop = Shop.find_by(email: shop_context)
+      if target_shop
+        staff = target_shop.staffs.find_by(username: login_input)
+        return render json: auth_payload(target_shop, staff) if staff&.authenticate(password)
+      end
+    end
+
+    # 4. Fallback: Check if username is unique across all staffs
+    staffs = Staff.where(username: login_input)
+    if staffs.count == 1 && staffs.first.authenticate(password)
+      staff = staffs.first
       return render json: auth_payload(staff.shop, staff)
     end
 
-    render json: { error: 'Invalid username/email or password' }, status: :unauthorized
+    render json: { error: 'Invalid username/email, shop context, or password' }, status: :unauthorized
   end
 
   def me

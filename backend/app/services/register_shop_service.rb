@@ -8,22 +8,31 @@ class RegisterShopService
   end
 
   def initialize(params)
-    @params = params
+    @params = params.to_h.symbolize_keys
   end
 
   def call
     ActiveRecord::Base.transaction do
-      shop = Shop.new(params)
+      shop_params = params.slice(:name, :phone, :email, :password, :password_confirmation)
+      shop = Shop.new(shop_params)
       unless shop.save
         return Result.new(success?: false, errors: shop.errors.full_messages)
       end
 
-      admin_staff = shop.staffs.create!(
+      staff_attrs = {
         name: shop.name || 'Admin',
-        username: shop.email,
-        password: params[:password],
         role: 'admin'
-      )
+      }
+
+      if Staff.column_names.include?('username')
+        staff_attrs[:username] = shop.email
+      end
+
+      if Staff.column_names.include?('password_digest') && params[:password].present?
+        staff_attrs[:password] = params[:password]
+      end
+
+      admin_staff = shop.staffs.create!(staff_attrs)
 
       token = JsonWebToken.encode({ shop_id: shop.id, staff_id: admin_staff.id, role: 'admin' })
       Result.new(success?: true, shop: shop, token: token)
