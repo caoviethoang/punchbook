@@ -115,6 +115,17 @@ interface MembershipResultListProps {
   onViewDetail: (id: string) => void
 }
 
+function formatCheckInTime(dateStr?: string | null): string {
+  if (!dateStr) return ""
+  try {
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return ""
+    return d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })
+  } catch {
+    return ""
+  }
+}
+
 function MembershipResultList({
   memberships,
   checkingInId,
@@ -131,6 +142,7 @@ function MembershipResultList({
         const isDisabled = isCheckingIn || isExhausted
         const currentMessage =
           checkInMessage?.id === membership.id ? checkInMessage : null
+        const checkInTime = formatCheckInTime(membership.last_checked_in_at)
 
         return (
           <div
@@ -153,6 +165,14 @@ function MembershipResultList({
                     <PackageIcon className="h-3.5 w-3.5 shrink-0 text-indigo-600 dark:text-indigo-400" />
                     <span>{membership.package.name}</span>
                   </span>
+                  {membership.checked_in_today && (
+                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                      <span>
+                        Đã check-in hôm nay{checkInTime ? ` (${checkInTime})` : ""}
+                      </span>
+                    </span>
+                  )}
                 </div>
                 <p className="mt-1 text-base text-slate-500 dark:text-slate-400">
                   {membership.phone}
@@ -358,7 +378,12 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
       setMemberships((prev) =>
         prev.map((m) =>
           m.id === membershipId
-            ? { ...m, sessions_left: result.membership.sessions_left }
+            ? {
+                ...m,
+                sessions_left: result.membership.sessions_left,
+                checked_in_today: true,
+                last_checked_in_at: result.check_in.checked_in_at,
+              }
             : m,
         ),
       )

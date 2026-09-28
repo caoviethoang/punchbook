@@ -15,6 +15,8 @@ export interface Membership {
   sessions_left: number | null
   expires_at: string | null
   package: MembershipPackage
+  checked_in_today?: boolean
+  last_checked_in_at?: string | null
 }
 
 export interface MembershipDetailCheckIn {

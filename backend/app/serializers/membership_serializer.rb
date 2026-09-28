@@ -12,6 +12,9 @@ class MembershipSerializer
     membership.as_json(
       only: %i[id customer_name phone sessions_left expires_at],
       include: { package: { only: %i[id name] } }
+    ).merge(
+      'checked_in_today' => membership.checked_in_today?,
+      'last_checked_in_at' => membership.last_checked_in_at
     )
   end
 
