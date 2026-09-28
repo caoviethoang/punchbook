@@ -138,17 +138,23 @@ function MembershipResultList({
             role="listitem"
             className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-indigo-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-900/50 sm:gap-6 sm:p-6"
           >
-            {/* Col 1: Customer name + phone */}
+            {/* Col 1: Customer name + package badge + phone */}
             <div className="min-w-0 flex-1">
               <button
                 type="button"
                 onClick={() => onViewDetail(membership.id)}
-                className="text-left group/btn focus:outline-none"
+                className="w-full text-left group/btn focus:outline-none"
               >
-                <p className="truncate text-2xl font-bold tracking-tight text-slate-900 group-hover/btn:text-indigo-600 dark:text-slate-50 dark:group-hover/btn:text-indigo-400 sm:text-3xl">
-                  {membership.customer_name}
-                </p>
-                <p className="mt-0.5 text-base text-slate-500 dark:text-slate-400">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
+                  <p className="truncate text-2xl font-bold tracking-tight text-slate-900 group-hover/btn:text-indigo-600 dark:text-slate-50 dark:group-hover/btn:text-indigo-400 sm:text-3xl">
+                    {membership.customer_name}
+                  </p>
+                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                    <PackageIcon className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                    <span>{membership.package.name}</span>
+                  </span>
+                </div>
+                <p className="mt-1 text-base text-slate-500 dark:text-slate-400">
                   {membership.phone}
                 </p>
               </button>
@@ -168,16 +174,6 @@ function MembershipResultList({
                   <span>{currentMessage.text}</span>
                 </div>
               )}
-            </div>
-
-            {/* Col 2: Package badge */}
-            <div className="hidden shrink-0 sm:block sm:w-44">
-              <div className="inline-flex items-start gap-2 rounded-xl bg-indigo-50 px-4 py-2.5 dark:bg-indigo-950/60">
-                <PackageIcon className="mt-0.5 h-5 w-5 shrink-0 text-indigo-600 dark:text-indigo-400" />
-                <span className="text-base font-semibold leading-snug text-indigo-700 dark:text-indigo-300 line-clamp-2">
-                  {membership.package.name}
-                </span>
-              </div>
             </div>
 
             {/* Col 3: Remaining sessions / expiry */}
