@@ -63,10 +63,24 @@ RSpec.describe 'Memberships', type: :request do
         'id' => hoa.id,
         'customer_name' => 'Hoa Nguyen',
         'phone' => '0902000000',
-        'sessions_left' => 3
+        'sessions_left' => 3,
+        'checked_in_today' => false,
+        'last_checked_in_at' => nil
       )
       expect(memberships.first['package']).to eq('id' => package.id, 'name' => '10-session massage')
       expect(memberships.first['expires_at']).to eq((Date.current + 30.days).iso8601)
+    end
+
+    it 'returns checked_in_today true when member checked in today' do
+      staff = Staff.create!(shop: shop, name: 'Receptionist', role: 'staff')
+      CheckIn.create!(membership: hoa, staff: staff, checked_in_at: Time.current)
+
+      get '/memberships', params: { query: 'hoa' }, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      member = response.parsed_body['memberships'].first
+      expect(member['checked_in_today']).to be true
+      expect(member['last_checked_in_at']).to be_present
     end
 
     it 'searches by phone within current_shop' do
