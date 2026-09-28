@@ -6,6 +6,7 @@ class Package < ApplicationRecord
   default_scope { kept }
 
   belongs_to :shop, inverse_of: :packages
+  belongs_to :package_category, optional: true, inverse_of: :packages
   has_many :memberships, dependent: :destroy, inverse_of: :package
 
   validates :name, presence: true
