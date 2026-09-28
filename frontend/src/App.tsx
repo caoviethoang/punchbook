@@ -75,9 +75,6 @@ function App() {
             <h1 className="text-2xl font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400">
               {shop.name}
             </h1>
-            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-              PunchBook
-            </span>
           </div>
 
           <div className="flex items-center gap-3 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
