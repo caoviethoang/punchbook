@@ -2,13 +2,19 @@
 
 class PackagesController < ApiController
   def index
-    packages = current_shop.packages.order(:name)
+    packages = current_shop.packages.includes(:package_category).order(:name)
     render json: { packages: packages.map { |pkg| PackageSerializer.new(pkg).as_json } }
   end
 
   def create
     package = current_shop.packages.create!(package_params)
     render json: PackageSerializer.new(package).as_json, status: :created
+  end
+
+  def update
+    package = current_shop.packages.find(params.expect(:id))
+    package.update!(package_params)
+    render json: PackageSerializer.new(package).as_json
   end
 
   def destroy
@@ -20,6 +26,6 @@ class PackagesController < ApiController
   private
 
   def package_params
-    params.expect(package: %i[name price sessions_count duration_days])
+    params.expect(package: %i[name price sessions_count duration_days package_category_id])
   end
 end

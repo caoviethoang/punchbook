@@ -3,7 +3,7 @@ import { CheckInScreen } from "./components/CheckInScreen"
 import { DashboardScreen } from "./components/DashboardScreen"
 import { LoginScreen } from "./components/LoginScreen"
 import { MembershipCreateForm } from "./components/MembershipCreateForm"
-import { PackageCreateForm } from "./components/PackageCreateForm"
+import { PackagesScreen } from "./components/PackagesScreen"
 import { SettingsScreen } from "./components/SettingsScreen"
 import {
   clearStoredToken,
@@ -116,9 +116,7 @@ function App() {
             <MembershipCreateForm />
           </div>
         ) : view === "packages" ? (
-          <div className="flex justify-center">
-            <PackageCreateForm />
-          </div>
+          <PackagesScreen />
         ) : (
           <SettingsScreen shop={shop} onShopUpdated={setShop} />
         )}
