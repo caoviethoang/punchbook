@@ -17,7 +17,6 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
   const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")
   const [username, setUsername] = useState("")
-  const [shopEmail, setShopEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -31,7 +30,7 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
       const loginIdentifier = loginType === "owner" ? email : username
       const result =
         mode === "login"
-          ? await login(loginIdentifier, password, loginType === "staff" ? shopEmail : undefined)
+          ? await login(loginIdentifier, password)
           : await register({
               name,
               phone,
@@ -128,25 +127,15 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
             placeholder="chushop@gmail.com"
           />
         ) : (
-          <>
-            <FormField
-              label="Tên đăng nhập Nhân viên"
-              type="text"
-              required
-              autoComplete="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="letan_1"
-            />
-            <FormField
-              label="Email phòng tập (Mã Tenant)"
-              type="text"
-              required
-              value={shopEmail}
-              onChange={(e) => setShopEmail(e.target.value)}
-              placeholder="studio1@punchbook.test"
-            />
-          </>
+          <FormField
+            label="Tên đăng nhập Nhân viên"
+            type="text"
+            required
+            autoComplete="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="letan_1"
+          />
         )}
 
         <FormField
@@ -189,7 +178,7 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
         <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3 text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
           <p className="font-semibold text-slate-700 dark:text-slate-300">Tài khoản mẫu (Demo Seed):</p>
           <p className="mt-1">🔑 Chủ shop: <code className="font-mono text-indigo-600 dark:text-indigo-400">studio1@punchbook.test</code> / <code className="font-mono">password123</code></p>
-          <p className="mt-0.5">🔑 Lễ tân: <code className="font-mono text-indigo-600 dark:text-indigo-400">letan_studio1</code> (Email tiệm: <code className="font-mono">studio1@punchbook.test</code>) / <code className="font-mono">password123</code></p>
+          <p className="mt-0.5">🔑 Lễ tân: <code className="font-mono text-indigo-600 dark:text-indigo-400">letan_studio1</code> / <code className="font-mono">password123</code></p>
         </div>
       )}
     </div>
