@@ -14,7 +14,8 @@ class MembershipSerializer
       include: { package: { only: %i[id name] } }
     ).merge(
       'checked_in_today' => membership.checked_in_today?,
-      'last_checked_in_at' => membership.last_checked_in_at
+      'last_checked_in_at' => membership.last_checked_in_at,
+      'qr_code_value' => "PUNCHBOOK:#{membership.id}"
     )
   end
 
@@ -29,17 +30,23 @@ class MembershipSerializer
       only: %i[id customer_name phone sessions_left expires_at created_at],
       include: { package: { only: %i[id name price sessions_count duration_days] } }
     )
-
-    base.merge(
-      'status' => membership.status,
-      'check_ins' => serialized_check_ins,
-      'invoices' => serialized_invoices
-    )
+    base.merge(extra_detail_hash)
   end
 
   private
 
   attr_reader :membership
+
+  def extra_detail_hash
+    {
+      'status' => membership.status,
+      'checked_in_today' => membership.checked_in_today?,
+      'last_checked_in_at' => membership.last_checked_in_at,
+      'qr_code_value' => "PUNCHBOOK:#{membership.id}",
+      'check_ins' => serialized_check_ins,
+      'invoices' => serialized_invoices
+    }
+  end
 
   def serialized_check_ins
     membership.check_ins.includes(:staff).order(checked_in_at: :desc).map do |check_in|
