@@ -6,7 +6,7 @@ class MembershipsController < ApiController
   def index
     page, per_page = parse_pagination_params
     relation = current_shop.memberships.search_by_query(params[:query]).by_status(params[:status])
-    memberships = paginate_relation(relation.includes(:package).order(:customer_name), page, per_page)
+    memberships = paginate_relation(relation.includes(:package, :check_ins).order(:customer_name), page, per_page)
 
     render json: {
       memberships: memberships.map(&:as_api_json),

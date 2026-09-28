@@ -115,6 +115,17 @@ interface MembershipResultListProps {
   onViewDetail: (id: string) => void
 }
 
+function formatCheckInTime(dateStr?: string | null): string {
+  if (!dateStr) return ""
+  try {
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return ""
+    return d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })
+  } catch {
+    return ""
+  }
+}
+
 function MembershipResultList({
   memberships,
   checkingInId,
@@ -128,9 +139,11 @@ function MembershipResultList({
       {memberships.map((membership) => {
         const isCheckingIn = checkingInId === membership.id
         const isExhausted = isMembershipExhausted(membership)
-        const isDisabled = isCheckingIn || isExhausted
+        const isAlreadyCheckedIn = Boolean(membership.checked_in_today)
+        const isDisabled = isCheckingIn || isExhausted || isAlreadyCheckedIn
         const currentMessage =
           checkInMessage?.id === membership.id ? checkInMessage : null
+        const checkInTime = formatCheckInTime(membership.last_checked_in_at)
 
         return (
           <div
@@ -153,6 +166,14 @@ function MembershipResultList({
                     <PackageIcon className="h-3.5 w-3.5 shrink-0 text-indigo-600 dark:text-indigo-400" />
                     <span>{membership.package.name}</span>
                   </span>
+                  {membership.checked_in_today && (
+                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                      <span>
+                        Đã check-in hôm nay{checkInTime ? ` (${checkInTime})` : ""}
+                      </span>
+                    </span>
+                  )}
                 </div>
                 <p className="mt-1 text-base text-slate-500 dark:text-slate-400">
                   {membership.phone}
@@ -212,19 +233,27 @@ function MembershipResultList({
                 type="button"
                 disabled={isDisabled}
                 onClick={() => {
-                  if (isExhausted) return
+                  if (isExhausted || isAlreadyCheckedIn) return
                   onCheckIn(membership.id)
                 }}
-                aria-disabled={isExhausted}
+                aria-disabled={isExhausted || isAlreadyCheckedIn}
                 aria-label={
-                  isExhausted
-                    ? `${membership.customer_name} đã hết — không thể check-in`
-                    : `Check-in cho ${membership.customer_name}`
+                  isCheckingIn
+                    ? `Đang check-in cho ${membership.customer_name}`
+                    : isExhausted
+                      ? `${membership.customer_name} đã hết — không thể check-in`
+                      : isAlreadyCheckedIn
+                        ? `${membership.customer_name} đã check-in hôm nay`
+                        : `Check-in cho ${membership.customer_name}`
                 }
                 className={`inline-flex min-w-28 items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-base font-semibold shadow-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:min-w-36 ${
-                  isExhausted
-                    ? "cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600"
-                    : "bg-indigo-600 text-white hover:bg-indigo-500 active:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
+                  isCheckingIn
+                    ? "bg-indigo-600 text-white opacity-70"
+                    : isExhausted
+                      ? "cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600"
+                      : isAlreadyCheckedIn
+                        ? "cursor-not-allowed bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50"
+                        : "bg-indigo-600 text-white hover:bg-indigo-500 active:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
                 }`}
               >
                 {isCheckingIn ? (
@@ -234,6 +263,11 @@ function MembershipResultList({
                   </>
                 ) : isExhausted ? (
                   <span>Đã hết</span>
+                ) : isAlreadyCheckedIn ? (
+                  <>
+                    <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    <span>Đã Check-in</span>
+                  </>
                 ) : (
                   <>
                     <UserCheck className="h-5 w-5" />
@@ -322,7 +356,7 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault()
-      const firstAvailable = memberships.find((m) => !isMembershipExhausted(m))
+      const firstAvailable = memberships.find((m) => !isMembershipExhausted(m) && !m.checked_in_today)
       if (firstAvailable && checkingInId !== firstAvailable.id) {
         void handleCheckIn(firstAvailable.id)
       }
@@ -358,7 +392,12 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
       setMemberships((prev) =>
         prev.map((m) =>
           m.id === membershipId
-            ? { ...m, sessions_left: result.membership.sessions_left }
+            ? {
+                ...m,
+                sessions_left: result.membership.sessions_left,
+                checked_in_today: true,
+                last_checked_in_at: result.check_in.checked_in_at,
+              }
             : m,
         ),
       )
