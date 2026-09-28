@@ -1,15 +1,14 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
-  AlertCircle,
-  CheckCircle2,
+  Check,
   Copy,
-  ExternalLink,
+  CreditCard,
   Loader2,
-  QrCode,
   RefreshCw,
 } from "lucide-react"
-import { createInvoice, type PayosInvoiceResult } from "../lib/invoices"
-import { formatVnd } from "../lib/formatters"
+import { formatVndInput } from "../lib/formatters"
+import { fetchSettings } from "../lib/settings"
+import type { Shop } from "../lib/auth"
 import { Modal } from "./ui/Modal"
 
 interface RenewalModalProps {
@@ -26,43 +25,55 @@ interface RenewalModalProps {
 }
 
 export function RenewalModal({ membership, onClose }: RenewalModalProps) {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [result, setResult] = useState<PayosInvoiceResult | null>(null)
-  const [copied, setCopied] = useState(false)
+  const [shop, setShop] = useState<Shop | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [copiedAccount, setCopiedAccount] = useState(false)
+  const [copiedMemo, setCopiedMemo] = useState(false)
 
-  const packagePrice = membership.package.price ?? 0
+  useEffect(() => {
+    let isCancelled = false
 
-  async function handleCreateInvoice() {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await createInvoice(membership.id)
-      setResult(res)
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Tạo hóa đơn thất bại. Vui lòng thử lại.",
-      )
-    } finally {
-      setLoading(false)
+    fetchSettings()
+      .then((res) => {
+        if (!isCancelled) {
+          setShop(res.shop)
+        }
+      })
+      .catch(() => {
+        // Fallback silently if settings fetch fails
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setLoading(false)
+        }
+      })
+
+    return () => {
+      isCancelled = true
     }
-  }
+  }, [])
 
-  function handleCopyLink() {
-    if (!result?.payos.checkout_url) return
-    navigator.clipboard.writeText(result.payos.checkout_url).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
-  }
+  const bankName = shop?.bank_name
+  const accountNo = shop?.bank_account_no
+  const accountName = shop?.bank_account_name
+  const price = membership.package.price ?? 0
 
-  const qrImageUrl = result?.payos.qr_code
-    ? result.payos.qr_code.startsWith("http")
-      ? result.payos.qr_code
-      : `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(result.payos.qr_code)}`
-    : result?.payos.checkout_url
-      ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(result.payos.checkout_url)}`
-      : null
+  const hasBankConfig = Boolean(bankName && accountNo)
+
+  const transferMemo = `Gia han ${membership.customer_name} ${membership.phone}`
+
+  // VietQR standard API endpoint
+  const vietQrUrl = hasBankConfig
+    ? `https://img.vietqr.io/image/${bankName}-${accountNo}-compact2.png?amount=${price}&addInfo=${encodeURIComponent(
+        transferMemo,
+      )}&accountName=${encodeURIComponent(accountName || "")}`
+    : ""
+
+  const copyToClipboard = (text: string, setCopiedState: (v: boolean) => void) => {
+    void navigator.clipboard.writeText(text)
+    setCopiedState(true)
+    setTimeout(() => setCopiedState(false), 2000)
+  }
 
   return (
     <Modal isOpen={true} onClose={onClose} maxWidthClass="max-w-md" className="p-6 sm:p-7">
@@ -82,7 +93,7 @@ export function RenewalModal({ membership, onClose }: RenewalModalProps) {
       </div>
 
       {/* Package info card */}
-      <div className="mt-5 rounded-xl bg-slate-50 p-4 dark:bg-slate-950/60">
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
         <div className="flex items-center justify-between text-sm">
           <span className="font-medium text-slate-500 dark:text-slate-400">
             Gói dịch vụ:
@@ -91,107 +102,106 @@ export function RenewalModal({ membership, onClose }: RenewalModalProps) {
             {membership.package.name}
           </span>
         </div>
-        {packagePrice > 0 && (
-          <div className="mt-2 flex items-center justify-between text-sm">
+        {price > 0 && (
+          <div className="mt-2 flex items-center justify-between text-sm border-t border-slate-200/60 pt-2 dark:border-slate-800">
             <span className="font-medium text-slate-500 dark:text-slate-400">
-              Giá gói:
+              Số tiền thanh toán:
             </span>
-            <span className="text-base font-extrabold text-indigo-600 dark:text-indigo-400">
-              {formatVnd(packagePrice)}
+            <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
+              {formatVndInput(String(price))} VNĐ
             </span>
           </div>
         )}
       </div>
 
-      {/* Error notification */}
-      {error && (
-        <div className="mt-4 flex items-center gap-2 rounded-xl bg-red-50 p-3.5 text-sm font-medium text-red-700 dark:bg-red-950/40 dark:text-red-300">
-          <AlertCircle className="h-5 w-5 shrink-0" />
-          <span>{error}</span>
+      {/* Loading state */}
+      {loading ? (
+        <div className="mt-8 flex flex-col items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
+          <p className="mt-2 text-xs font-medium text-slate-400">Đang tải mã VietQR...</p>
         </div>
-      )}
+      ) : hasBankConfig ? (
+        <div className="mt-5 flex flex-col items-center">
+          {/* VietQR Image Container */}
+          <div className="relative flex justify-center rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-white">
+            <img
+              src={vietQrUrl}
+              alt={`Mã VietQR ${bankName}`}
+              className="h-56 w-56 object-contain"
+            />
+          </div>
 
-      {/* Dynamic content area */}
-      {!result ? (
-        <div className="mt-6">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Nhấn nút bên dưới để khởi tạo mã QR thanh toán PayOS. Khách hàng có thể quét mã trực tiếp để gia hạn.
+          <p className="mt-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400">
+            Quét mã VietQR bằng ứng dụng ngân hàng bất kỳ để gia hạn
           </p>
-          <button
-            type="button"
-            disabled={loading}
-            onClick={handleCreateInvoice}
-            className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3.5 text-base font-semibold text-white shadow-sm transition hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-60 dark:bg-indigo-600 dark:hover:bg-indigo-500"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Đang tạo mã QR payOS...</span>
-              </>
-            ) : (
-              <>
-                <QrCode className="h-5 w-5" />
-                <span>Tạo mã QR thanh toán</span>
-              </>
-            )}
-          </button>
+
+          {/* Bank Transfer Details with Copy buttons */}
+          <div className="mt-4 w-full space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500">Ngân hàng & STK:</span>
+              <div className="flex items-center gap-1 font-semibold text-slate-900 dark:text-slate-100">
+                <span>
+                  {bankName} - {accountNo} {accountName ? `(${accountName})` : ""}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(accountNo || "", setCopiedAccount)}
+                  className="ml-1 rounded p-1 text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
+                  title="Sao chép số tài khoản"
+                >
+                  {copiedAccount ? (
+                    <Check className="h-3.5 w-3.5 text-emerald-600" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between border-t border-slate-200/60 pt-2 dark:border-slate-800">
+              <span className="text-slate-500">Nội dung chuyển khoản:</span>
+              <div className="flex items-center gap-1 font-mono font-semibold text-indigo-600 dark:text-indigo-400">
+                <span>{transferMemo}</span>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(transferMemo, setCopiedMemo)}
+                  className="ml-1 rounded p-1 text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
+                  title="Sao chép nội dung chuyển khoản"
+                >
+                  {copiedMemo ? (
+                    <Check className="h-3.5 w-3.5 text-emerald-600" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
-        <div className="mt-6 flex flex-col items-center space-y-4">
-          {/* Status indicator */}
-          <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
-            <span className="h-2 w-2 animate-ping rounded-full bg-amber-500" />
-            <span>Trạng thái: Đang chờ thanh toán</span>
+        <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-center dark:border-amber-900/60 dark:bg-amber-950/40">
+          <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/60 dark:text-amber-300">
+            <CreditCard className="h-5 w-5" />
           </div>
-
-          {/* QR Code Container */}
-          {qrImageUrl && (
-            <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-              <img
-                src={qrImageUrl}
-                alt="Mã QR thanh toán PayOS"
-                className="h-56 w-56 object-contain"
-              />
-              <p className="mt-2 text-xs font-medium text-slate-400 dark:text-slate-500">
-                Đưa mã QR cho khách hàng quét bằng ứng dụng Ngân hàng / Momo
-              </p>
-            </div>
-          )}
-
-          {/* PayOS URL Links */}
-          <div className="flex w-full flex-col gap-2 pt-2">
-            <a
-              href={result.payos.checkout_url}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500"
-            >
-              <ExternalLink className="h-4 w-4" />
-              <span>Mở trang thanh toán PayOS</span>
-            </a>
-
-            <button
-              type="button"
-              onClick={handleCopyLink}
-              className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-            >
-              {copied ? (
-                <>
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  <span className="text-emerald-600 dark:text-emerald-400">
-                    Đã sao chép link
-                  </span>
-                </>
-              ) : (
-                <>
-                  <Copy className="h-4 w-4" />
-                  <span>Sao chép link thanh toán</span>
-                </>
-              )}
-            </button>
-          </div>
+          <h4 className="font-bold text-amber-900 text-sm dark:text-amber-200">
+            Chưa cài đặt Tài khoản Ngân hàng
+          </h4>
+          <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">
+            Vào mục <strong>Cài đặt &rarr; Thông tin Cửa hàng</strong> để điền số tài khoản ngân hàng của tiệm. Hệ thống sẽ tự động xuất mã VietQR để thu phí gia hạn!
+          </p>
         </div>
       )}
+
+      {/* Footer Action */}
+      <div className="mt-6 flex justify-end border-t border-slate-100 pt-4 dark:border-slate-800">
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500"
+        >
+          Đóng
+        </button>
+      </div>
     </Modal>
   )
 }
