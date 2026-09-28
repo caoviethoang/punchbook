@@ -8,6 +8,7 @@ import {
 } from "lucide-react"
 import { formatVndInput } from "../lib/formatters"
 import { fetchSettings } from "../lib/settings"
+import { getMembershipDetail } from "../lib/memberships"
 import type { Shop } from "../lib/auth"
 import { Modal } from "./ui/Modal"
 
@@ -26,6 +27,8 @@ interface RenewalModalProps {
 
 export function RenewalModal({ membership, onClose }: RenewalModalProps) {
   const [shop, setShop] = useState<Shop | null>(null)
+  const [price, setPrice] = useState<number>(membership.package.price ?? 0)
+  const [packageName, setPackageName] = useState<string>(membership.package.name)
   const [loading, setLoading] = useState(true)
   const [copiedAccount, setCopiedAccount] = useState(false)
   const [copiedMemo, setCopiedMemo] = useState(false)
@@ -33,30 +36,44 @@ export function RenewalModal({ membership, onClose }: RenewalModalProps) {
   useEffect(() => {
     let isCancelled = false
 
-    fetchSettings()
-      .then((res) => {
-        if (!isCancelled) {
-          setShop(res.shop)
+    const loadData = async () => {
+      try {
+        const [settingsRes, detailRes] = await Promise.allSettled([
+          fetchSettings(),
+          getMembershipDetail(membership.id),
+        ])
+
+        if (isCancelled) return
+
+        if (settingsRes.status === "fulfilled") {
+          setShop(settingsRes.value.shop)
         }
-      })
-      .catch(() => {
-        // Fallback silently if settings fetch fails
-      })
-      .finally(() => {
+
+        if (detailRes.status === "fulfilled" && detailRes.value.package) {
+          if (detailRes.value.package.price !== undefined) {
+            setPrice(detailRes.value.package.price)
+          }
+          if (detailRes.value.package.name) {
+            setPackageName(detailRes.value.package.name)
+          }
+        }
+      } finally {
         if (!isCancelled) {
           setLoading(false)
         }
-      })
+      }
+    }
+
+    void loadData()
 
     return () => {
       isCancelled = true
     }
-  }, [])
+  }, [membership.id])
 
   const bankName = shop?.bank_name
   const accountNo = shop?.bank_account_no
   const accountName = shop?.bank_account_name
-  const price = membership.package.price ?? 0
 
   const hasBankConfig = Boolean(bankName && accountNo)
 
@@ -99,19 +116,17 @@ export function RenewalModal({ membership, onClose }: RenewalModalProps) {
             Gói dịch vụ:
           </span>
           <span className="font-semibold text-slate-900 dark:text-slate-100">
-            {membership.package.name}
+            {packageName}
           </span>
         </div>
-        {price > 0 && (
-          <div className="mt-2 flex items-center justify-between text-sm border-t border-slate-200/60 pt-2 dark:border-slate-800">
-            <span className="font-medium text-slate-500 dark:text-slate-400">
-              Số tiền thanh toán:
-            </span>
-            <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
-              {formatVndInput(String(price))} VNĐ
-            </span>
-          </div>
-        )}
+        <div className="mt-2 flex items-center justify-between text-sm border-t border-slate-200/60 pt-2 dark:border-slate-800">
+          <span className="font-medium text-slate-500 dark:text-slate-400">
+            Giá gói / Số tiền:
+          </span>
+          <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
+            {price > 0 ? `${formatVndInput(String(price))} VNĐ` : "0 VNĐ"}
+          </span>
+        </div>
       </div>
 
       {/* Loading state */}
