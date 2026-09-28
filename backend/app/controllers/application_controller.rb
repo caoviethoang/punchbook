@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+require 'cancan'
 
 class ApplicationController < ActionController::API
   include Authenticatable
