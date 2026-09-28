@@ -8,65 +8,23 @@ class AuthController < ApplicationController
 
   def register
     result = RegisterShopService.call(register_params)
+    return render json: { errors: result.errors }, status: :unprocessable_content unless result.success?
 
-    if result.success?
-      admin_staff = result.shop.staffs.find_by(role: 'admin')
-      render json: {
-        token: result.token,
-        shop: ShopSerializer.new(result.shop).as_json,
-        staff: StaffSerializer.new(admin_staff).as_json
-      }, status: :created
-    else
-      render json: { errors: result.errors }, status: :unprocessable_content
-    end
+    admin_staff = result.shop.staffs.find_by(role: 'admin')
+    render json: {
+      token: result.token,
+      shop: ShopSerializer.new(result.shop).as_json,
+      staff: StaffSerializer.new(admin_staff).as_json
+    }, status: :created
   end
 
   def login
-    login_input = (params[:email] || params[:username]).to_s.strip
-    password = params[:password]
-    shop_context = params[:shop_email].to_s.strip.presence
+    input, password, shop_context = extract_login_params
+    payload = authenticate_owner(input, password) ||
+              authenticate_scoped_staff(input, password, shop_context) ||
+              authenticate_unique_staff(input, password)
 
-    # 1. Check if login_input is a Shop Owner Email directly
-    shop = Shop.find_for_database_authentication(email: login_input)
-    if shop&.valid_password?(password)
-      staff = shop.staffs.find_by(role: 'admin') || shop.staffs.create!(
-        name: shop.name || 'Admin',
-        username: shop.email,
-        password: password,
-        role: 'admin'
-      )
-      return render json: auth_payload(shop, staff)
-    end
-
-    # 2. Check if username contains shop email in 'username@shop_email' format (e.g. 'letan_a@studio1@punchbook.test')
-    if login_input.include?('@') && shop_context.blank?
-      parts = login_input.split('@')
-      if parts.size >= 2
-        possible_username = parts[0]
-        possible_shop_email = parts[1..].join('@')
-        target_shop = Shop.find_by(email: possible_shop_email)
-        if target_shop
-          staff = target_shop.staffs.find_by(username: possible_username)
-          return render json: auth_payload(target_shop, staff) if staff&.authenticate(password)
-        end
-      end
-    end
-
-    # 3. Check if explicit shop_email context was provided
-    if shop_context.present?
-      target_shop = Shop.find_by(email: shop_context)
-      if target_shop
-        staff = target_shop.staffs.find_by(username: login_input)
-        return render json: auth_payload(target_shop, staff) if staff&.authenticate(password)
-      end
-    end
-
-    # 4. Fallback: Check if username is unique across all staffs
-    staffs = Staff.where(username: login_input)
-    if staffs.count == 1 && staffs.first.authenticate(password)
-      staff = staffs.first
-      return render json: auth_payload(staff.shop, staff)
-    end
+    return render json: payload if payload
 
     render json: { error: 'Invalid username/email, shop context, or password' }, status: :unauthorized
   end
@@ -80,8 +38,54 @@ class AuthController < ApplicationController
 
   private
 
+  def extract_login_params
+    [
+      (params[:email] || params[:username]).to_s.strip,
+      params[:password],
+      params[:shop_email].to_s.strip.presence
+    ]
+  end
+
+  def authenticate_owner(email, password)
+    shop = Shop.find_for_database_authentication(email: email)
+    return unless shop&.valid_password?(password)
+
+    staff = shop.staffs.find_by(role: 'admin') || shop.staffs.create!(
+      name: shop.name || 'Admin', username: shop.email, password: password, role: 'admin'
+    )
+    auth_payload(shop, staff)
+  end
+
+  def authenticate_scoped_staff(input, password, shop_context)
+    if shop_context.present?
+      authenticate_by_shop_context(input, password, shop_context)
+    elsif input.include?('@')
+      authenticate_by_email_prefix(input, password)
+    end
+  end
+
+  def authenticate_by_shop_context(input, password, shop_context)
+    target_shop = Shop.find_by(email: shop_context)
+    staff = target_shop&.staffs&.find_by(username: input)
+    auth_payload(target_shop, staff) if staff&.authenticate(password)
+  end
+
+  def authenticate_by_email_prefix(input, password)
+    parts = input.split('@')
+    target_shop = Shop.find_by(email: parts[1..].join('@'))
+    staff = target_shop&.staffs&.find_by(username: parts[0])
+    auth_payload(target_shop, staff) if staff&.authenticate(password)
+  end
+
+  def authenticate_unique_staff(input, password)
+    staffs = Staff.where(username: input)
+    return unless staffs.one? && staffs.first.authenticate(password)
+
+    staff = staffs.first
+    auth_payload(staff.shop, staff)
+  end
+
   def register_params
-    # Do not permit :plan — new shops always start on the free default.
     params.permit(:name, :phone, :email, :password, :password_confirmation)
   end
 

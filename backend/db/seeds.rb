@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 def create_staffs(shop)
-  staff1 = shop.staffs.create!(name: 'Alice Nguyen (Admin)', role: 'admin', username: shop.email, password: 'password123')
-  staff2 = shop.staffs.create!(name: 'Bob Tran (Lễ tân)', role: 'staff', username: "letan_#{shop.email.split('@').first}", password: 'password123')
+  staff1 = shop.staffs.create!(name: 'Alice Nguyen (Admin)', role: 'admin', username: shop.email,
+                               password: 'password123')
+  staff2 = shop.staffs.create!(name: 'Bob Tran (Lễ tân)', role: 'staff',
+                               username: "letan_#{shop.email.split('@').first}", password: 'password123')
   [staff1, staff2]
 end
 

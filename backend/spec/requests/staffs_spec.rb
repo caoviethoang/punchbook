@@ -4,8 +4,13 @@ require 'rails_helper'
 
 RSpec.describe 'Staffs', type: :request do
   let!(:shop) { create_shop(name: 'Test Gym') }
-  let!(:admin_staff) { Staff.create!(shop: shop, name: 'Admin Owner', username: 'admin_owner', password: 'password123', role: 'admin') }
-  let!(:receptionist) { Staff.create!(shop: shop, name: 'Receptionist Mai', username: 'mai_reception', password: 'password123', role: 'staff') }
+  let!(:admin_staff) do
+    Staff.create!(shop: shop, name: 'Admin Owner', username: 'admin_owner', password: 'password123', role: 'admin')
+  end
+  let!(:receptionist) do
+    Staff.create!(shop: shop, name: 'Receptionist Mai', username: 'mai_reception', password: 'password123',
+                  role: 'staff')
+  end
 
   def admin_headers
     token = JsonWebToken.encode({ shop_id: shop.id, staff_id: admin_staff.id, role: 'admin' })
@@ -24,7 +29,7 @@ RSpec.describe 'Staffs', type: :request do
       expect(response).to have_http_status(:ok)
       body = response.parsed_body['staffs']
       expect(body.size).to eq(2)
-      names = body.map { |s| s['name'] }
+      names = body.pluck('name')
       expect(names).to include('Admin Owner', 'Receptionist Mai')
     end
 

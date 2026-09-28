@@ -5,11 +5,15 @@ require 'cancan/matchers'
 
 RSpec.describe Ability, type: :model do
   let(:shop) { create_shop }
-  let(:admin_staff) { Staff.create!(shop: shop, name: 'Owner', username: 'owner_admin', password: 'password123', role: 'admin') }
-  let(:reception_staff) { Staff.create!(shop: shop, name: 'Receptionist', username: 'letan_1', password: 'password123', role: 'staff') }
+  let(:admin_staff) do
+    Staff.create!(shop: shop, name: 'Owner', username: 'owner_admin', password: 'password123', role: 'admin')
+  end
+  let(:reception_staff) do
+    Staff.create!(shop: shop, name: 'Receptionist', username: 'letan_1', password: 'password123', role: 'staff')
+  end
 
   context 'when staff is an admin' do
-    subject(:ability) { Ability.new(admin_staff) }
+    subject(:ability) { described_class.new(admin_staff) }
 
     it 'can manage all resources' do
       expect(ability).to be_able_to(:manage, :all)
@@ -20,7 +24,7 @@ RSpec.describe Ability, type: :model do
   end
 
   context 'when staff is a receptionist (staff role)' do
-    subject(:ability) { Ability.new(reception_staff) }
+    subject(:ability) { described_class.new(reception_staff) }
 
     it 'can manage Memberships and CheckIns' do
       expect(ability).to be_able_to(:manage, Membership.new(shop: shop))

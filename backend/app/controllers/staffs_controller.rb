@@ -20,7 +20,7 @@ class StaffsController < ApiController
   end
 
   def destroy
-    staff = current_shop.staffs.find(params[:id])
+    staff = current_shop.staffs.find(params.expect(:id))
 
     if staff.id == current_staff.id
       return render json: { error: 'Cannot delete your own account' }, status: :unprocessable_content
@@ -37,6 +37,6 @@ class StaffsController < ApiController
   end
 
   def staff_params
-    params.require(:staff).permit(:name, :username, :password, :role)
+    params.expect(staff: %i[name username password role])
   end
 end

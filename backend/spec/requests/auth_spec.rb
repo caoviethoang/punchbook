@@ -51,7 +51,8 @@ RSpec.describe 'Auth', type: :request do
     end
 
     it 'logs in staff with shop_email context' do
-      staff = Staff.create!(shop: shop, name: 'Mai Reception', username: 'mai_letan', password: 'password123', role: 'staff')
+      staff = Staff.create!(shop: shop, name: 'Mai Reception', username: 'mai_letan', password: 'password123',
+                            role: 'staff')
 
       post '/auth/login', params: { username: 'mai_letan', shop_email: 'owner@example.com', password: 'password123' }
 

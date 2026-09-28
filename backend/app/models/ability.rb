@@ -9,19 +9,21 @@ class Ability
     if staff.admin?
       can :manage, :all
     else
-      # Staff (Receptionist) role can only manage Memberships & CheckIns
-      can :manage, Membership, shop_id: staff.shop_id
-      can :manage, CheckIn, membership: { shop_id: staff.shop_id }
-
-      # Read-only access to Packages and PackageCategories
-      can :read, Package, shop_id: staff.shop_id
-      can :read, PackageCategory, shop_id: staff.shop_id
-
-      # Forbidden from managing Packages, Staff accounts, or Shop settings
-      cannot %i[create update destroy], Package
-      cannot %i[create update destroy], PackageCategory
-      cannot :manage, Staff
-      cannot %i[update change_password], Shop
+      setup_staff_permissions(staff.shop_id)
     end
+  end
+
+  private
+
+  def setup_staff_permissions(shop_id)
+    can :manage, Membership, shop_id: shop_id
+    can :manage, CheckIn, membership: { shop_id: shop_id }
+    can :read, Package, shop_id: shop_id
+    can :read, PackageCategory, shop_id: shop_id
+
+    cannot %i[create update destroy], Package
+    cannot %i[create update destroy], PackageCategory
+    cannot :manage, Staff
+    cannot %i[update change_password], Shop
   end
 end

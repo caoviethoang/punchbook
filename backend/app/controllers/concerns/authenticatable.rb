@@ -14,16 +14,23 @@ module Authenticatable
   def authenticate_shop!
     token = bearer_token
     payload = JsonWebToken.decode(token) if token.present?
+    return render_unauthorized unless payload
 
-    @current_shop = Shop.find_by(id: payload&.dig(:shop_id)) if payload
-    if @current_shop && payload&.dig(:staff_id)
-      @current_staff = @current_shop.staffs.find_by(id: payload[:staff_id])
-    end
-    @current_staff ||= @current_shop&.staffs&.find_by(role: 'admin') ||
-                       @current_shop&.staffs&.first ||
-                       (@current_shop && @current_shop.staffs.create!(name: @current_shop.name || 'Admin', role: 'admin'))
+    @current_shop = Shop.find_by(id: payload[:shop_id])
+    return render_unauthorized unless @current_shop
 
-    render json: { error: 'Unauthorized' }, status: :unauthorized unless @current_shop
+    @current_staff = resolve_current_staff(payload[:staff_id])
+  end
+
+  def resolve_current_staff(staff_id)
+    staff = @current_shop.staffs.find_by(id: staff_id) if staff_id
+    staff || @current_shop.staffs.find_by(role: 'admin') ||
+      @current_shop.staffs.first ||
+      @current_shop.staffs.create!(name: @current_shop.name || 'Admin', role: 'admin')
+  end
+
+  def render_unauthorized
+    render json: { error: 'Unauthorized' }, status: :unauthorized
   end
 
   def current_ability
