@@ -135,7 +135,7 @@ function App() {
         ) : view === "members" ? (
           <MembershipsScreen shop={shop} />
         ) : view === "packages" ? (
-          <PackagesScreen />
+          <PackagesScreen currentStaff={staff} />
         ) : (
           <SettingsScreen shop={shop} currentStaff={staff} onShopUpdated={setShop} />
         )}

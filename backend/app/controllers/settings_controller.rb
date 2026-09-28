@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class SettingsController < ApiController
+  before_action :authorize_shop_update!, only: %i[update_profile update_password upgrade_plan]
+
   def show
     render json: { shop: ShopSerializer.new(current_shop).as_json }
   end
@@ -40,6 +42,10 @@ class SettingsController < ApiController
   end
 
   private
+
+  def authorize_shop_update!
+    authorize! :update, current_shop
+  end
 
   def profile_params
     params.permit(:name, :phone, :address, :bank_name, :bank_account_no, :bank_account_name)

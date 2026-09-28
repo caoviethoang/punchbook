@@ -18,14 +18,21 @@ RSpec.describe 'Staffs', type: :request do
   end
 
   describe 'GET /staffs' do
-    it 'returns list of shop staffs' do
-      get '/staffs', headers: staff_headers
+    it 'allows admin to view list of shop staffs' do
+      get '/staffs', headers: admin_headers
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body['staffs']
       expect(body.size).to eq(2)
       names = body.map { |s| s['name'] }
       expect(names).to include('Admin Owner', 'Receptionist Mai')
+    end
+
+    it 'forbids non-admin staff from viewing staff list' do
+      get '/staffs', headers: staff_headers
+
+      expect(response).to have_http_status(:forbidden)
+      expect(response.parsed_body['error']).to include('Access denied')
     end
   end
 

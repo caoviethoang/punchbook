@@ -2,7 +2,7 @@
 
 # Controller for managing Staff accounts within a shop.
 class StaffsController < ApiController
-  before_action :require_admin!, only: %i[create destroy]
+  before_action :authorize_staff_management!
 
   def index
     staffs = current_shop.staffs.order(created_at: :asc)
@@ -31,6 +31,10 @@ class StaffsController < ApiController
   end
 
   private
+
+  def authorize_staff_management!
+    authorize! :manage, Staff
+  end
 
   def staff_params
     params.require(:staff).permit(:name, :username, :password, :role)

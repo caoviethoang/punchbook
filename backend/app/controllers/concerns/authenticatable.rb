@@ -19,15 +19,19 @@ module Authenticatable
     if @current_shop && payload&.dig(:staff_id)
       @current_staff = @current_shop.staffs.find_by(id: payload[:staff_id])
     end
-    @current_staff ||= @current_shop&.staffs&.find_by(role: 'admin') || @current_shop&.staffs&.first
+    @current_staff ||= @current_shop&.staffs&.find_by(role: 'admin') ||
+                       @current_shop&.staffs&.first ||
+                       (@current_shop && @current_shop.staffs.create!(name: @current_shop.name || 'Admin', role: 'admin'))
 
     render json: { error: 'Unauthorized' }, status: :unauthorized unless @current_shop
   end
 
-  def require_admin!
-    return if current_staff&.admin?
+  def current_ability
+    @current_ability ||= Ability.new(current_staff)
+  end
 
-    render json: { error: 'Access denied. Admin permissions required.' }, status: :forbidden
+  def require_admin!
+    authorize! :manage, :all
   end
 
   def bearer_token

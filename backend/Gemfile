@@ -26,6 +26,9 @@ gem 'sidekiq-cron', '~> 1.12'
 # JWT Authentication
 gem 'jwt', '~> 2.9'
 
+# Authorization
+gem 'cancancan', '~> 3.5'
+
 # Shop owner authentication (password hashing via Devise; API sessions via JWT)
 gem 'devise', '~> 5.0'
 
