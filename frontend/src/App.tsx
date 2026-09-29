@@ -7,9 +7,10 @@ import { PackagesScreen } from "./components/PackagesScreen"
 import { SettingsScreen } from "./components/SettingsScreen"
 import {
   clearStoredToken,
-  fetchCurrentShop,
+  fetchCurrentAuth,
   getStoredToken,
   type Shop,
+  type Staff,
 } from "./lib/auth"
 
 type AppView = "dashboard" | "checkin" | "packages" | "members" | "settings"
@@ -24,6 +25,7 @@ const NAV_ITEMS: { view: AppView; label: string }[] = [
 
 function App() {
   const [shop, setShop] = useState<Shop | null>(null)
+  const [staff, setStaff] = useState<Staff | null>(null)
   const [authLoading, setAuthLoading] = useState(() => getStoredToken() !== null)
   const [view, setView] = useState<AppView>("dashboard")
 
@@ -31,8 +33,11 @@ function App() {
     const token = getStoredToken()
     if (!token) return
 
-    fetchCurrentShop(token)
-      .then(setShop)
+    fetchCurrentAuth(token)
+      .then(({ shop: s, staff: st }) => {
+        setShop(s)
+        setStaff(st)
+      })
       .catch(() => clearStoredToken())
       .finally(() => setAuthLoading(false))
   }, [])
@@ -40,7 +45,13 @@ function App() {
   function handleLogout() {
     clearStoredToken()
     setShop(null)
+    setStaff(null)
     setView("dashboard")
+  }
+
+  function handleAuthSuccess(s: Shop, st?: Staff | null) {
+    setShop(s)
+    if (st !== undefined) setStaff(st)
   }
 
   useEffect(() => {
@@ -62,7 +73,7 @@ function App() {
   if (!shop) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 p-4 dark:bg-slate-950">
-        <LoginScreen onSuccess={setShop} />
+        <LoginScreen onSuccess={(s, st) => handleAuthSuccess(s, st)} />
       </div>
     )
   }
@@ -75,6 +86,11 @@ function App() {
             <h1 className="text-2xl font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400">
               {shop.name}
             </h1>
+            {staff && (
+              <span className="rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                {staff.name} ({staff.role === "admin" ? "Admin" : "Lễ tân"})
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-3 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
@@ -119,9 +135,9 @@ function App() {
         ) : view === "members" ? (
           <MembershipsScreen shop={shop} />
         ) : view === "packages" ? (
-          <PackagesScreen />
+          <PackagesScreen currentStaff={staff} />
         ) : (
-          <SettingsScreen shop={shop} onShopUpdated={setShop} />
+          <SettingsScreen shop={shop} currentStaff={staff} onShopUpdated={setShop} />
         )}
       </main>
     </div>

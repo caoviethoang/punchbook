@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from "react"
 import { Building2, CreditCard, KeyRound, ShieldCheck, Sparkles, Zap } from "lucide-react"
-import type { Shop } from "../lib/auth"
+import type { Shop, Staff } from "../lib/auth"
 import { toApiError } from "../lib/errors"
 import { formatDate } from "../lib/formatters"
 import { changeShopPassword, updateShopProfile } from "../lib/settings"
+import { StaffManagementSection } from "./StaffManagementSection"
 import { FormField, FORM_CONTROL_CLASS } from "./ui/FormField"
 import { Toast } from "./ui/Toast"
 import { UpgradePlanModal } from "./UpgradePlanModal"
@@ -24,10 +25,11 @@ const POPULAR_BANKS = [
 
 interface SettingsScreenProps {
   shop: Shop
+  currentStaff?: Staff | null
   onShopUpdated: (updatedShop: Shop) => void
 }
 
-export function SettingsScreen({ shop, onShopUpdated }: SettingsScreenProps) {
+export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsScreenProps) {
   // Profile form state
   const [name, setName] = useState(shop.name || "")
   const [phone, setPhone] = useState(shop.phone || "")
@@ -288,6 +290,12 @@ export function SettingsScreen({ shop, onShopUpdated }: SettingsScreenProps) {
           </form>
         </section>
       </div>
+
+      {/* Section 2.5: Staff Management for Shop Admin */}
+      <StaffManagementSection
+        currentStaff={currentStaff}
+        onToast={(message, type) => setToast({ message, type })}
+      />
 
       {/* Section 3: Subscription Plan Info & Upgrade CTA */}
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">

@@ -17,6 +17,7 @@ Rails.application.routes.draw do
 
   resources :package_categories, only: %i[index create update destroy]
   resources :packages, only: %i[index create update destroy]
+  resources :staffs, only: %i[index create destroy]
 
   resources :memberships, only: %i[index create show update destroy] do
     collection do

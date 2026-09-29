@@ -16,7 +16,7 @@ const typeButtonClass = (active: boolean) =>
       : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700/60"
   }`
 
-export function PackageCreateForm({ onSuccess, onCancel }: PackageCreateFormProps) {
+  export function PackageCreateForm({ onSuccess, onCancel }: PackageCreateFormProps) {
   const [name, setName] = useState("")
   const [packageType, setPackageType] = useState<PackageType>("sessions")
   const [sessionsCount, setSessionsCount] = useState<string>("10")

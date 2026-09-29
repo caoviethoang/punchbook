@@ -8,6 +8,7 @@ import {
   Settings2,
   Trash2,
 } from "lucide-react"
+import type { Staff } from "../lib/auth"
 import {
   deletePackage,
   listPackageCategories,
@@ -21,7 +22,12 @@ import { PackageGrid } from "./packages/PackageTable"
 import { Modal } from "./ui/Modal"
 import { Toast } from "./ui/Toast"
 
-export function PackagesScreen() {
+interface PackagesScreenProps {
+  currentStaff?: Staff | null
+}
+
+export function PackagesScreen({ currentStaff }: PackagesScreenProps) {
+  const isAdmin = currentStaff ? currentStaff.role === "admin" : true
   const [packages, setPackages] = useState<PackageItem[]>([])
   const [categories, setCategories] = useState<PackageCategory[]>([])
   const [loading, setLoading] = useState(true)
@@ -189,25 +195,27 @@ export function PackagesScreen() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => setIsCategoryManagerOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            <Settings2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-            <span>Quản lý bộ môn</span>
-          </button>
+        {isAdmin && (
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsCategoryManagerOpen(true)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <Settings2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              <span>Quản lý bộ môn</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={handleOpenCreate}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-indigo-500 active:bg-indigo-700"
-          >
-            <Plus className="h-5 w-5" />
-            <span>Tạo gói mới</span>
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={handleOpenCreate}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-indigo-500 active:bg-indigo-700"
+            >
+              <Plus className="h-5 w-5" />
+              <span>Tạo gói mới</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Category Filter Tabs */}
@@ -282,6 +290,7 @@ export function PackagesScreen() {
         loading={loading}
         packages={packages}
         filteredPackages={filteredPackages}
+        readOnly={!isAdmin}
         onOpenCreate={handleOpenCreate}
         onOpenEdit={handleOpenEdit}
         onDeleteRequest={(pkg) => setDeletingPackage(pkg)}

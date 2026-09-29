@@ -10,6 +10,7 @@ interface PackageGridProps {
   loading: boolean
   packages: PackageItem[]
   filteredPackages: PackageItem[]
+  readOnly?: boolean
   onOpenCreate: () => void
   onOpenEdit: (pkg: PackageItem) => void
   onDeleteRequest: (pkg: PackageItem) => void
@@ -19,6 +20,7 @@ export function PackageGrid({
   loading,
   packages,
   filteredPackages,
+  readOnly = false,
   onOpenCreate,
   onOpenEdit,
   onDeleteRequest,
@@ -53,17 +55,19 @@ export function PackageGrid({
         </h3>
         <p className="mt-2 max-w-sm text-base text-slate-500 dark:text-slate-400">
           {packages.length === 0
-            ? "Hãy tạo gói dịch vụ đầu tiên để áp dụng khi tạo thẻ hội viên mới."
-            : "Thử chọn bộ môn khác hoặc tạo gói mới cho bộ môn này."}
+            ? "Chưa có gói dịch vụ nào"
+            : "Thử chọn bộ môn khác hoặc chọn tất cả bộ môn."}
         </p>
-        <button
-          type="button"
-          onClick={onOpenCreate}
-          className="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-base font-semibold text-white hover:bg-indigo-500"
-        >
-          <Plus className="h-5 w-5" />
-          Tạo gói ngay
-        </button>
+        {!readOnly && (
+          <button
+            type="button"
+            onClick={onOpenCreate}
+            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-base font-semibold text-white hover:bg-indigo-500"
+          >
+            <Plus className="h-5 w-5" />
+            Tạo gói ngay
+          </button>
+        )}
       </div>
     )
   }
@@ -126,27 +130,29 @@ export function PackageGrid({
             </div>
 
             {/* Actions */}
-            <div className="mt-6 flex items-center justify-end gap-2 border-t border-slate-100 pt-4 dark:border-slate-800/80">
-              <button
-                type="button"
-                onClick={() => onOpenEdit(pkg)}
-                title="Chỉnh sửa gói"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-              >
-                <Edit2 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                <span>Sửa</span>
-              </button>
+            {!readOnly && (
+              <div className="mt-6 flex items-center justify-end gap-2 border-t border-slate-100 pt-4 dark:border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={() => onOpenEdit(pkg)}
+                  title="Chỉnh sửa gói"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                >
+                  <Edit2 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  <span>Sửa</span>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => onDeleteRequest(pkg)}
-                title="Xóa gói dịch vụ"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 shadow-sm transition hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/60"
-              >
-                <Trash2 className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-                <span>Xóa</span>
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => onDeleteRequest(pkg)}
+                  title="Xóa gói dịch vụ"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 shadow-sm transition hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/60"
+                >
+                  <Trash2 className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+                  <span>Xóa</span>
+                </button>
+              </div>
+            )}
           </div>
         )
       })}
