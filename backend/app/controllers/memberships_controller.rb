@@ -8,7 +8,7 @@ class MembershipsController < ApiController
   def index
     page, per_page = parse_pagination_params
     relation = current_shop.memberships.search_by_query(params[:query]).by_status(params[:status])
-    memberships = paginate_relation(relation.includes(:package, :check_ins).order(:customer_name), page, per_page)
+    memberships = fetch_paginated_memberships(relation, page, per_page)
 
     render json: {
       memberships: memberships.map(&:as_api_json),
@@ -97,5 +97,11 @@ class MembershipsController < ApiController
     else
       current_shop.staffs.first || current_shop.staffs.create!(name: 'Lễ tân', role: 'staff')
     end
+  end
+
+  def fetch_paginated_memberships(relation, page, per_page)
+    records = paginate_relation(relation.includes(:package).order(:customer_name), page, per_page)
+    ActiveRecord::Associations::Preloader.new(records: records, associations: :check_ins).call
+    records
   end
 end
