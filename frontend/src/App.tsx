@@ -15,12 +15,18 @@ import {
 
 type AppView = "dashboard" | "checkin" | "packages" | "members" | "settings"
 
-const NAV_ITEMS: { view: AppView; label: string }[] = [
+interface NavItem {
+  view: AppView
+  label: string
+  adminOnly?: boolean
+}
+
+const NAV_ITEMS: NavItem[] = [
   { view: "dashboard", label: "Dashboard" },
   { view: "checkin", label: "Check-in" },
   { view: "members", label: "Hội viên" },
   { view: "packages", label: "Gói dịch vụ" },
-  { view: "settings", label: "Cài đặt" },
+  { view: "settings", label: "Cài đặt", adminOnly: true },
 ]
 
 function App() {
@@ -28,6 +34,10 @@ function App() {
   const [staff, setStaff] = useState<Staff | null>(null)
   const [authLoading, setAuthLoading] = useState(() => getStoredToken() !== null)
   const [view, setView] = useState<AppView>("dashboard")
+
+  const isAdmin = !staff || staff.role === "admin"
+  const visibleNavItems = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin)
+  const activeView = !isAdmin && view === "settings" ? "dashboard" : view
 
   useEffect(() => {
     const token = getStoredToken()
@@ -95,13 +105,13 @@ function App() {
 
           <div className="flex items-center gap-3 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
             <nav className="flex flex-wrap rounded-xl border border-slate-200 p-1 dark:border-slate-700">
-              {NAV_ITEMS.map(({ view: v, label }) => (
+              {visibleNavItems.map(({ view: v, label }) => (
                 <button
                   key={v}
                   type="button"
                   onClick={() => setView(v)}
                   className={`rounded-lg px-3 py-1.5 font-semibold transition ${
-                    view === v
+                    activeView === v
                       ? "bg-indigo-600 text-white"
                       : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                   }`}
@@ -128,13 +138,13 @@ function App() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-6">
-        {view === "dashboard" ? (
-          <DashboardScreen />
-        ) : view === "checkin" ? (
+        {activeView === "dashboard" ? (
+          <DashboardScreen currentStaff={staff} />
+        ) : activeView === "checkin" ? (
           <CheckInScreen />
-        ) : view === "members" ? (
-          <MembershipsScreen shop={shop} />
-        ) : view === "packages" ? (
+        ) : activeView === "members" ? (
+          <MembershipsScreen shop={shop} currentStaff={staff} />
+        ) : activeView === "packages" ? (
           <PackagesScreen currentStaff={staff} />
         ) : (
           <SettingsScreen shop={shop} currentStaff={staff} onShopUpdated={setShop} />

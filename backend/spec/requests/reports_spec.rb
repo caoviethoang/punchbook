@@ -22,6 +22,17 @@ RSpec.describe 'Reports Export', type: :request do
       expect(response.parsed_body['error']).to include('Gói Free không hỗ trợ xuất báo cáo')
     end
 
+    it 'returns 403 when user is non-admin staff' do
+      staff = Staff.create!(
+        shop: paid_shop, name: 'Staff User', username: 'staff1', password: 'password123', role: 'staff'
+      )
+      token = JsonWebToken.encode({ shop_id: paid_shop.id, staff_id: staff.id, role: 'staff' })
+
+      get '/reports/export', headers: { 'Authorization' => "Bearer #{token}" }
+
+      expect(response).to have_http_status(:forbidden)
+    end
+
     it 'returns 200 with an XLSX attachment when shop is on paid plan' do
       Membership.create!(
         shop: paid_shop,

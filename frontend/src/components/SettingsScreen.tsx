@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from "react"
-import { Building2, CreditCard, KeyRound, ShieldCheck, Sparkles, Zap } from "lucide-react"
+import { useCallback, useState, type FormEvent } from "react"
+import { Building2, CreditCard, KeyRound, ShieldAlert, ShieldCheck, Sparkles, Zap } from "lucide-react"
 import type { Shop, Staff } from "../lib/auth"
 import { toApiError } from "../lib/errors"
 import { formatDate } from "../lib/formatters"
@@ -30,6 +30,8 @@ interface SettingsScreenProps {
 }
 
 export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsScreenProps) {
+  const isAdmin = !currentStaff || currentStaff.role === "admin"
+
   // Profile form state
   const [name, setName] = useState(shop.name || "")
   const [phone, setPhone] = useState(shop.phone || "")
@@ -54,8 +56,13 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
   // Toast feedback state
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
 
+  const handleToast = useCallback((message: string, type: "success" | "error") => {
+    setToast({ message, type })
+  }, [])
+
   const handleProfileSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    if (!isAdmin) return
     setProfileLoading(true)
 
     try {
@@ -84,6 +91,7 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
 
   const handlePasswordSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    if (!isAdmin) return
 
     if (newPassword !== confirmPassword) {
       setToast({
@@ -141,6 +149,18 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
         </p>
       </div>
 
+      {!isAdmin && (
+        <div className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
+          <ShieldAlert className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <div className="text-xs sm:text-sm">
+            <p className="font-bold">Chế độ chỉ xem (Dành cho Lễ tân)</p>
+            <p className="mt-0.5 text-amber-700 dark:text-amber-300">
+              Tài khoản của bạn không có quyền chỉnh sửa thông tin cửa hàng, đổi mật khẩu hoặc quản lý nhân viên.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-6 md:grid-cols-2">
         {/* Section 1: Store Information */}
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -162,18 +182,21 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
             <FormField
               label="Tên cửa hàng"
               required
+              disabled={!isAdmin}
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="VD: Lan Spa & Salon"
             />
             <FormField
               label="Số điện thoại liên hệ"
+              disabled={!isAdmin}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="VD: 0901234567"
             />
             <FormField
               label="Địa chỉ tiệm"
+              disabled={!isAdmin}
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder="VD: 123 Đường Nguyễn Trãi, Quận 1, TP.HCM"
@@ -195,6 +218,7 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
                   </label>
                   <select
                     value={bankName}
+                    disabled={!isAdmin}
                     onChange={(e) => setBankName(e.target.value)}
                     className={FORM_CONTROL_CLASS}
                   >
@@ -209,6 +233,7 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
                 <FormField
                   label="Số tài khoản ngân hàng"
                   type="text"
+                  disabled={!isAdmin}
                   value={bankAccountNo}
                   onChange={(e) => setBankAccountNo(e.target.value.replace(/\s/g, ""))}
                   placeholder="VD: 0123456789"
@@ -217,6 +242,7 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
                 <FormField
                   label="Tên chủ tài khoản"
                   type="text"
+                  disabled={!isAdmin}
                   value={bankAccountName}
                   onChange={(e) => setBankAccountName(e.target.value.toUpperCase())}
                   placeholder="VD: CAO VIET HOANG"
@@ -227,10 +253,14 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={profileLoading}
-                className="inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                disabled={profileLoading || !isAdmin}
+                className="inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {profileLoading ? "Đang lưu..." : "Lưu thông tin tiệm & ngân hàng"}
+                {!isAdmin
+                  ? "Chỉ xem (Không có quyền sửa)"
+                  : profileLoading
+                  ? "Đang lưu..."
+                  : "Lưu thông tin tiệm & ngân hàng"}
               </button>
             </div>
           </form>
@@ -257,6 +287,7 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
               label="Mật khẩu hiện tại"
               type="password"
               required
+              disabled={!isAdmin}
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               placeholder="••••••••"
@@ -265,6 +296,7 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
               label="Mật khẩu mới"
               type="password"
               required
+              disabled={!isAdmin}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Mật khẩu tối thiểu 6 ký tự"
@@ -273,6 +305,7 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
               label="Xác nhận mật khẩu mới"
               type="password"
               required
+              disabled={!isAdmin}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Nhập lại mật khẩu mới"
@@ -281,10 +314,14 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={passwordLoading}
-                className="inline-flex w-full items-center justify-center rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:opacity-50"
+                disabled={passwordLoading || !isAdmin}
+                className="inline-flex w-full items-center justify-center rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {passwordLoading ? "Đang xử lý..." : "Cập nhật mật khẩu"}
+                {!isAdmin
+                  ? "Chỉ xem (Không có quyền sửa)"
+                  : passwordLoading
+                  ? "Đang xử lý..."
+                  : "Cập nhật mật khẩu"}
               </button>
             </div>
           </form>
@@ -294,7 +331,7 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
       {/* Section 2.5: Staff Management for Shop Admin */}
       <StaffManagementSection
         currentStaff={currentStaff}
-        onToast={(message, type) => setToast({ message, type })}
+        onToast={handleToast}
       />
 
       {/* Section 3: Subscription Plan Info & Upgrade CTA */}
@@ -326,14 +363,16 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
               Gói {shop.plan === "paid" ? "Premium (Paid)" : "Miễn phí (Free)"}
             </span>
 
-            <button
-              type="button"
-              onClick={() => setShowUpgradeModal(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md transition hover:from-amber-600 hover:to-indigo-700"
-            >
-              <Zap className="h-3.5 w-3.5 fill-current" />
-              <span>{shop.plan === "paid" ? "Gia hạn Premium" : "Nâng cấp Premium"}</span>
-            </button>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => setShowUpgradeModal(true)}
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md transition hover:from-amber-600 hover:to-indigo-700"
+              >
+                <Zap className="h-3.5 w-3.5 fill-current" />
+                <span>{shop.plan === "paid" ? "Gia hạn Premium" : "Nâng cấp Premium"}</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -359,7 +398,7 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
         </div>
 
         {/* Upgrade Banner for Free Plan */}
-        {shop.plan !== "paid" && (
+        {shop.plan !== "paid" && isAdmin && (
           <div className="mt-6 flex flex-col items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 p-5 text-white shadow-md sm:flex-row">
             <div>
               <div className="flex items-center gap-2">

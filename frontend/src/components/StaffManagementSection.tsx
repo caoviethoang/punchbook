@@ -23,7 +23,10 @@ export function StaffManagementSection({ currentStaff, onToast }: StaffManagemen
   const [role, setRole] = useState<"admin" | "staff">("staff")
   const [submitting, setSubmitting] = useState(false)
 
+  const isAdmin = !currentStaff || currentStaff.role === "admin"
+
   const loadStaffs = async () => {
+    if (!isAdmin) return
     try {
       setLoading(true)
       const list = await fetchStaffs()
@@ -36,6 +39,8 @@ export function StaffManagementSection({ currentStaff, onToast }: StaffManagemen
   }
 
   useEffect(() => {
+    if (!isAdmin) return
+
     let active = true
     fetchStaffs()
       .then((list) => {
@@ -51,7 +56,7 @@ export function StaffManagementSection({ currentStaff, onToast }: StaffManagemen
     return () => {
       active = false
     }
-  }, [onToast])
+  }, [isAdmin, onToast])
 
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault()
@@ -86,8 +91,6 @@ export function StaffManagementSection({ currentStaff, onToast }: StaffManagemen
       onToast(toApiError(err, "Xóa nhân viên thất bại."), "error")
     }
   }
-
-  const isAdmin = !currentStaff || currentStaff.role === "admin"
 
   if (!isAdmin) return null
 
