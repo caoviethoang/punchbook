@@ -25,7 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { view: "dashboard", label: "Dashboard" },
   { view: "checkin", label: "Check-in" },
   { view: "members", label: "Hội viên" },
-  { view: "packages", label: "Gói dịch vụ" },
+  { view: "packages", label: "Gói dịch vụ", adminOnly: true },
   { view: "settings", label: "Cài đặt", adminOnly: true },
 ]
 
@@ -37,7 +37,8 @@ function App() {
 
   const isAdmin = !staff || staff.role === "admin"
   const visibleNavItems = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin)
-  const activeView = !isAdmin && view === "settings" ? "dashboard" : view
+  const activeView =
+    !isAdmin && (view === "settings" || view === "packages") ? "dashboard" : view
 
   useEffect(() => {
     const token = getStoredToken()
