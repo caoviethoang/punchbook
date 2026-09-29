@@ -23,7 +23,7 @@ import {
   type StatusFilterType,
 } from "../lib/memberships"
 import { listPackages } from "../lib/packages"
-import { type Shop } from "../lib/auth"
+import { type Shop, type Staff } from "../lib/auth"
 import { MemberQRModal } from "./MemberQRModal"
 import { MemberEditModal } from "./MemberEditModal"
 import { MembershipDetailModal } from "./MembershipDetailModal"
@@ -66,9 +66,11 @@ function MemberRemainingBadge({ membership }: { membership: Membership }) {
 
 interface MembershipsScreenProps {
   shop: Shop
+  currentStaff?: Staff | null
 }
 
-export function MembershipsScreen({ shop }: MembershipsScreenProps) {
+export function MembershipsScreen({ shop, currentStaff }: MembershipsScreenProps) {
+  const isAdmin = !currentStaff || currentStaff.role === "admin"
   const [memberships, setMemberships] = useState<Membership[]>([])
   const [meta, setMeta] = useState<PaginationMeta | null>(null)
   const [packages, setPackages] = useState<MembershipPackage[]>([])
@@ -203,14 +205,16 @@ export function MembershipsScreen({ shop }: MembershipsScreenProps) {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setShowImportModal(true)}
-            className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            <FileSpreadsheet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            <span>Import Excel</span>
-          </button>
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => setShowImportModal(true)}
+              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <FileSpreadsheet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <span>Import Excel</span>
+            </button>
+          )}
 
           <button
             type="button"

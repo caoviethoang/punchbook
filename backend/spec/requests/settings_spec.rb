@@ -13,6 +13,15 @@ RSpec.describe 'Settings API', type: :request do
     )
   end
 
+  let!(:staff_user) do
+    Staff.create!(shop: shop, name: 'Staff Reception', username: 'reception', password: 'password123', role: 'staff')
+  end
+
+  def staff_headers
+    token = JsonWebToken.encode({ shop_id: shop.id, staff_id: staff_user.id, role: 'staff' })
+    { 'Authorization' => "Bearer #{token}" }
+  end
+
   describe 'GET /settings' do
     it 'returns the current shop settings' do
       get '/settings', headers: auth_headers(shop)
@@ -24,6 +33,12 @@ RSpec.describe 'Settings API', type: :request do
       expect(body.dig('shop', 'phone')).to eq('0901112222')
       expect(body.dig('shop', 'address')).to eq('100 QL1A')
       expect(body.dig('shop', 'plan')).to eq('free')
+    end
+
+    it 'allows staff user to view shop settings' do
+      get '/settings', headers: staff_headers
+
+      expect(response).to have_http_status(:ok)
     end
 
     it 'rejects unauthenticated requests' do
@@ -56,6 +71,12 @@ RSpec.describe 'Settings API', type: :request do
       expect(body.dig('shop', 'bank_account_name')).to eq('HOANG CAO VIET')
     end
 
+    it 'forbids non-admin staff from updating profile' do
+      patch '/settings/profile', params: { name: 'Unauthorized Gym' }, headers: staff_headers
+
+      expect(response).to have_http_status(:forbidden)
+    end
+
     it 'returns unprocessable when params are invalid' do
       patch '/settings/profile', params: { name: '' }, headers: auth_headers(shop)
 
@@ -76,6 +97,16 @@ RSpec.describe 'Settings API', type: :request do
       expect(response.parsed_body['message']).to eq('Đổi mật khẩu thành công')
 
       expect(shop.reload.valid_password?('newsecurepassword')).to be true
+    end
+
+    it 'forbids non-admin staff from changing password' do
+      patch '/settings/password', params: {
+        current_password: 'password123',
+        password: 'newsecurepassword',
+        password_confirmation: 'newsecurepassword'
+      }, headers: staff_headers
+
+      expect(response).to have_http_status(:forbidden)
     end
 
     it 'returns error when current password is invalid' do
@@ -100,6 +131,12 @@ RSpec.describe 'Settings API', type: :request do
       expect(body.dig('shop', 'plan')).to eq('paid')
       expect(shop.reload.plan).to eq('paid')
       expect(shop.plan_expires_at).to be > Time.current
+    end
+
+    it 'forbids non-admin staff from upgrading plan' do
+      post '/settings/upgrade_plan', params: { months: 6 }, headers: staff_headers
+
+      expect(response).to have_http_status(:forbidden)
     end
   end
 end
