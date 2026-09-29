@@ -23,7 +23,9 @@ RSpec.describe 'Reports Export', type: :request do
     end
 
     it 'returns 403 when user is non-admin staff' do
-      staff = Staff.create!(shop: paid_shop, name: 'Staff User', username: 'staff1', password: 'password123', role: 'staff')
+      staff = Staff.create!(
+        shop: paid_shop, name: 'Staff User', username: 'staff1', password: 'password123', role: 'staff'
+      )
       token = JsonWebToken.encode({ shop_id: paid_shop.id, staff_id: staff.id, role: 'staff' })
 
       get '/reports/export', headers: { 'Authorization' => "Bearer #{token}" }

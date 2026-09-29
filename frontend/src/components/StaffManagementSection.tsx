@@ -39,10 +39,7 @@ export function StaffManagementSection({ currentStaff, onToast }: StaffManagemen
   }
 
   useEffect(() => {
-    if (!isAdmin) {
-      setLoading(false)
-      return
-    }
+    if (!isAdmin) return
 
     let active = true
     fetchStaffs()
