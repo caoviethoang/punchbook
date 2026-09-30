@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { AlertCircle, Clock, Shield, User, X } from "lucide-react"
-import { getStoredToken } from "../lib/auth"
+import { apiGet } from "../lib/api"
+import { toApiError } from "../lib/errors"
 
 interface AuditLogEntry {
   id: string
@@ -47,25 +48,23 @@ export function AuditLogsPanel({ shopId, onClose }: AuditLogsPanelProps) {
 
   useEffect(() => {
     let active = true
-    const params = new URLSearchParams({ shop_id: shopId })
+    const params = new URLSearchParams()
+    if (shopId) params.set("shop_id", shopId)
     if (filter) params.set("log_action", filter)
 
-    const token = getStoredToken()
-    fetch(`/audit_logs?${params}`, {
-      headers: { Authorization: `Bearer ${token ?? ""}` },
-    })
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed to load audit logs")
-        return r.json()
-      })
+    const queryString = params.toString()
+    const path = queryString ? `/audit_logs?${queryString}` : "/audit_logs"
+
+    apiGet<{ audit_logs: AuditLogEntry[] }>(path)
       .then((data) => {
         if (!active) return
         setLogs(data.audit_logs || [])
+        setError(null)
         setLoading(false)
       })
       .catch((err) => {
         if (!active) return
-        setError(err instanceof Error ? err.message : "Lỗi tải nhật ký")
+        setError(toApiError(err, "Lỗi tải nhật ký thao tác"))
         setLoading(false)
       })
 
