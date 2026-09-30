@@ -14,11 +14,14 @@ export function toCheckInError(err: unknown): string {
 }
 
 /**
- * Generic Vietnamese error mapper for API operations (forms, settings, etc.).
+ * Generic Vietnamese error mapper for API operations (hooks, forms, settings, etc.).
  * Returns the original error message if it's already a user-facing string,
  * or a safe fallback Vietnamese string for generic/unknown errors.
  */
-export function toApiError(err: unknown, fallback = "Thao tác thất bại. Vui lòng thử lại."): string {
+export function toApiError(
+  err: unknown,
+  fallback = "Thao tác thất bại. Vui lòng thử lại.",
+): string {
   if (err instanceof Error && err.message && err.message !== "Request failed") {
     return err.message
   }
