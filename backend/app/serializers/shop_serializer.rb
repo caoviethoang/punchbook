@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ShopSerializer
-  FIELDS = %i[id name phone address email plan plan_expires_at].freeze
+  FIELDS = %i[id name phone address email plan plan_expires_at bank_name bank_account_no bank_account_name].freeze
 
   def initialize(shop)
     @shop = shop

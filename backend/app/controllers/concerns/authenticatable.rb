@@ -6,55 +6,42 @@ module Authenticatable
   extend ActiveSupport::Concern
 
   included do
-    attr_reader :current_shop, :current_token_payload
+    attr_reader :current_shop, :current_staff
   end
 
   private
 
   def authenticate_shop!
-    @current_token_payload = decoded_token_payload
-    @current_shop = shop_from_token
-    render json: { error: 'Unauthorized' }, status: :unauthorized unless @current_shop
-  end
-
-  def current_role
-    @current_token_payload&.dig(:role)&.to_s || 'owner'
-  end
-
-  def owner?
-    current_role == 'owner'
-  end
-
-  def staff?
-    current_role == 'staff'
-  end
-
-  def current_staff
-    return unless staff?
-    return @current_staff if defined?(@current_staff)
-
-    staff_id = @current_token_payload&.dig(:staff_id)
-    @current_staff = current_shop.staffs.find_by(id: staff_id)
-  end
-
-  def require_owner!
-    return if owner?
-
-    render json: { error: 'Forbidden: Thao tác này chỉ dành cho Chủ tiệm' }, status: :forbidden
-  end
-
-  def decoded_token_payload
     token = bearer_token
-    return if token.blank?
+    payload = JsonWebToken.decode(token) if token.present?
+    return render_unauthorized unless payload
 
-    JsonWebToken.decode(token)
+    @current_shop = Shop.find_by(id: payload[:shop_id])
+    return render_unauthorized unless @current_shop
+
+    @current_staff = resolve_current_staff(payload[:staff_id])
   end
 
-  def shop_from_token
-    return if @current_token_payload.blank?
-
-    Shop.find_by(id: @current_token_payload[:shop_id])
+  def resolve_current_staff(staff_id)
+    staff = @current_shop.staffs.find_by(id: staff_id) if staff_id
+    staff || @current_shop.staffs.find_by(role: 'admin') ||
+      @current_shop.staffs.first ||
+      @current_shop.staffs.create!(name: @current_shop.name || 'Admin', role: 'admin')
   end
+
+  def render_unauthorized
+    render json: { error: 'Unauthorized' }, status: :unauthorized
+  end
+
+  def current_ability
+    @current_ability ||= Ability.new(current_staff)
+  end
+
+  def require_admin!
+    authorize! :manage, :all
+  end
+
+  alias require_owner! require_admin!
 
   def bearer_token
     pattern = /\ABearer\s+(.+)\z/i

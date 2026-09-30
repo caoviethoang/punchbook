@@ -13,10 +13,13 @@ Rails.application.routes.draw do
   get '/settings', to: 'settings#show'
   patch '/settings/profile', to: 'settings#update_profile'
   patch '/settings/password', to: 'settings#update_password'
+  post '/settings/upgrade_plan', to: 'settings#upgrade_plan'
 
-  resources :packages, only: %i[index create destroy]
+  resources :package_categories, only: %i[index create update destroy]
+  resources :packages, only: %i[index create update destroy]
+  resources :staffs, only: %i[index create destroy]
 
-  resources :memberships, only: %i[index create show destroy] do
+  resources :memberships, only: %i[index create show update destroy] do
     collection do
       get :import_template
       post :import
@@ -26,6 +29,8 @@ Rails.application.routes.draw do
     end
     resources :invoices, only: %i[create]
   end
+
+  resources :audit_logs, only: [:index]
 
   namespace :webhooks do
     post :payos, to: 'payos#create'

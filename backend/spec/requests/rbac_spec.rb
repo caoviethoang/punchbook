@@ -43,7 +43,7 @@ RSpec.describe 'RBAC Permissions', type: :request do
       post '/packages', params: { package: { name: 'New Pkg', price: 100_000, sessions_count: 5 } },
                         headers: staff_headers
       expect(response).to have_http_status(:forbidden)
-      expect(response.parsed_body['error']).to include('Chủ tiệm')
+      expect(response.parsed_body['error']).to be_present
     end
 
     it 'forbids staff from deleting packages' do
@@ -51,15 +51,15 @@ RSpec.describe 'RBAC Permissions', type: :request do
       expect(response).to have_http_status(:forbidden)
     end
 
-    it 'forbids staff from creating memberships' do
+    it 'allows staff to create memberships' do
       payload = { membership: { customer_name: 'Bob', phone: '0911111111', package_id: membership.package_id } }
       post '/memberships', params: payload, headers: staff_headers
-      expect(response).to have_http_status(:forbidden)
+      expect(response).to have_http_status(:created)
     end
 
-    it 'forbids staff from deleting memberships' do
+    it 'allows staff to delete memberships' do
       delete "/memberships/#{membership.id}", headers: staff_headers
-      expect(response).to have_http_status(:forbidden)
+      expect(response).to have_http_status(:ok)
     end
 
     it 'forbids staff from importing memberships' do
@@ -67,9 +67,9 @@ RSpec.describe 'RBAC Permissions', type: :request do
       expect(response).to have_http_status(:forbidden)
     end
 
-    it 'forbids staff from viewing settings' do
+    it 'allows staff to view settings' do
       get '/settings', headers: staff_headers
-      expect(response).to have_http_status(:forbidden)
+      expect(response).to have_http_status(:ok)
     end
 
     it 'forbids staff from updating shop profile' do

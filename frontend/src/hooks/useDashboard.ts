@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react"
 import { fetchDashboard, type DashboardData } from "../lib/dashboard"
+import { toApiError } from "../lib/errors"
 
 export function useDashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
@@ -14,7 +15,7 @@ export function useDashboard() {
       setData(dashboard)
       return dashboard
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Request failed"
+      const message = toApiError(err, "Không thể tải dữ liệu dashboard.")
       setError(message)
       throw err
     } finally {

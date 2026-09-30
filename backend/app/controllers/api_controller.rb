@@ -3,6 +3,8 @@
 # Base for shop-scoped JSON API endpoints.
 # AuthController stays on ApplicationController so register/login remain public.
 class ApiController < ApplicationController
+  wrap_parameters false
+
   before_action :authenticate_shop!
 
   rescue_from ActiveRecord::RecordNotFound, with: :render_not_found

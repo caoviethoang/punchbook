@@ -34,12 +34,23 @@ class CheckInMembership
   end
 
   def process_check_in!
-    membership.update!(sessions_left: membership.sessions_left - 1) if membership.package.session_based?
+    decrement_sessions_if_needed!
+    check_in = create_check_in_record!
+    log_audit_event!(check_in)
+    check_in
+  end
 
-    CheckIn.create!(
-      membership: membership,
-      staff: staff,
-      checked_in_at: Time.current
+  def decrement_sessions_if_needed!
+    membership.update!(sessions_left: membership.sessions_left - 1) if membership.package.session_based?
+  end
+
+  def create_check_in_record!
+    CheckIn.create!(membership: membership, staff: staff, checked_in_at: Time.current)
+  end
+
+  def log_audit_event!(check_in)
+    AuditLog.log_check_in!(
+      shop: membership.shop, staff: staff, membership: membership, checked_in_at: check_in.checked_in_at
     )
   end
 end
