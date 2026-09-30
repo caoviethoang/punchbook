@@ -7,11 +7,13 @@ import {
   Loader2,
   RefreshCw,
   Search,
+  Shield,
   Upload,
   Users,
   Wallet,
 } from "lucide-react"
 import type { Staff } from "../lib/auth"
+import { AuditLogsPanel } from "./AuditLogsPanel"
 import { useDashboard } from "../hooks/useDashboard"
 import type { DashboardMembership } from "../lib/dashboard"
 import { toApiError } from "../lib/errors"
@@ -70,6 +72,7 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [isAuditLogsOpen, setIsAuditLogsOpen] = useState(false)
 
   // Pagination & Filtering state
   const [memberships, setMemberships] = useState<DashboardMembership[]>([])
@@ -192,6 +195,15 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
 
         {isAdmin && (
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsAuditLogsOpen(true)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <Shield className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              <span>Nhật ký</span>
+            </button>
+
             <button
               type="button"
               onClick={() => setIsImportModalOpen(true)}
@@ -411,6 +423,13 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
           refreshList()
         }}
       />
+
+      {isAuditLogsOpen && (
+        <AuditLogsPanel
+          shopId=""
+          onClose={() => setIsAuditLogsOpen(false)}
+        />
+      )}
     </div>
   )
 }
