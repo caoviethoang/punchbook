@@ -7,10 +7,31 @@ export interface DashboardMembership extends Membership {
   status: MembershipStatus
 }
 
+export interface DailyRevenueData {
+  date: string
+  revenue: number
+}
+
+export interface HourlyCheckInData {
+  hour: number
+  label: string
+  count: number
+}
+
+export interface PeakHourData {
+  hour: number
+  label: string
+  count: number
+  recommendation: string
+}
+
 export interface DashboardData {
   revenue_this_month: number
   active_memberships_count: number
   expiring_within_7_days_count: number
+  daily_revenue_30_days?: DailyRevenueData[]
+  check_in_frequency_by_hour?: HourlyCheckInData[]
+  peak_check_in_hour?: PeakHourData | null
   memberships: DashboardMembership[]
 }
 

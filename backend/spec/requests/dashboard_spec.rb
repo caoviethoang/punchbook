@@ -77,6 +77,32 @@ RSpec.describe 'Dashboard', type: :request do
       expect(response.parsed_body['revenue_this_month']).to eq(0)
     end
 
+    it 'returns daily revenue for 30 days and check-in frequency by hour' do
+      staff = Staff.create!(shop: shop, name: 'Kasumi', role: 'staff')
+      member = create_member(package: session_package, name: 'Hoa Nguyen', sessions_left: 5)
+      Invoice.create!(membership: member, amount: 500_000, status: 'paid', created_at: Time.zone.now)
+      CheckIn.create!(staff: staff, membership: member, checked_in_at: Time.zone.now.change(hour: 14, min: 30))
+
+      get '/dashboard', headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+
+      expect(body['daily_revenue_30_days']).to be_an(Array)
+      expect(body['daily_revenue_30_days'].length).to eq(30)
+      today_rev = body['daily_revenue_30_days'].find { |d| d['date'] == Time.zone.today.iso8601 }
+      expect(today_rev['revenue']).to eq(500_000)
+
+      expect(body['check_in_frequency_by_hour']).to be_an(Array)
+      expect(body['check_in_frequency_by_hour'].length).to eq(24)
+      hour14 = body['check_in_frequency_by_hour'].find { |h| h['hour'] == 14 }
+      expect(hour14['count']).to eq(1)
+
+      expect(body['peak_check_in_hour']).not_to be_nil
+      expect(body['peak_check_in_hour']['hour']).to eq(14)
+      expect(body['peak_check_in_hour']['label']).to include('14:00')
+    end
+
     it 'does not N+1 query when memberships grow', :aggregate_failures do
       create_member(package: session_package, name: 'Member 1', phone: '0901000001', sessions_left: 5)
 
