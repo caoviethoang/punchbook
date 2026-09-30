@@ -101,7 +101,7 @@ function App() {
             </h1>
             {staff && (
               <span className="rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                {staff.name} ({staff.role === "admin" ? "Admin" : "Lễ tân"})
+                {staff.role === "admin" ? "Admin" : "Lễ tân"}
               </span>
             )}
           </div>
@@ -125,8 +125,14 @@ function App() {
             </nav>
             <span>
               Plan:{" "}
-              <strong className="font-semibold text-slate-700 dark:text-slate-200">
-                {shop.plan}
+              <strong
+                className={`font-bold ${
+                  shop.plan === "paid"
+                    ? "text-amber-500 dark:text-amber-400"
+                    : "text-slate-700 dark:text-slate-200"
+                }`}
+              >
+                {shop.plan_details || (shop.plan === "paid" ? "Premium" : "Free")}
               </strong>
             </span>
             <button
