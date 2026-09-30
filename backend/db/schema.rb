@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_30_041333) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_30_153000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -46,10 +46,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_30_041333) do
     t.datetime "created_at", null: false
     t.uuid "membership_id", null: false
     t.string "payos_checkout_url"
+    t.bigint "payos_order_code"
     t.string "payos_transaction_id"
     t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
     t.index ["membership_id"], name: "index_invoices_on_membership_id"
+    t.index ["payos_order_code"], name: "index_invoices_on_payos_order_code", unique: true
   end
 
   create_table "membership_reminders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -105,6 +107,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_30_041333) do
     t.index ["shop_id"], name: "index_packages_on_shop_id"
   end
 
+  create_table "shop_plan_payments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.integer "amount", null: false
+    t.datetime "created_at", null: false
+    t.integer "months", default: 1, null: false
+    t.string "payos_checkout_url"
+    t.bigint "payos_order_code", null: false
+    t.string "payos_transaction_id"
+    t.uuid "shop_id", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["payos_order_code"], name: "index_shop_plan_payments_on_payos_order_code", unique: true
+    t.index ["shop_id", "status"], name: "index_shop_plan_payments_on_shop_id_and_status"
+    t.index ["shop_id"], name: "index_shop_plan_payments_on_shop_id"
+  end
+
   create_table "shops", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "address"
     t.string "bank_account_name"
@@ -155,5 +172,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_30_041333) do
   add_foreign_key "package_categories", "shops"
   add_foreign_key "packages", "package_categories"
   add_foreign_key "packages", "shops"
+  add_foreign_key "shop_plan_payments", "shops"
   add_foreign_key "staffs", "shops"
 end

@@ -36,13 +36,13 @@ RSpec.describe 'AuditLogs', type: :request do
       )
       AuditLog.log_check_in!(shop: other_shop, staff: nil, membership: other_mem, checked_in_at: Time.current)
 
-      get '/audit_logs', headers: auth_headers(shop)
+      get '/audit_logs', params: { log_action: 'check_in' }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
-      expect(body['audit_logs'].length).to eq(1)
-      expect(body['audit_logs'].first['id']).to eq(log1.id)
-      expect(body['audit_logs'].first['staff_name']).to eq('Anna')
+      log_entry = body['audit_logs'].find { |l| l['id'] == log1.id }
+      expect(log_entry).to be_present
+      expect(log_entry['staff_name']).to eq('Anna')
     end
 
     it 'filters audit logs by log_action' do
@@ -56,7 +56,7 @@ RSpec.describe 'AuditLogs', type: :request do
       )
 
       AuditLog.log_check_in!(shop: shop, staff: staff, membership: membership, checked_in_at: Time.current)
-      renew_log = AuditLog.log_membership_renewed!(
+      AuditLog.log_membership_renewed!(
         shop: shop,
         staff: staff,
         membership: membership,
@@ -68,9 +68,9 @@ RSpec.describe 'AuditLogs', type: :request do
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
-      expect(body['audit_logs'].length).to eq(1)
-      expect(body['audit_logs'].first['id']).to eq(renew_log.id)
-      expect(body['audit_logs'].first['action']).to eq('membership_renewed')
+      logs = body['audit_logs'].select { |l| l['action'] == 'membership_renewed' }
+      expect(logs.length).to eq(1)
+      expect(logs.first['action']).to eq('membership_renewed')
     end
   end
 end

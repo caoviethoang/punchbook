@@ -15,6 +15,7 @@ export interface Shop {
   address?: string | null
   email: string
   plan: string
+  plan_details?: string
   plan_expires_at?: string | null
   bank_name?: string | null
   bank_account_no?: string | null
