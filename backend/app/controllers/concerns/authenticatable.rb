@@ -41,6 +41,8 @@ module Authenticatable
     authorize! :manage, :all
   end
 
+  alias require_owner! require_admin!
+
   def bearer_token
     pattern = /\ABearer\s+(.+)\z/i
     header = request.headers['Authorization'].to_s
