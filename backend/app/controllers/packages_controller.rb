@@ -2,7 +2,6 @@
 
 class PackagesController < ApiController
   before_action :authorize_package_management!, only: %i[create update destroy]
-
   def index
     authorize! :read, Package
     packages = current_shop.packages.includes(:package_category).order(:name)

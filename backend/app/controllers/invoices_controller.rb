@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class InvoicesController < ApiController
+  before_action :require_owner!
   def create
     invoice, result = CreateInvoice.call(
       shop: current_shop,

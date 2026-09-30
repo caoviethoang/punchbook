@@ -2,7 +2,6 @@
 
 class SettingsController < ApiController
   before_action :authorize_shop_update!, only: %i[update_profile update_password upgrade_plan]
-
   def show
     render json: { shop: ShopSerializer.new(current_shop).as_json }
   end
