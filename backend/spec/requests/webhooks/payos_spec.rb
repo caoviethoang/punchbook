@@ -175,6 +175,23 @@ RSpec.describe 'PayOS Webhook API', type: :request do
         expect(shop.plan).to eq('paid')
         expect(shop.plan_expires_at).to be > Time.current
       end
+
+      it 'handles shop UUID prefix in orderCode fallback for VietQR transfers' do
+        hex_prefix = shop.id.delete('-')[0..7].upcase
+        data = { orderCode: hex_prefix, amount: 199_000, code: '00' }
+        signature = compute_signature(data)
+
+        payload = { code: '00', desc: 'success', data: data, signature: signature }
+
+        post '/webhooks/payos', params: payload, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['status']).to eq('success')
+
+        shop.reload
+        expect(shop.plan).to eq('paid')
+        expect(shop.plan_expires_at).to be > Time.current
+      end
     end
 
     context 'when signature is valid but payment response code indicates failure' do

@@ -59,7 +59,19 @@ class ProcessPayosWebhook
   end
 
   def find_shop_plan_payment
-    ShopPlanPayment.find_by(payos_order_code: order_code)
+    payment = ShopPlanPayment.find_by(payos_order_code: order_code) || ShopPlanPayment.find_by(id: order_code)
+    return payment if payment.present? || order_code.blank?
+
+    create_fallback_payment_for_shop
+  end
+
+  def create_fallback_payment_for_shop
+    shop = Shop.find_by('id::text ILIKE ?', "#{order_code}%")
+    return nil if shop.nil?
+
+    amount = (data_hash['amount'] || data_hash[:amount] || 199_000).to_i
+    months = amount >= 1_990_000 ? 12 : 1
+    shop.shop_plan_payments.create!(amount: amount, months: months, status: 'pending')
   end
 
   def process_invoice(invoice)

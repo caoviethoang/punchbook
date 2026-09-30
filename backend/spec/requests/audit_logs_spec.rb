@@ -56,7 +56,7 @@ RSpec.describe 'AuditLogs', type: :request do
       )
 
       AuditLog.log_check_in!(shop: shop, staff: staff, membership: membership, checked_in_at: Time.current)
-      renew_log = AuditLog.log_membership_renewed!(
+      AuditLog.log_membership_renewed!(
         shop: shop,
         staff: staff,
         membership: membership,
