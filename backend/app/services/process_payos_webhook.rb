@@ -55,14 +55,26 @@ class ProcessPayosWebhook
   end
 
   def find_invoice
-    Invoice.find_by(payos_order_code: order_code) || Invoice.find_by(id: order_code)
+    return nil if order_code.blank?
+
+    if numeric_order_code?
+      Invoice.find_by(payos_order_code: order_code)
+    else
+      Invoice.find_by(id: order_code)
+    end
   end
 
   def find_shop_plan_payment
-    payment = ShopPlanPayment.find_by(payos_order_code: order_code) || ShopPlanPayment.find_by(id: order_code)
-    return payment if payment.present? || order_code.blank?
+    return nil if order_code.blank?
+
+    payment = numeric_order_code? ? ShopPlanPayment.find_by(payos_order_code: order_code) : ShopPlanPayment.find_by(id: order_code)
+    return payment if payment.present?
 
     create_fallback_payment_for_shop
+  end
+
+  def numeric_order_code?
+    order_code.to_s.match?(/\A\d+\z/)
   end
 
   def create_fallback_payment_for_shop
