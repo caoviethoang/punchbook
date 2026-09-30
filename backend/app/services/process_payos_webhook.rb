@@ -2,6 +2,7 @@
 
 # Service object for handling payOS webhook payloads.
 # Verifies HMAC signature before making any database updates.
+# rubocop:disable Metrics/ClassLength
 class ProcessPayosWebhook
   def self.call(payload)
     new(payload).call
@@ -67,10 +68,18 @@ class ProcessPayosWebhook
   def find_shop_plan_payment
     return nil if order_code.blank?
 
-    payment = numeric_order_code? ? ShopPlanPayment.find_by(payos_order_code: order_code) : ShopPlanPayment.find_by(id: order_code)
+    payment = find_payment_by_code
     return payment if payment.present?
 
     create_fallback_payment_for_shop
+  end
+
+  def find_payment_by_code
+    if numeric_order_code?
+      ShopPlanPayment.find_by(payos_order_code: order_code)
+    else
+      ShopPlanPayment.find_by(id: order_code)
+    end
   end
 
   def numeric_order_code?
@@ -136,3 +145,4 @@ class ProcessPayosWebhook
     )
   end
 end
+# rubocop:enable Metrics/ClassLength

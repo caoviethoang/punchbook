@@ -53,6 +53,13 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
   // Upgrade Modal state
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
 
+  const [daysLeft] = useState(() => {
+    if (!shop.plan_expires_at) return 0
+    return Math.ceil((new Date(shop.plan_expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+  })
+
+  const showRenewalButton = shop.plan !== "paid" || daysLeft <= 10
+
   // Toast feedback state
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
 
@@ -363,14 +370,20 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
               Gói {shop.plan === "paid" ? "Premium (Paid)" : "Miễn phí (Free)"}
             </span>
 
-            {isAdmin && (
+            {isAdmin && showRenewalButton && (
               <button
                 type="button"
                 onClick={() => setShowUpgradeModal(true)}
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md transition hover:from-amber-600 hover:to-indigo-700"
               >
                 <Zap className="h-3.5 w-3.5 fill-current" />
-                <span>{shop.plan === "paid" ? "Gia hạn Premium" : "Nâng cấp Premium"}</span>
+                <span>
+                  {shop.plan === "paid"
+                    ? daysLeft <= 5
+                      ? `Sắp hết hạn (${daysLeft} ngày) - Gia hạn ngay`
+                      : "Gia hạn Premium"
+                    : "Nâng cấp Premium"}
+                </span>
               </button>
             )}
           </div>
