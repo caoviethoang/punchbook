@@ -6,6 +6,7 @@ class ApiController < ApplicationController
   wrap_parameters false
 
   before_action :authenticate_shop!
+  before_action :set_paper_trail_whodunnit
 
   rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
   rescue_from ActiveRecord::RecordInvalid, with: :render_record_invalid
@@ -13,6 +14,10 @@ class ApiController < ApplicationController
   rescue_from CheckInMembership::Error, PayosService::Error, with: :render_unprocessable_exception
 
   private
+
+  def set_paper_trail_whodunnit
+    PaperTrail.request.whodunnit = current_staff&.name || current_staff&.id || current_shop&.id
+  end
 
   def find_shop_membership(id)
     current_shop.memberships.includes(:package).find(id)

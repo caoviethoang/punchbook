@@ -3,6 +3,8 @@
 class Package < ApplicationRecord
   include Discard::Model
 
+  has_paper_trail
+
   default_scope { kept }
 
   belongs_to :shop, inverse_of: :packages

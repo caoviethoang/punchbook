@@ -4,6 +4,8 @@ class Membership < ApplicationRecord
   include Discard::Model
   include MembershipStatusable
 
+  has_paper_trail
+
   default_scope { kept }
 
   MAX_FREE_MEMBERSHIPS = 15
