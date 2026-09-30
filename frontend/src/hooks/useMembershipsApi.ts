@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react"
+import { toApiError } from "../lib/errors"
 import {
   checkIn as checkInRequest,
   searchMemberships,
@@ -17,7 +18,7 @@ export function useMembershipsApi() {
     try {
       return await searchMemberships(query)
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Request failed"
+      const message = toApiError(err, "Tìm kiếm hội viên thất bại.")
       setError(message)
       throw err
     } finally {
@@ -26,12 +27,12 @@ export function useMembershipsApi() {
   }, [])
 
   const checkIn = useCallback(
-    async (id: string, staffId: string): Promise<CheckInResult> => {
+    async (id: string, staffId?: string): Promise<CheckInResult> => {
       setError(null)
       try {
         return await checkInRequest(id, staffId)
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Request failed"
+        const message = toApiError(err, "Check-in thất bại.")
         setError(message)
         throw err
       }

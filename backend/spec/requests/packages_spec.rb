@@ -121,4 +121,42 @@ RSpec.describe 'Packages', type: :request do
       expect(response.parsed_body['errors']).to include('Must set exactly one of sessions_count or duration_days')
     end
   end
+
+  describe 'PATCH /packages/:id' do
+    let!(:package) { Package.create!(shop: shop, name: 'Yoga 10', sessions_count: 10, price: 500_000) }
+
+    it 'returns 401 when unauthenticated' do
+      patch "/packages/#{package.id}", params: { package: { name: 'Yoga VIP' } }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'updates package successfully' do
+      payload = {
+        package: {
+          name: 'Yoga 12 buổi',
+          price: 600_000,
+          sessions_count: 12
+        }
+      }
+
+      patch "/packages/#{package.id}", params: payload, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['name']).to eq('Yoga 12 buổi')
+      expect(body['price']).to eq(600_000)
+      expect(body['sessions_count']).to eq(12)
+      expect(package.reload.name).to eq('Yoga 12 buổi')
+    end
+
+    it 'returns 404 for package belonging to another shop' do
+      other_shop = create_shop(name: 'Other', email: 'other@example.com')
+      other_pkg = Package.create!(shop: other_shop, name: 'Secret', sessions_count: 5, price: 100_000)
+
+      patch "/packages/#{other_pkg.id}", params: { package: { name: 'Hack' } }, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
 end

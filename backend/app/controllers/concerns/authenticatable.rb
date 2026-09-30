@@ -6,22 +6,39 @@ module Authenticatable
   extend ActiveSupport::Concern
 
   included do
-    attr_reader :current_shop
+    attr_reader :current_shop, :current_staff
   end
 
   private
 
   def authenticate_shop!
-    @current_shop = shop_from_token
-    render json: { error: 'Unauthorized' }, status: :unauthorized unless @current_shop
+    token = bearer_token
+    payload = JsonWebToken.decode(token) if token.present?
+    return render_unauthorized unless payload
+
+    @current_shop = Shop.find_by(id: payload[:shop_id])
+    return render_unauthorized unless @current_shop
+
+    @current_staff = resolve_current_staff(payload[:staff_id])
   end
 
-  def shop_from_token
-    token = bearer_token
-    return if token.blank?
+  def resolve_current_staff(staff_id)
+    staff = @current_shop.staffs.find_by(id: staff_id) if staff_id
+    staff || @current_shop.staffs.find_by(role: 'admin') ||
+      @current_shop.staffs.first ||
+      @current_shop.staffs.create!(name: @current_shop.name || 'Admin', role: 'admin')
+  end
 
-    payload = JsonWebToken.decode(token)
-    Shop.find_by(id: payload&.dig(:shop_id))
+  def render_unauthorized
+    render json: { error: 'Unauthorized' }, status: :unauthorized
+  end
+
+  def current_ability
+    @current_ability ||= Ability.new(current_staff)
+  end
+
+  def require_admin!
+    authorize! :manage, :all
   end
 
   def bearer_token

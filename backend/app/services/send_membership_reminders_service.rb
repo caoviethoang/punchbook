@@ -29,7 +29,7 @@ class SendMembershipRemindersService
   end
 
   def expiring_memberships
-    Membership.needing_reminder.includes(:package, :shop)
+    Membership.needing_reminder.includes(:package, :shop, :membership_reminders, :invoices)
   end
 
   def get_or_create_payment_link(membership)
@@ -45,12 +45,25 @@ class SendMembershipRemindersService
   end
 
   def find_pending_payment_url(membership)
-    membership.invoices
-              .where(status: 'pending')
-              .where.not(payos_checkout_url: nil)
-              .order(created_at: :desc)
-              .first
-              &.payos_checkout_url
+    if membership.invoices.loaded?
+      find_pending_url_from_loaded(membership.invoices)
+    else
+      find_pending_url_from_db(membership.invoices)
+    end
+  end
+
+  def find_pending_url_from_loaded(invoices)
+    invoices.select { |inv| inv.status == 'pending' && inv.payos_checkout_url.present? }
+            .max_by(&:created_at)
+            &.payos_checkout_url
+  end
+
+  def find_pending_url_from_db(invoices)
+    invoices.where(status: 'pending')
+            .where.not(payos_checkout_url: nil)
+            .order(created_at: :desc)
+            .first
+            &.payos_checkout_url
   end
 
   def send_zalo_reminder(membership, payment_url)

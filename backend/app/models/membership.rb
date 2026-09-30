@@ -42,6 +42,23 @@ class Membership < ApplicationRecord
     by_status_query(status.to_s)
   }
 
+  def checked_in_today?
+    today_range = Time.zone.now.all_day
+    if check_ins.loaded?
+      check_ins.any? { |ci| ci.checked_in_at && today_range.cover?(ci.checked_in_at) }
+    else
+      check_ins.exists?(checked_in_at: today_range)
+    end
+  end
+
+  def last_checked_in_at
+    if check_ins.loaded?
+      check_ins.reject { |ci| ci.checked_in_at.nil? }.max_by(&:checked_in_at)&.checked_in_at
+    else
+      check_ins.maximum(:checked_in_at)
+    end
+  end
+
   def as_api_json
     MembershipSerializer.new(self).as_api_json
   end

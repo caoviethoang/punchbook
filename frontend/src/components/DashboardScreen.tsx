@@ -12,6 +12,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react"
+import type { Staff } from "../lib/auth"
 import { AuditLogsPanel } from "./AuditLogsPanel"
 import { useDashboard } from "../hooks/useDashboard"
 import type { DashboardMembership } from "../lib/dashboard"
@@ -57,7 +58,12 @@ const STATUS_TABS: { key: StatusFilterType; label: string }[] = [
   { key: "expired", label: "Đã hết" },
 ]
 
-export function DashboardScreen() {
+interface DashboardScreenProps {
+  currentStaff?: Staff | null
+}
+
+export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
+  const isAdmin = !currentStaff || currentStaff.role === "admin"
   const { data, loading, error, load } = useDashboard()
   const [selectedMembershipForRenewal, setSelectedMembershipForRenewal] =
     useState<DashboardMembership | null>(null)
@@ -187,47 +193,51 @@ export function DashboardScreen() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setIsAuditLogsOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            <Shield className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            <span>Nhật ký</span>
-          </button>
+        {isAdmin && (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsAuditLogsOpen(true)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <Shield className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              <span>Nhật ký</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setIsImportModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            <Upload className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            <span>Import Excel</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setIsImportModalOpen(true)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <Upload className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <span>Import Excel</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => void handleExport()}
-            disabled={exporting}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-500"
-          >
-            {exporting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <FileSpreadsheet className="h-4 w-4" />
-            )}
-            <span>{exporting ? "Đang xuất..." : "Xuất Excel"}</span>
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => void handleExport()}
+              disabled={exporting}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+            >
+              {exporting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <FileSpreadsheet className="h-4 w-4" />
+              )}
+              <span>{exporting ? "Đang xuất..." : "Xuất Excel"}</span>
+            </button>
+          </div>
+        )}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Metric
-          label="Doanh thu tháng"
-          value={formatVnd(data.revenue_this_month)}
-          icon={<Wallet className="h-4 w-4" />}
-        />
+      <div className={`grid gap-4 ${isAdmin ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+        {isAdmin && (
+          <Metric
+            label="Doanh thu tháng"
+            value={formatVnd(data.revenue_this_month)}
+            icon={<Wallet className="h-4 w-4" />}
+          />
+        )}
         <Metric
           label="Hội viên active"
           value={String(data.active_memberships_count)}

@@ -3,10 +3,12 @@
 class MembershipsController < ApiController
   include Paginatable
 
+  before_action :require_admin!, only: %i[import import_template]
+
   def index
     page, per_page = parse_pagination_params
     relation = current_shop.memberships.search_by_query(params[:query]).by_status(params[:status])
-    memberships = paginate_relation(relation.includes(:package).order(:customer_name), page, per_page)
+    memberships = fetch_paginated_memberships(relation, page, per_page)
 
     render json: {
       memberships: memberships.map(&:as_api_json),
@@ -27,6 +29,15 @@ class MembershipsController < ApiController
       package_id: membership_params[:package_id]
     )
     render json: { membership: membership.as_api_json }, status: :created
+  end
+
+  def update
+    membership = find_shop_membership(params.expect(:id))
+    if membership.update(update_membership_params)
+      render json: { membership: membership.as_api_json }
+    else
+      render json: { errors: membership.errors.full_messages }, status: :unprocessable_content
+    end
   end
 
   def destroy
@@ -76,7 +87,21 @@ class MembershipsController < ApiController
     params.expect(membership: %i[customer_name phone package_id])
   end
 
+  def update_membership_params
+    params.expect(membership: %i[customer_name phone package_id sessions_left expires_at])
+  end
+
   def find_staff
-    current_shop.staffs.find(params.expect(:staff_id))
+    if params[:staff_id].present?
+      current_shop.staffs.find(params.expect(:staff_id))
+    else
+      current_shop.staffs.first || current_shop.staffs.create!(name: 'Lễ tân', role: 'staff')
+    end
+  end
+
+  def fetch_paginated_memberships(relation, page, per_page)
+    records = paginate_relation(relation.includes(:package).order(:customer_name), page, per_page)
+    ActiveRecord::Associations::Preloader.new(records: records, associations: :check_ins).call
+    records
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_21_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_28_113001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -81,21 +81,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_000000) do
     t.index ["shop_id"], name: "index_memberships_on_shop_id"
   end
 
+  create_table "package_categories", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.uuid "shop_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["shop_id", "name"], name: "index_package_categories_on_shop_id_and_name", unique: true
+    t.index ["shop_id"], name: "index_package_categories_on_shop_id"
+  end
+
   create_table "packages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "discarded_at"
     t.integer "duration_days"
     t.string "name"
+    t.uuid "package_category_id"
     t.integer "price"
     t.integer "sessions_count"
     t.uuid "shop_id", null: false
     t.datetime "updated_at", null: false
     t.index ["discarded_at"], name: "index_packages_on_discarded_at"
+    t.index ["package_category_id"], name: "index_packages_on_package_category_id"
     t.index ["shop_id"], name: "index_packages_on_shop_id"
   end
 
   create_table "shops", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "address"
+    t.string "bank_account_name"
+    t.string "bank_account_no"
+    t.string "bank_name"
     t.datetime "created_at", null: false
     t.string "email", null: false
     t.string "encrypted_password", default: "", null: false
@@ -110,9 +124,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_000000) do
   create_table "staffs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name"
+    t.string "password_digest"
     t.string "role"
     t.uuid "shop_id", null: false
     t.datetime "updated_at", null: false
+    t.string "username"
+    t.index ["shop_id", "username"], name: "index_staffs_on_shop_id_and_username", unique: true, where: "(username IS NOT NULL)"
     t.index ["shop_id"], name: "index_staffs_on_shop_id"
   end
 
@@ -124,6 +141,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_000000) do
   add_foreign_key "membership_reminders", "memberships"
   add_foreign_key "memberships", "packages"
   add_foreign_key "memberships", "shops"
+  add_foreign_key "package_categories", "shops"
+  add_foreign_key "packages", "package_categories"
   add_foreign_key "packages", "shops"
   add_foreign_key "staffs", "shops"
 end

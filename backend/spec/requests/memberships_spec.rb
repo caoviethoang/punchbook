@@ -63,10 +63,24 @@ RSpec.describe 'Memberships', type: :request do
         'id' => hoa.id,
         'customer_name' => 'Hoa Nguyen',
         'phone' => '0902000000',
-        'sessions_left' => 3
+        'sessions_left' => 3,
+        'checked_in_today' => false,
+        'last_checked_in_at' => nil
       )
-      expect(memberships.first['package']).to eq('id' => package.id, 'name' => '10-session massage')
+      expect(memberships.first['package']).to include('id' => package.id, 'name' => '10-session massage')
       expect(memberships.first['expires_at']).to eq((Date.current + 30.days).iso8601)
+    end
+
+    it 'returns checked_in_today true when member checked in today' do
+      staff = Staff.create!(shop: shop, name: 'Receptionist', role: 'staff')
+      CheckIn.create!(membership: hoa, staff: staff, checked_in_at: Time.current)
+
+      get '/memberships', params: { query: 'hoa' }, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      member = response.parsed_body['memberships'].first
+      expect(member['checked_in_today']).to be true
+      expect(member['last_checked_in_at']).to be_present
     end
 
     it 'searches by phone within current_shop' do
@@ -204,7 +218,7 @@ RSpec.describe 'Memberships', type: :request do
         'phone' => '0903000000',
         'sessions_left' => 10
       )
-      expect(body['package']).to eq('id' => package.id, 'name' => '10-session massage')
+      expect(body['package']).to include('id' => package.id, 'name' => '10-session massage')
       expect(Membership.find(body['id'])).to have_attributes(shop_id: shop.id, sessions_left: 10)
     end
 
@@ -322,6 +336,52 @@ RSpec.describe 'Memberships', type: :request do
     end
   end
 
+  describe 'PATCH /memberships/:id' do
+    it 'returns 401 when unauthenticated' do
+      patch "/memberships/#{hoa.id}", params: { membership: { customer_name: 'Hoa Updated' } }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'updates customer_name, phone, and sessions_left successfully' do
+      patch "/memberships/#{hoa.id}",
+            params: {
+              membership: {
+                customer_name: 'Hoa Nguyen Updated',
+                phone: '0999888777',
+                sessions_left: 5
+              }
+            },
+            headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body['membership']
+      expect(body['customer_name']).to eq('Hoa Nguyen Updated')
+      expect(body['phone']).to eq('0999888777')
+      expect(body['sessions_left']).to eq(5)
+      expect(body['qr_code_value']).to eq("PUNCHBOOK:#{hoa.id}")
+
+      hoa.reload
+      expect(hoa.customer_name).to eq('Hoa Nguyen Updated')
+      expect(hoa.phone).to eq('0999888777')
+      expect(hoa.sessions_left).to eq(5)
+    end
+
+    it 'returns 404 when membership belongs to another shop' do
+      other_shop = create_shop(name: 'Other Spa', email: 'other@example.com')
+      other_pkg = Package.create!(shop: other_shop, name: 'Pkg', sessions_count: 5, price: 100_000)
+      other_member = Membership.create!(
+        shop: other_shop, package: other_pkg, customer_name: 'Other', phone: '0900000000'
+      )
+
+      patch "/memberships/#{other_member.id}",
+            params: { membership: { customer_name: 'Hacked' } },
+            headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
   describe 'POST /memberships/:id/check_in' do
     let!(:staff) { Staff.create!(shop: shop, name: 'Mai', role: 'staff') }
 
@@ -382,11 +442,13 @@ RSpec.describe 'Memberships', type: :request do
       expect(response.parsed_body['error']).to eq('Membership has expired')
     end
 
-    it 'returns 422 when staff_id is missing' do
-      post "/memberships/#{hoa.id}/check_in", headers: auth_headers(shop)
+    it 'checks in with default shop staff when staff_id is missing' do
+      expect do
+        post "/memberships/#{hoa.id}/check_in", headers: auth_headers(shop)
+      end.to change(CheckIn, :count).by(1)
 
-      expect(response).to have_http_status(:unprocessable_content)
-      expect(response.parsed_body['error']).to be_present
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.dig('membership', 'id')).to eq(hoa.id)
     end
 
     it 'returns 404 for another shop membership and does not check in' do
