@@ -19,15 +19,26 @@ import {
 import { MembershipDetailModal } from "./MembershipDetailModal"
 import { RenewalModal } from "./RenewalModal"
 import { QRScannerModal } from "./QRScannerModal"
+import { ThermalReceiptModal, type ReceiptData } from "./ThermalReceiptModal"
 import { Toast } from "./ui/Toast"
 import { MembershipResultList } from "./checkin/CheckInSearchResults"
 
 interface CheckInScreenProps {
   /** Optional staff ID to perform check-ins. */
   currentStaffId?: string
+  shopName?: string
+  shopAddress?: string | null
+  shopPhone?: string | null
 }
 
-export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
+export function CheckInScreen({
+  currentStaffId,
+  shopName = "PunchBook Spa",
+  shopAddress,
+  shopPhone,
+}: CheckInScreenProps) {
   const [query, setQuery] = useState("")
   const debouncedQuery = useDebounce(query, 300)
 
@@ -43,6 +54,7 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
     type?: "success" | "error"
   } | null>(null)
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false)
+  const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const { search, checkIn, searchLoading, error: apiError } = useMembershipsApi()
@@ -53,6 +65,20 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
 
   // Track if input is currently being debounced (300ms delay has not passed yet)
   const isDebouncing = query !== debouncedQuery
+
+  function handlePrintReceipt(membership: Membership, checkedInAt?: string) {
+    setSelectedReceipt({
+      shopName,
+      shopAddress,
+      shopPhone,
+      customerName: membership.customer_name,
+      customerPhone: membership.phone,
+      packageName: membership.package.name,
+      sessionsLeft: membership.sessions_left,
+      expiresAt: membership.expires_at,
+      checkedInAt: checkedInAt || new Date().toISOString(),
+    })
+  }
 
   // Fetch memberships using debounced query
   useEffect(() => {
@@ -313,6 +339,7 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
           onCheckIn={(id) => void handleCheckIn(id)}
           onRenew={(m) => setRenewingMembership(m)}
           onViewDetail={(id) => setDetailMembershipId(id)}
+          onPrintReceipt={handlePrintReceipt}
         />
       )}
 
@@ -329,6 +356,14 @@ export function CheckInScreen({ currentStaffId }: CheckInScreenProps) {
         <RenewalModal
           membership={renewingMembership}
           onClose={() => setRenewingMembership(null)}
+        />
+      )}
+
+      {/* Thermal Receipt Modal */}
+      {selectedReceipt && (
+        <ThermalReceiptModal
+          receipt={selectedReceipt}
+          onClose={() => setSelectedReceipt(null)}
         />
       )}
 

@@ -142,7 +142,12 @@ function App() {
         {activeView === "dashboard" ? (
           <DashboardScreen currentStaff={staff} />
         ) : activeView === "checkin" ? (
-          <CheckInScreen />
+          <CheckInScreen
+            currentStaffId={staff?.id}
+            shopName={shop.name}
+            shopAddress={shop.address}
+            shopPhone={shop.phone}
+          />
         ) : activeView === "members" ? (
           <MembershipsScreen shop={shop} currentStaff={staff} />
         ) : activeView === "packages" ? (

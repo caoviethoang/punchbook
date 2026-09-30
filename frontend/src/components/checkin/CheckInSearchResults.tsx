@@ -5,6 +5,7 @@ import {
   Eye,
   Loader2,
   Package as PackageIcon,
+  Printer,
   RefreshCw,
   UserCheck,
 } from "lucide-react"
@@ -95,6 +96,7 @@ export interface MembershipResultListProps {
   onCheckIn: (id: string) => void
   onRenew: (membership: Membership) => void
   onViewDetail: (id: string) => void
+  onPrintReceipt?: (membership: Membership) => void
 }
 
 function formatCheckInTime(dateStr?: string | null): string {
@@ -115,6 +117,7 @@ export function MembershipResultList({
   onCheckIn,
   onRenew,
   onViewDetail,
+  onPrintReceipt,
 }: MembershipResultListProps) {
   return (
     <div role="list" aria-label="Danh sách hội viên" className="grid gap-4">
@@ -162,19 +165,31 @@ export function MembershipResultList({
                 </p>
               </button>
               {currentMessage && (
-                <div
-                  className={`mt-2 flex items-center gap-1.5 text-sm font-medium ${
-                    currentMessage.type === "success"
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-red-600 dark:text-red-400"
-                  }`}
-                >
-                  {currentMessage.type === "success" ? (
-                    <CheckCircle2 className="h-4 w-4 shrink-0" />
-                  ) : (
-                    <AlertCircle className="h-4 w-4 shrink-0" />
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <div
+                    className={`flex items-center gap-1.5 text-sm font-medium ${
+                      currentMessage.type === "success"
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-red-600 dark:text-red-400"
+                    }`}
+                  >
+                    {currentMessage.type === "success" ? (
+                      <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                    )}
+                    <span>{currentMessage.text}</span>
+                  </div>
+                  {currentMessage.type === "success" && onPrintReceipt && (
+                    <button
+                      type="button"
+                      onClick={() => onPrintReceipt(membership)}
+                      className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                    >
+                      <Printer className="h-3.5 w-3.5" />
+                      In phiếu ngay
+                    </button>
                   )}
-                  <span>{currentMessage.text}</span>
                 </div>
               )}
             </div>
@@ -187,8 +202,19 @@ export function MembershipResultList({
               />
             </div>
 
-            {/* Col 4: Action buttons (Chi tiết + Gia hạn + Check-in) */}
+            {/* Col 4: Action buttons (In phiếu + Chi tiết + Gia hạn + Check-in) */}
             <div className="flex shrink-0 items-center gap-2">
+              {onPrintReceipt && (
+                <button
+                  type="button"
+                  onClick={() => onPrintReceipt(membership)}
+                  title="In phiếu check-in (POS)"
+                  aria-label={`In phiếu check-in cho ${membership.customer_name}`}
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white p-3.5 text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                >
+                  <Printer className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => onViewDetail(membership.id)}
