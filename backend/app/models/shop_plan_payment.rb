@@ -1,19 +1,15 @@
 # frozen_string_literal: true
 
-class Invoice < ApplicationRecord
+class ShopPlanPayment < ApplicationRecord
   STATUSES = %w[pending paid failed cancelled].freeze
 
-  belongs_to :membership, -> { with_discarded }, inverse_of: :invoices
+  belongs_to :shop, inverse_of: :shop_plan_payments
 
   before_validation :generate_payos_order_code, on: :create
 
-  validates :amount, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :amount, :months, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :status, presence: true, inclusion: { in: STATUSES }
-  validates :payos_order_code, uniqueness: { allow_nil: true }
-
-  def as_api_json
-    InvoiceSerializer.new(self).as_api_json
-  end
+  validates :payos_order_code, presence: true, uniqueness: true
 
   private
 
@@ -21,9 +17,8 @@ class Invoice < ApplicationRecord
     return if payos_order_code.present?
 
     loop do
-      # Generates a unique 11-12 digit integer e.g., 93015350142
       candidate = (Time.current.strftime('%m%d%H%M%S').to_i * 100) + rand(10..99)
-      unless Invoice.exists?(payos_order_code: candidate)
+      unless ShopPlanPayment.exists?(payos_order_code: candidate) || Invoice.exists?(payos_order_code: candidate)
         self.payos_order_code = candidate
         break
       end

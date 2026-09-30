@@ -15,10 +15,15 @@ class ProcessPayosWebhook
     return [false, :invalid_signature] unless valid_signature?
 
     invoice = find_invoice
-    return [false, :invoice_not_found] if invoice.nil?
-    return [true, :already_processed] if invoice.status == 'paid'
+    shop_plan_payment = find_shop_plan_payment
 
-    process_payment(invoice)
+    return [false, :invoice_not_found] if invoice.nil? && shop_plan_payment.nil?
+
+    if invoice.present?
+      process_invoice(invoice)
+    else
+      process_shop_plan_payment(shop_plan_payment)
+    end
   end
 
   private
@@ -50,14 +55,29 @@ class ProcessPayosWebhook
   end
 
   def find_invoice
-    Invoice.find_by(id: order_code)
+    Invoice.find_by(payos_order_code: order_code) || Invoice.find_by(id: order_code)
   end
 
-  def process_payment(invoice)
+  def find_shop_plan_payment
+    ShopPlanPayment.find_by(payos_order_code: order_code)
+  end
+
+  def process_invoice(invoice)
+    return [true, :already_processed] if invoice.status == 'paid'
     return [true, :payment_not_successful] unless response_code == '00'
 
     Invoice.transaction do
       execute_renewal_and_log!(invoice)
+    end
+    [true, :success]
+  end
+
+  def process_shop_plan_payment(payment)
+    return [true, :already_processed] if payment.status == 'paid'
+    return [true, :payment_not_successful] unless response_code == '00'
+
+    ShopPlanPayment.transaction do
+      execute_shop_upgrade_and_log!(payment)
     end
     [true, :success]
   end
@@ -73,6 +93,22 @@ class ProcessPayosWebhook
     AuditLog.log_membership_renewed!(
       shop: membership.shop, staff: nil, membership: membership,
       sessions_before: sessions_before, expires_at_before: expires_at_before
+    )
+  end
+
+  def execute_shop_upgrade_and_log!(payment)
+    shop = payment.shop
+    base = shop.plan_expires_at && shop.plan_expires_at > Time.current ? shop.plan_expires_at : Time.current
+
+    payment.update!(status: 'paid')
+    shop.update!(plan: 'paid', plan_expires_at: base + payment.months.months)
+    log_shop_upgrade!(shop, payment)
+  end
+
+  def log_shop_upgrade!(shop, payment)
+    AuditLog.create!(
+      shop: shop, staff: nil, action: 'shop_plan_upgraded', target_type: 'Shop', target_id: shop.id,
+      details: { months: payment.months, amount: payment.amount, expires_at: shop.plan_expires_at }
     )
   end
 end

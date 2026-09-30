@@ -46,7 +46,7 @@ class CreateInvoice
 
   def create_payos_link(invoice)
     PayosService.create_payment_link(
-      order_code: invoice.id,
+      order_code: invoice.payos_order_code,
       amount: invoice.amount,
       description: (params[:description].presence || DEFAULT_DESCRIPTION).to_s[0..8],
       cancel_url: params[:cancel_url].presence || default_url('cancel'),

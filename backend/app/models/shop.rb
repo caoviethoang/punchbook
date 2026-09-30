@@ -9,7 +9,9 @@ class Shop < ApplicationRecord
   has_many :package_categories, dependent: :destroy, inverse_of: :shop
   has_many :packages, dependent: :destroy, inverse_of: :shop
   has_many :memberships, dependent: :destroy, inverse_of: :shop
+  has_many :check_ins, through: :memberships
   has_many :audit_logs, dependent: :destroy, inverse_of: :shop
+  has_many :shop_plan_payments, dependent: :destroy, inverse_of: :shop
 
   validates :plan, presence: true, inclusion: { in: PLANS }
   validates :name, presence: true

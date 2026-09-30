@@ -27,20 +27,27 @@ class SettingsController < ApiController
   end
 
   def upgrade_plan
-    months = params[:months] || 1
-    result = UpgradeShopPlanService.new(current_shop, months: months).call
+    result = UpgradeShopPlanService.new(current_shop, months: params[:months] || 1).call
 
     if result.success?
-      render json: {
-        shop: ShopSerializer.new(result.shop).as_json,
-        message: 'Nâng cấp gói Premium thành công!'
-      }
+      render json: format_upgrade_response(result)
     else
       render json: { errors: result.errors }, status: :unprocessable_content
     end
   end
 
   private
+
+  def format_upgrade_response(result)
+    msg = result.checkout_url.present? ? 'Khởi tạo thanh toán thành công!' : 'Nâng cấp gói Premium thành công!'
+    {
+      shop: ShopSerializer.new(result.shop).as_json,
+      checkout_url: result.checkout_url,
+      qr_code: result.qr_code,
+      payment_id: result.payment&.id,
+      message: msg
+    }
+  end
 
   def authorize_shop_update!
     authorize! :update, current_shop

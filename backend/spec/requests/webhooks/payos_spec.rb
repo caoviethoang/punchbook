@@ -156,10 +156,31 @@ RSpec.describe 'PayOS Webhook API', type: :request do
       end
     end
 
+    context 'when signature is valid and payment succeeded for shop plan upgrade' do
+      it 'marks shop plan payment as paid and upgrades shop plan' do
+        payment = ShopPlanPayment.create!(shop: shop, amount: 199_000, months: 1, status: 'pending')
+        data = { orderCode: payment.payos_order_code, amount: 199_000, code: '00' }
+        signature = compute_signature(data)
+
+        payload = { code: '00', desc: 'success', data: data, signature: signature }
+
+        post '/webhooks/payos', params: payload, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['status']).to eq('success')
+
+        payment.reload
+        shop.reload
+        expect(payment.status).to eq('paid')
+        expect(shop.plan).to eq('paid')
+        expect(shop.plan_expires_at).to be > Time.current
+      end
+    end
+
     context 'when signature is valid but payment response code indicates failure' do
       it 'does not mark invoice as paid or renew membership' do
         membership, invoice = create_session_fixture
-        data = { orderCode: invoice.id, amount: 500_000, code: '01' }
+        data = { orderCode: invoice.payos_order_code || invoice.id, amount: 500_000, code: '01' }
         signature = compute_signature(data)
 
         payload = { code: '01', desc: 'failed', data: data, signature: signature }
