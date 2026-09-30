@@ -57,7 +57,7 @@ RSpec.describe 'Dashboard', type: :request do
 
       hoa = response.parsed_body['memberships'].find { |m| m['customer_name'] == 'Hoa Nguyen' }
       expect(hoa).to include('id' => active.id, 'sessions_left' => 5, 'status' => 'active')
-      expect(hoa['package']).to eq('id' => session_package.id, 'name' => '10-session massage')
+      expect(hoa['package']).to include('id' => session_package.id, 'name' => '10-session massage')
       expect(status_for('Lan Tran')).to eq('expiring')
       expect(status_for('Expired User')).to eq('expired')
     end

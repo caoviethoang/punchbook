@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 def create_staffs(shop)
-  staff1 = shop.staffs.create!(name: 'Alice Nguyen', role: 'Manager')
-  staff2 = shop.staffs.create!(name: 'Bob Tran', role: 'Trainer')
+  staff1 = shop.staffs.create!(name: 'Alice Nguyen (Admin)', role: 'admin', username: shop.email,
+                               password: 'password123')
+  staff2 = shop.staffs.create!(name: 'Bob Tran (Lễ tân)', role: 'staff',
+                               username: "letan_#{shop.email.split('@').first}", password: 'password123')
   [staff1, staff2]
 end
 
@@ -72,8 +74,9 @@ end
 Rails.logger.debug 'Clearing existing data...'
 Invoice.destroy_all
 CheckIn.destroy_all
-Membership.destroy_all
-Package.destroy_all
+Membership.with_discarded.destroy_all
+Package.with_discarded.destroy_all
+PackageCategory.destroy_all
 Staff.destroy_all
 Shop.destroy_all
 

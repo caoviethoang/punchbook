@@ -11,7 +11,7 @@ class DashboardQuery
   end
 
   def to_h
-    memberships = shop.memberships.includes(:package).order(:customer_name)
+    memberships = shop.memberships.includes(:package, :check_ins).order(:customer_name).to_a
     hourly = check_in_frequency_by_hour
 
     {

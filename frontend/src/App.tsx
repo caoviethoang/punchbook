@@ -2,37 +2,53 @@ import { useEffect, useState } from "react"
 import { CheckInScreen } from "./components/CheckInScreen"
 import { DashboardScreen } from "./components/DashboardScreen"
 import { LoginScreen } from "./components/LoginScreen"
-import { MembershipCreateForm } from "./components/MembershipCreateForm"
-import { PackageCreateForm } from "./components/PackageCreateForm"
+import { MembershipsScreen } from "./components/MembershipsScreen"
+import { PackagesScreen } from "./components/PackagesScreen"
 import { SettingsScreen } from "./components/SettingsScreen"
 import {
   clearStoredToken,
-  fetchCurrentShop,
+  fetchCurrentAuth,
   getStoredToken,
   type Shop,
+  type Staff,
 } from "./lib/auth"
 
 type AppView = "dashboard" | "checkin" | "packages" | "members" | "settings"
 
-const NAV_ITEMS: { view: AppView; label: string }[] = [
+interface NavItem {
+  view: AppView
+  label: string
+  adminOnly?: boolean
+}
+
+const NAV_ITEMS: NavItem[] = [
   { view: "dashboard", label: "Dashboard" },
   { view: "checkin", label: "Check-in" },
   { view: "members", label: "Hội viên" },
-  { view: "packages", label: "Gói dịch vụ" },
-  { view: "settings", label: "Cài đặt" },
+  { view: "packages", label: "Gói dịch vụ", adminOnly: true },
+  { view: "settings", label: "Cài đặt", adminOnly: true },
 ]
 
 function App() {
   const [shop, setShop] = useState<Shop | null>(null)
+  const [staff, setStaff] = useState<Staff | null>(null)
   const [authLoading, setAuthLoading] = useState(() => getStoredToken() !== null)
   const [view, setView] = useState<AppView>("dashboard")
+
+  const isAdmin = !staff || staff.role === "admin"
+  const visibleNavItems = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin)
+  const activeView =
+    !isAdmin && (view === "settings" || view === "packages") ? "dashboard" : view
 
   useEffect(() => {
     const token = getStoredToken()
     if (!token) return
 
-    fetchCurrentShop(token)
-      .then(setShop)
+    fetchCurrentAuth(token)
+      .then(({ shop: s, staff: st }) => {
+        setShop(s)
+        setStaff(st)
+      })
       .catch(() => clearStoredToken())
       .finally(() => setAuthLoading(false))
   }, [])
@@ -40,8 +56,22 @@ function App() {
   function handleLogout() {
     clearStoredToken()
     setShop(null)
+    setStaff(null)
     setView("dashboard")
   }
+
+  function handleAuthSuccess(s: Shop, st?: Staff | null) {
+    setShop(s)
+    if (st !== undefined) setStaff(st)
+  }
+
+  useEffect(() => {
+    if (shop?.name) {
+      document.title = `${shop.name} - PunchBook`
+    } else {
+      document.title = "PunchBook"
+    }
+  }, [shop?.name])
 
   if (authLoading) {
     return (
@@ -54,7 +84,7 @@ function App() {
   if (!shop) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 p-4 dark:bg-slate-950">
-        <LoginScreen onSuccess={setShop} />
+        <LoginScreen onSuccess={(s, st) => handleAuthSuccess(s, st)} />
       </div>
     )
   }
@@ -63,24 +93,26 @@ function App() {
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <h1 className="text-2xl font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400">
-              PunchBook
-            </h1>
-            <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
               {shop.name}
-            </span>
+            </h1>
+            {staff && (
+              <span className="rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                {staff.name} ({staff.role === "admin" ? "Admin" : "Lễ tân"})
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-3 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
             <nav className="flex flex-wrap rounded-xl border border-slate-200 p-1 dark:border-slate-700">
-              {NAV_ITEMS.map(({ view: v, label }) => (
+              {visibleNavItems.map(({ view: v, label }) => (
                 <button
                   key={v}
                   type="button"
                   onClick={() => setView(v)}
                   className={`rounded-lg px-3 py-1.5 font-semibold transition ${
-                    view === v
+                    activeView === v
                       ? "bg-indigo-600 text-white"
                       : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                   }`}
@@ -107,20 +139,21 @@ function App() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-6">
-        {view === "dashboard" ? (
-          <DashboardScreen />
-        ) : view === "checkin" ? (
-          <CheckInScreen />
-        ) : view === "members" ? (
-          <div className="flex justify-center">
-            <MembershipCreateForm />
-          </div>
-        ) : view === "packages" ? (
-          <div className="flex justify-center">
-            <PackageCreateForm />
-          </div>
+        {activeView === "dashboard" ? (
+          <DashboardScreen currentStaff={staff} />
+        ) : activeView === "checkin" ? (
+          <CheckInScreen
+            currentStaffId={staff?.id}
+            shopName={shop.name}
+            shopAddress={shop.address}
+            shopPhone={shop.phone}
+          />
+        ) : activeView === "members" ? (
+          <MembershipsScreen shop={shop} currentStaff={staff} />
+        ) : activeView === "packages" ? (
+          <PackagesScreen currentStaff={staff} />
         ) : (
-          <SettingsScreen shop={shop} onShopUpdated={setShop} />
+          <SettingsScreen shop={shop} currentStaff={staff} onShopUpdated={setShop} />
         )}
       </main>
     </div>
