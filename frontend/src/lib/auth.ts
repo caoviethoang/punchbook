@@ -1,5 +1,13 @@
 import { apiGet, apiPost } from "./api"
 
+export interface Staff {
+  id: string
+  name: string
+  username: string | null
+  role: "admin" | "staff"
+  created_at?: string
+}
+
 export interface Shop {
   id: string
   name: string
@@ -8,11 +16,15 @@ export interface Shop {
   email: string
   plan: string
   plan_expires_at?: string | null
+  bank_name?: string | null
+  bank_account_no?: string | null
+  bank_account_name?: string | null
 }
 
 export interface AuthResponse {
   token: string
   shop: Shop
+  staff: Staff | null
 }
 
 const TOKEN_KEY = "punchbook_token"
@@ -29,8 +41,12 @@ export function clearStoredToken(): void {
   localStorage.removeItem(TOKEN_KEY)
 }
 
-export async function login(email: string, password: string): Promise<AuthResponse> {
-  return apiPost<AuthResponse>("/auth/login", { email, password }, { auth: false })
+export async function login(loginInput: string, password: string, shopEmail?: string): Promise<AuthResponse> {
+  return apiPost<AuthResponse>(
+    "/auth/login",
+    { email: loginInput, username: loginInput, password, shop_email: shopEmail },
+    { auth: false }
+  )
 }
 
 export async function register(input: {
@@ -43,7 +59,12 @@ export async function register(input: {
   return apiPost<AuthResponse>("/auth/register", input, { auth: false })
 }
 
+export async function fetchCurrentAuth(token: string): Promise<{ shop: Shop; staff: Staff | null }> {
+  const body = await apiGet<{ shop: Shop; staff: Staff | null }>("/auth/me", { token })
+  return { shop: body.shop, staff: body.staff }
+}
+
 export async function fetchCurrentShop(token: string): Promise<Shop> {
-  const body = await apiGet<{ shop: Shop }>("/auth/me", { token })
-  return body.shop
+  const { shop } = await fetchCurrentAuth(token)
+  return shop
 }

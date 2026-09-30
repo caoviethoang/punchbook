@@ -120,7 +120,7 @@ Create MembershipsController and endpoints:
 
 Ensure both endpoints are scoped to current_shop (Devise); do not allow
 shop A to operate on shop B's data (write a dedicated test for this — the
-most common security hole in multi-tenant apps).
+most common security hole in multi-tenanPunchBookPunchBookt apps).
 
 Write request specs (RSpec) for both endpoints, including deliberately calling
 the API with a membership_id from another shop and confirming it is blocked (403 or 404).

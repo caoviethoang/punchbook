@@ -67,7 +67,12 @@ module MembershipStatusable
   end
 
   def reminder_sent_today?
-    membership_reminders.exists?(sent_at: Time.current.all_day)
+    today_range = Time.current.all_day
+    if membership_reminders.loaded?
+      membership_reminders.any? { |r| r.sent_at && today_range.cover?(r.sent_at) }
+    else
+      membership_reminders.exists?(sent_at: today_range)
+    end
   end
 
   def apply_package_init
