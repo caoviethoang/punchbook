@@ -1,17 +1,18 @@
 # frozen_string_literal: true
 
 class MembershipsController < ApiController
-  DEFAULT_PER_PAGE = 20
-  MAX_PER_PAGE = 100
+  include Paginatable
+
+  before_action :require_admin!, only: %i[import import_template]
 
   def index
     page, per_page = parse_pagination_params
-    base_relation = current_shop.memberships.search_by_query(params[:query]).by_status(params[:status])
-    total_count = base_relation.count
+    relation = current_shop.memberships.search_by_query(params[:query]).by_status(params[:status])
+    memberships = fetch_paginated_memberships(relation, page, per_page)
 
     render json: {
-      memberships: fetch_paginated_memberships(base_relation, page, per_page).map(&:as_api_json),
-      meta: build_pagination_meta(total_count, page, per_page)
+      memberships: memberships.map(&:as_api_json),
+      meta: build_pagination_meta(relation.count, page, per_page)
     }
   end
 
@@ -28,6 +29,15 @@ class MembershipsController < ApiController
       package_id: membership_params[:package_id]
     )
     render json: { membership: membership.as_api_json }, status: :created
+  end
+
+  def update
+    membership = find_shop_membership(params.expect(:id))
+    if membership.update(update_membership_params)
+      render json: { membership: membership.as_api_json }
+    else
+      render json: { errors: membership.errors.full_messages }, status: :unprocessable_content
+    end
   end
 
   def destroy
@@ -73,31 +83,25 @@ class MembershipsController < ApiController
 
   private
 
-  def build_pagination_meta(total_count, page, per_page)
-    total_pages = [(total_count.to_f / per_page).ceil, 1].max
-    { total: total_count, page: page, per_page: per_page, total_pages: total_pages }
-  end
-
-  def fetch_paginated_memberships(relation, page, per_page)
-    relation.includes(:package)
-            .order(:customer_name)
-            .offset((page - 1) * per_page)
-            .limit(per_page)
-  end
-
-  def parse_pagination_params
-    page = [params[:page].to_i, 1].max
-    raw_per_page = params[:per_page].present? ? params[:per_page].to_i : DEFAULT_PER_PAGE
-    per_page = raw_per_page.clamp(1, MAX_PER_PAGE)
-
-    [page, per_page]
-  end
-
   def membership_params
     params.expect(membership: %i[customer_name phone package_id])
   end
 
+  def update_membership_params
+    params.expect(membership: %i[customer_name phone package_id sessions_left expires_at])
+  end
+
   def find_staff
-    current_shop.staffs.find(params.expect(:staff_id))
+    if params[:staff_id].present?
+      current_shop.staffs.find(params.expect(:staff_id))
+    else
+      current_shop.staffs.first || current_shop.staffs.create!(name: 'Lễ tân', role: 'staff')
+    end
+  end
+
+  def fetch_paginated_memberships(relation, page, per_page)
+    records = paginate_relation(relation.includes(:package).order(:customer_name), page, per_page)
+    ActiveRecord::Associations::Preloader.new(records: records, associations: :check_ins).call
+    records
   end
 end

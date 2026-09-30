@@ -13,6 +13,15 @@ RSpec.describe 'Settings API', type: :request do
     )
   end
 
+  let!(:staff_user) do
+    Staff.create!(shop: shop, name: 'Staff Reception', username: 'reception', password: 'password123', role: 'staff')
+  end
+
+  def staff_headers
+    token = JsonWebToken.encode({ shop_id: shop.id, staff_id: staff_user.id, role: 'staff' })
+    { 'Authorization' => "Bearer #{token}" }
+  end
+
   describe 'GET /settings' do
     it 'returns the current shop settings' do
       get '/settings', headers: auth_headers(shop)
@@ -26,6 +35,12 @@ RSpec.describe 'Settings API', type: :request do
       expect(body.dig('shop', 'plan')).to eq('free')
     end
 
+    it 'allows staff user to view shop settings' do
+      get '/settings', headers: staff_headers
+
+      expect(response).to have_http_status(:ok)
+    end
+
     it 'rejects unauthenticated requests' do
       get '/settings'
 
@@ -36,7 +51,14 @@ RSpec.describe 'Settings API', type: :request do
   describe 'PATCH /settings/profile' do
     it 'updates profile info successfully' do
       patch '/settings/profile',
-            params: { name: 'PunchBook Gym', phone: '0988776655', address: '200 Lê Lợi' },
+            params: {
+              name: 'PunchBook Gym',
+              phone: '0988776655',
+              address: '200 Lê Lợi',
+              bank_name: 'MBBank',
+              bank_account_no: '0123456789',
+              bank_account_name: 'HOANG CAO VIET'
+            },
             headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
@@ -44,6 +66,15 @@ RSpec.describe 'Settings API', type: :request do
       expect(body['message']).to eq('Cập nhật thông tin tiệm thành công')
       expect(body.dig('shop', 'name')).to eq('PunchBook Gym')
       expect(body.dig('shop', 'address')).to eq('200 Lê Lợi')
+      expect(body.dig('shop', 'bank_name')).to eq('MBBank')
+      expect(body.dig('shop', 'bank_account_no')).to eq('0123456789')
+      expect(body.dig('shop', 'bank_account_name')).to eq('HOANG CAO VIET')
+    end
+
+    it 'forbids non-admin staff from updating profile' do
+      patch '/settings/profile', params: { name: 'Unauthorized Gym' }, headers: staff_headers
+
+      expect(response).to have_http_status(:forbidden)
     end
 
     it 'returns unprocessable when params are invalid' do
@@ -68,6 +99,16 @@ RSpec.describe 'Settings API', type: :request do
       expect(shop.reload.valid_password?('newsecurepassword')).to be true
     end
 
+    it 'forbids non-admin staff from changing password' do
+      patch '/settings/password', params: {
+        current_password: 'password123',
+        password: 'newsecurepassword',
+        password_confirmation: 'newsecurepassword'
+      }, headers: staff_headers
+
+      expect(response).to have_http_status(:forbidden)
+    end
+
     it 'returns error when current password is invalid' do
       patch '/settings/password', params: {
         current_password: 'wrongpassword',
@@ -77,6 +118,25 @@ RSpec.describe 'Settings API', type: :request do
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.parsed_body['errors']).to include('Mật khẩu hiện tại không đúng')
+    end
+  end
+
+  describe 'POST /settings/upgrade_plan' do
+    it 'upgrades plan to paid and sets plan_expires_at' do
+      post '/settings/upgrade_plan', params: { months: 6 }, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['message']).to eq('Nâng cấp gói Premium thành công!')
+      expect(body.dig('shop', 'plan')).to eq('paid')
+      expect(shop.reload.plan).to eq('paid')
+      expect(shop.plan_expires_at).to be > Time.current
+    end
+
+    it 'forbids non-admin staff from upgrading plan' do
+      post '/settings/upgrade_plan', params: { months: 6 }, headers: staff_headers
+
+      expect(response).to have_http_status(:forbidden)
     end
   end
 end

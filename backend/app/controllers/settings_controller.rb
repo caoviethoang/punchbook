@@ -1,15 +1,17 @@
 # frozen_string_literal: true
 
 class SettingsController < ApiController
+  before_action :authorize_shop_update!, only: %i[update_profile update_password upgrade_plan]
+
   def show
-    render json: { shop: shop_json(current_shop) }
+    render json: { shop: ShopSerializer.new(current_shop).as_json }
   end
 
   def update_profile
     result = UpdateShopProfileService.new(current_shop, profile_params).call
 
     if result.success?
-      render json: { shop: shop_json(result.shop), message: 'Cập nhật thông tin tiệm thành công' }
+      render json: { shop: ShopSerializer.new(result.shop).as_json, message: 'Cập nhật thông tin tiệm thành công' }
     else
       render json: { errors: result.errors }, status: :unprocessable_content
     end
@@ -19,7 +21,21 @@ class SettingsController < ApiController
     result = ChangeShopPasswordService.new(current_shop, password_params).call
 
     if result.success?
-      render json: { shop: shop_json(result.shop), message: 'Đổi mật khẩu thành công' }
+      render json: { shop: ShopSerializer.new(result.shop).as_json, message: 'Đổi mật khẩu thành công' }
+    else
+      render json: { errors: result.errors }, status: :unprocessable_content
+    end
+  end
+
+  def upgrade_plan
+    months = params[:months] || 1
+    result = UpgradeShopPlanService.new(current_shop, months: months).call
+
+    if result.success?
+      render json: {
+        shop: ShopSerializer.new(result.shop).as_json,
+        message: 'Nâng cấp gói Premium thành công!'
+      }
     else
       render json: { errors: result.errors }, status: :unprocessable_content
     end
@@ -27,15 +43,15 @@ class SettingsController < ApiController
 
   private
 
+  def authorize_shop_update!
+    authorize! :update, current_shop
+  end
+
   def profile_params
-    params.permit(:name, :phone, :address)
+    params.permit(:name, :phone, :address, :bank_name, :bank_account_no, :bank_account_name)
   end
 
   def password_params
     params.permit(:current_password, :password, :password_confirmation)
-  end
-
-  def shop_json(shop)
-    shop.as_json(only: %i[id name phone address email plan plan_expires_at])
   end
 end

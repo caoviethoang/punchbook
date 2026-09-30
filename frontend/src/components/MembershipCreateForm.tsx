@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react"
-import { FileSpreadsheet } from "lucide-react"
+import { FileSpreadsheet, QrCode } from "lucide-react"
+import type { Shop } from "../lib/auth"
 import { createMembership, type Membership } from "../lib/memberships"
 import { listPackages, type PackageItem } from "../lib/packages"
 import { ImportMembersModal } from "./ImportMembersModal"
+import { MembershipPaymentQRModal } from "./MembershipPaymentQRModal"
 import { FormField, FORM_CONTROL_CLASS } from "./ui/FormField"
 
 interface MembershipCreateFormProps {
+  shop?: Shop | null
   onSuccess?: (membership: Membership) => void
   onCancel?: () => void
 }
@@ -17,7 +20,7 @@ function packageLabel(pkg: PackageItem): string {
   return `${pkg.name} (${detail})`
 }
 
-export function MembershipCreateForm({ onSuccess, onCancel }: MembershipCreateFormProps) {
+export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCreateFormProps) {
   const [customerName, setCustomerName] = useState("")
   const [phone, setPhone] = useState("")
   const [packageId, setPackageId] = useState("")
@@ -27,6 +30,7 @@ export function MembershipCreateForm({ onSuccess, onCancel }: MembershipCreateFo
   const [error, setError] = useState<string | null>(null)
   const [created, setCreated] = useState<Membership | null>(null)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -80,6 +84,7 @@ export function MembershipCreateForm({ onSuccess, onCancel }: MembershipCreateFo
         package_id: packageId,
       })
       setCreated(membership)
+      setIsQrModalOpen(true)
       setCustomerName("")
       setPhone("")
       onSuccess?.(membership)
@@ -89,6 +94,8 @@ export function MembershipCreateForm({ onSuccess, onCancel }: MembershipCreateFo
       setLoading(false)
     }
   }
+
+  const selectedPackage = packages.find((p) => p.id === packageId)
 
   return (
     <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -117,6 +124,15 @@ export function MembershipCreateForm({ onSuccess, onCancel }: MembershipCreateFo
                     ? ` · hết hạn ${created.expires_at}`
                     : ""}
               </p>
+
+              <button
+                type="button"
+                onClick={() => setIsQrModalOpen(true)}
+                className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700"
+              >
+                <QrCode className="h-3.5 w-3.5" />
+                <span>Xem mã QR Chuyển khoản</span>
+              </button>
             </div>
             <button
               type="button"
@@ -227,6 +243,14 @@ export function MembershipCreateForm({ onSuccess, onCancel }: MembershipCreateFo
             onSuccess(created)
           }
         }}
+      />
+
+      <MembershipPaymentQRModal
+        isOpen={isQrModalOpen}
+        membership={created}
+        packagePrice={created?.package?.price ?? selectedPackage?.price}
+        shop={shop}
+        onClose={() => setIsQrModalOpen(false)}
       />
     </div>
   )

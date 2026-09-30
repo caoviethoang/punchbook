@@ -1,19 +1,23 @@
 # frozen_string_literal: true
 
 class PackagesController < ApiController
+  before_action :authorize_package_management!, only: %i[create update destroy]
+
   def index
-    packages = current_shop.packages.order(:name)
+    authorize! :read, Package
+    packages = current_shop.packages.includes(:package_category).order(:name)
     render json: { packages: packages.map { |pkg| PackageSerializer.new(pkg).as_json } }
   end
 
   def create
-    package = current_shop.packages.build(package_params)
+    package = current_shop.packages.create!(package_params)
+    render json: PackageSerializer.new(package).as_json, status: :created
+  end
 
-    if package.save
-      render json: PackageSerializer.new(package).as_json, status: :created
-    else
-      render_unprocessable(package.errors.full_messages)
-    end
+  def update
+    package = current_shop.packages.find(params.expect(:id))
+    package.update!(package_params)
+    render json: PackageSerializer.new(package).as_json
   end
 
   def destroy
@@ -24,7 +28,11 @@ class PackagesController < ApiController
 
   private
 
+  def authorize_package_management!
+    authorize! :manage, Package
+  end
+
   def package_params
-    params.expect(package: %i[name price sessions_count duration_days])
+    params.expect(package: %i[name price sessions_count duration_days package_category_id])
   end
 end

@@ -1,4 +1,4 @@
-import { apiBaseUrl, apiGet, apiPost, authHeaders, parseApiResponse } from "./api"
+import { apiGet, apiPost, apiPatch, apiDelete, authToken, downloadBlob, parseApiResponse, apiBaseUrl } from "./api"
 
 export interface MembershipPackage {
   id: string
@@ -15,6 +15,9 @@ export interface Membership {
   sessions_left: number | null
   expires_at: string | null
   package: MembershipPackage
+  checked_in_today?: boolean
+  last_checked_in_at?: string | null
+  qr_code_value?: string
 }
 
 export interface MembershipDetailCheckIn {
@@ -61,6 +64,25 @@ export function isMembershipExhausted(
     return true
   }
   return false
+}
+
+export function extractMembershipIdFromQR(scannedText: string): string {
+  const trimmed = scannedText.trim()
+  if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+    try {
+      const parsed = JSON.parse(trimmed) as Record<string, unknown>
+      if (parsed.membership_id) return String(parsed.membership_id).trim()
+      if (parsed.id) return String(parsed.id).trim()
+    } catch {
+      // Fallback
+    }
+  }
+  if (trimmed.includes("/memberships/")) {
+    const parts = trimmed.split("/memberships/")
+    const id = parts[1]?.split("?")[0]?.split("/")[0]
+    if (id) return id.trim()
+  }
+  return trimmed
 }
 
 export interface PaginationMeta {
@@ -111,6 +133,14 @@ export interface CreateMembershipPayload {
   package_id: string
 }
 
+export interface UpdateMembershipPayload {
+  customer_name?: string
+  phone?: string
+  package_id?: string
+  sessions_left?: number | null
+  expires_at?: string | null
+}
+
 /** POST /memberships — create member; backend inits sessions_left / expires_at from package. */
 export async function createMembership(
   payload: CreateMembershipPayload,
@@ -119,6 +149,22 @@ export async function createMembership(
     membership: payload,
   })
   return body.membership
+}
+
+/** PATCH /memberships/:id — update member. */
+export async function updateMembership(
+  id: string,
+  payload: UpdateMembershipPayload,
+): Promise<Membership> {
+  const body = await apiPatch<{ membership: Membership }>(`/memberships/${id}`, {
+    membership: payload,
+  })
+  return body.membership
+}
+
+/** DELETE /memberships/:id — discard member. */
+export async function deleteMembership(id: string): Promise<void> {
+  await apiDelete<{ message: string }>(`/memberships/${id}`)
 }
 
 export interface ImportErrorDetail {
@@ -137,22 +183,10 @@ export interface ImportMembershipsResult {
 
 /** GET /memberships/import_template — download template .xlsx file. */
 export async function downloadImportTemplate(): Promise<void> {
-  const response = await fetch(`${apiBaseUrl}/memberships/import_template`, {
-    headers: authHeaders(),
-  })
-  if (!response.ok) {
-    throw new Error("Không thể tải file mẫu Excel.")
-  }
-
-  const blob = await response.blob()
-  const url = window.URL.createObjectURL(blob)
-  const a = document.createElement("a")
-  a.href = url
-  a.download = "template_import_memberships.xlsx"
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  window.URL.revokeObjectURL(url)
+  return downloadBlob(
+    "/memberships/import_template",
+    "template_import_memberships.xlsx",
+  )
 }
 
 /** POST /memberships/import — upload Excel/CSV file to batch create memberships. */
@@ -163,7 +197,7 @@ export async function importMemberships(file: File): Promise<ImportMembershipsRe
   const response = await fetch(`${apiBaseUrl}/memberships/import`, {
     method: "POST",
     headers: {
-      Authorization: authHeaders()["Authorization" as keyof HeadersInit] as string,
+      Authorization: `Bearer ${authToken()}`,
     },
     body: formData,
   })
@@ -173,14 +207,14 @@ export async function importMemberships(file: File): Promise<ImportMembershipsRe
 
 /**
  * POST /memberships/:id/check_in
- * staffId is required — shop JWT has no staff identity yet (see backend MembershipsController).
+ * staffId is optional — backend defaults to current shop staff if omitted.
  */
 export async function checkIn(
   id: string,
-  staffId: string,
+  staffId?: string,
 ): Promise<CheckInResult> {
   return apiPost<CheckInResult>(`/memberships/${id}/check_in`, {
-    staff_id: staffId,
+    staff_id: staffId || undefined,
   })
 }
 
