@@ -43,7 +43,7 @@ class FetchAuditLogsQuery
   end
 
   def base_paper_trail_query(action)
-    base = PaperTrail::Version.all
+    base = PaperTrail::Version
     m_ids = shop.memberships.select(:id)
     c_ids = shop.check_ins.select(:id)
 
