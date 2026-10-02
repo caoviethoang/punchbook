@@ -44,8 +44,8 @@ class FetchAuditLogsQuery
 
   def base_paper_trail_query(action)
     base = PaperTrail::Version
-    m_ids = shop.memberships.select(:id)
-    c_ids = shop.check_ins.select(:id)
+    m_ids = shop.memberships.select(Arel.sql('memberships.id::text'))
+    c_ids = shop.check_ins.select(Arel.sql('check_ins.id::text'))
 
     case action
     when 'check_in' then base.where(item_type: 'CheckIn', item_id: c_ids)
