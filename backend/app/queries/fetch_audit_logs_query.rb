@@ -33,8 +33,8 @@ class FetchAuditLogsQuery
     action = params[:log_action]
     return PaperTrail::Version.none if action.present? && !paper_trail_action?(action)
 
-    membership_ids = shop.memberships.pluck(:id)
-    check_in_ids = shop.check_ins.pluck(:id)
+    membership_ids = shop.memberships.select(:id)
+    check_in_ids = shop.check_ins.select(:id)
 
     base = PaperTrail::Version.all
     query =
