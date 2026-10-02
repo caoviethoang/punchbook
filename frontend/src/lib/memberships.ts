@@ -66,6 +66,31 @@ export function isMembershipExhausted(
   return false
 }
 
+/**
+ * Derives a display status from the membership's expires_at and sessions_left.
+ * Mirrors the backend logic used in the /dashboard endpoint.
+ */
+export function computeMembershipStatus(
+  membership: Pick<Membership, "sessions_left" | "expires_at">,
+): "active" | "expiring" | "expired" {
+  const now = new Date()
+
+  // Session-based: no sessions left
+  if (membership.sessions_left !== null && membership.sessions_left !== undefined) {
+    if (membership.sessions_left === 0) return "expired"
+  }
+
+  // Date-based
+  if (membership.expires_at) {
+    const expiresAt = new Date(membership.expires_at)
+    if (expiresAt < now) return "expired"
+    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+    if (expiresAt <= sevenDaysFromNow) return "expiring"
+  }
+
+  return "active"
+}
+
 export function extractMembershipIdFromQR(scannedText: string): string {
   const trimmed = scannedText.trim()
   if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
