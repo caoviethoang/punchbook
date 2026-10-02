@@ -36,6 +36,7 @@ class FetchAuditLogsQuery
     PaperTrail::Version
       .where(item_type: 'Membership', item_id: membership_ids)
       .or(PaperTrail::Version.where(item_type: 'CheckIn', item_id: check_in_ids))
+      .includes(:item)
       .order(created_at: :desc)
       .limit(MAX_ENTRIES)
   rescue StandardError
@@ -63,15 +64,40 @@ class FetchAuditLogsQuery
   end
 
   def format_version(version)
+    action = version_action(version)
     {
       id: version.id,
-      action: version_action(version),
+      action: action,
       staff_name: version.whodunnit,
       target_type: version.item_type,
       target_id: version.item_id,
-      details: { event: version.event, changes: version.changeset },
+      details: build_version_details(version, action),
       created_at: version.created_at.iso8601
     }
+  end
+
+  def build_version_details(version, action)
+    item = version.item
+    return { event: version.event, changes: version.changeset } unless item
+
+    case action
+    when 'membership_created', 'membership_renewed'
+      {
+        customer_name: item.customer_name,
+        phone: item.phone,
+        package_name: item.package&.name,
+        sessions_before: version.changeset['sessions_left']&.first,
+        sessions_after: version.changeset['sessions_left']&.last || item.sessions_left
+      }.compact
+    when 'check_in'
+      {
+        membership_name: item.membership&.customer_name,
+        package_name: item.membership&.package&.name,
+        sessions_after: item.membership&.sessions_left
+      }.compact
+    else
+      { event: version.event, changes: version.changeset }
+    end
   end
 
   def version_action(version)
