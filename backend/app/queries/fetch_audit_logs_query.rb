@@ -30,17 +30,38 @@ class FetchAuditLogsQuery
   end
 
   def fetch_paper_trail_versions
+    action = params[:log_action]
+    return PaperTrail::Version.none if action.present? && !paper_trail_action?(action)
+
     membership_ids = shop.memberships.pluck(:id)
     check_in_ids = shop.check_ins.pluck(:id)
 
-    PaperTrail::Version
-      .where(item_type: 'Membership', item_id: membership_ids)
-      .or(PaperTrail::Version.where(item_type: 'CheckIn', item_id: check_in_ids))
-      .includes(:item)
-      .order(created_at: :desc)
-      .limit(MAX_ENTRIES)
+    base = PaperTrail::Version.all
+    query =
+      case action
+      when 'check_in'
+        base.where(item_type: 'CheckIn', item_id: check_in_ids)
+      when 'membership_created'
+        base.where(item_type: 'Membership', item_id: membership_ids, event: 'create')
+      when 'membership_renewed'
+        base.where(item_type: 'Membership', item_id: membership_ids).where.not(event: 'create')
+      else
+        base.where(item_type: 'Membership', item_id: membership_ids)
+            .or(base.where(item_type: 'CheckIn', item_id: check_in_ids))
+      end
+
+    if params[:staff_id].present?
+      staff_name = shop.staffs.find_by(id: params[:staff_id])&.name
+      query = query.where(whodunnit: staff_name) if staff_name
+    end
+
+    query.includes(:item).order(created_at: :desc).limit(MAX_ENTRIES)
   rescue StandardError
     PaperTrail::Version.none
+  end
+
+  def paper_trail_action?(action)
+    %w[check_in membership_created membership_renewed].include?(action.to_s)
   end
 
   def combine_entries(logs, versions)
