@@ -22,6 +22,7 @@ const ACTION_LABELS: Record<string, { label: string; icon: string }> = {
   check_in: { label: "Check-in", icon: "✓" },
   membership_created: { label: "Thêm hội viên", icon: "+" },
   membership_renewed: { label: "Gia hạn hội viên", icon: "↺" },
+  shop_plan_upgraded: { label: "Nâng cấp gói shop", icon: "⭐" },
 }
 
 function formatRelativeTime(isoString: string): string {
@@ -104,7 +105,7 @@ export function AuditLogsPanel({ shopId, onClose }: AuditLogsPanelProps) {
         {/* Filter */}
         <div className="border-b border-slate-100 px-6 py-3 dark:border-slate-800">
           <div className="flex gap-2">
-            {["", "check_in", "membership_created", "membership_renewed"].map(
+            {["", "check_in", "membership_created", "membership_renewed", "shop_plan_upgraded"].map(
               (f) => (
                 <button
                   key={f}
@@ -175,6 +176,8 @@ export function AuditLogsPanel({ shopId, onClose }: AuditLogsPanelProps) {
                           `Tên: ${log.details.customer_name} • SĐT: ${log.details.phone} • Gói: ${log.details.package_name}`}
                         {log.action === "membership_renewed" &&
                           `Hội viên: ${log.details.customer_name} • Trước: ${log.details.sessions_before} buổi → Sau: ${log.details.sessions_after} buổi`}
+                        {log.action === "shop_plan_upgraded" &&
+                          `Gia hạn: ${log.details.months} tháng • Số tiền: ${(Number(log.details.amount)).toLocaleString("vi-VN")}đ`}
                       </p>
                       <div className="mt-1.5 flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500">
                         <Clock className="h-3 w-3" />
