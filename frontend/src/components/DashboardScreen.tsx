@@ -20,6 +20,7 @@ import { toApiError } from "../lib/errors"
 import { formatVnd, remainingLabel } from "../lib/formatters"
 import {
   fetchMemberships,
+  computeMembershipStatus,
   type PaginationMeta,
   type StatusFilterType,
 } from "../lib/memberships"
@@ -348,7 +349,7 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
                       {remainingLabel(membership)}
                     </td>
                     <td className="px-4 py-3">
-                      <StatusBadge status={membership.status} type="membership" />
+                      <StatusBadge status={membership.status ?? computeMembershipStatus(membership)} type="membership" />
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">

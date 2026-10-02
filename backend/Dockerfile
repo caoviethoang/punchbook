@@ -37,6 +37,10 @@ COPY --from=build /app /app
 # Copy application code
 COPY . .
 
-# Run and preprocess script
+# Entrypoint removes stale server.pid before booting
+COPY entrypoint.sh /usr/bin/entrypoint.sh
+RUN chmod +x /usr/bin/entrypoint.sh
+ENTRYPOINT ["/usr/bin/entrypoint.sh"]
+
 EXPOSE 3000
 CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
