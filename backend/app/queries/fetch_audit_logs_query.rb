@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ClassLength
+
 # Query object to fetch, filter, and combine AuditLog entries with PaperTrail Version entries.
 class FetchAuditLogsQuery
   MAX_ENTRIES = 50
@@ -33,31 +35,31 @@ class FetchAuditLogsQuery
     action = params[:log_action]
     return PaperTrail::Version.none if action.present? && !paper_trail_action?(action)
 
-    membership_ids = shop.memberships.select(:id)
-    check_in_ids = shop.check_ins.select(:id)
-
-    base = PaperTrail::Version.all
-    query =
-      case action
-      when 'check_in'
-        base.where(item_type: 'CheckIn', item_id: check_in_ids)
-      when 'membership_created'
-        base.where(item_type: 'Membership', item_id: membership_ids, event: 'create')
-      when 'membership_renewed'
-        base.where(item_type: 'Membership', item_id: membership_ids).where.not(event: 'create')
-      else
-        base.where(item_type: 'Membership', item_id: membership_ids)
-            .or(base.where(item_type: 'CheckIn', item_id: check_in_ids))
-      end
-
-    if params[:staff_id].present?
-      staff_name = shop.staffs.find_by(id: params[:staff_id])&.name
-      query = query.where(whodunnit: staff_name) if staff_name
-    end
-
+    query = base_paper_trail_query(action)
+    query = apply_staff_paper_trail_filter(query)
     query.includes(:item).order(created_at: :desc).limit(MAX_ENTRIES)
   rescue StandardError
     PaperTrail::Version.none
+  end
+
+  def base_paper_trail_query(action)
+    base = PaperTrail::Version.all
+    m_ids = shop.memberships.select(:id)
+    c_ids = shop.check_ins.select(:id)
+
+    case action
+    when 'check_in' then base.where(item_type: 'CheckIn', item_id: c_ids)
+    when 'membership_created' then base.where(item_type: 'Membership', item_id: m_ids, event: 'create')
+    when 'membership_renewed' then base.where(item_type: 'Membership', item_id: m_ids).where.not(event: 'create')
+    else base.where(item_type: 'Membership', item_id: m_ids).or(base.where(item_type: 'CheckIn', item_id: c_ids))
+    end
+  end
+
+  def apply_staff_paper_trail_filter(query)
+    return query if params[:staff_id].blank?
+
+    staff_name = shop.staffs.find_by(id: params[:staff_id])&.name
+    staff_name ? query.where(whodunnit: staff_name) : query
   end
 
   def paper_trail_action?(action)
@@ -103,22 +105,30 @@ class FetchAuditLogsQuery
 
     case action
     when 'membership_created', 'membership_renewed'
-      {
-        customer_name: item.customer_name,
-        phone: item.phone,
-        package_name: item.package&.name,
-        sessions_before: version.changeset['sessions_left']&.first,
-        sessions_after: version.changeset['sessions_left']&.last || item.sessions_left
-      }.compact
+      membership_details(item, version)
     when 'check_in'
-      {
-        membership_name: item.membership&.customer_name,
-        package_name: item.membership&.package&.name,
-        sessions_after: item.membership&.sessions_left
-      }.compact
+      check_in_details(item)
     else
       { event: version.event, changes: version.changeset }
     end
+  end
+
+  def membership_details(item, version)
+    {
+      customer_name: item.customer_name,
+      phone: item.phone,
+      package_name: item.package&.name,
+      sessions_before: version.changeset['sessions_left']&.first,
+      sessions_after: version.changeset['sessions_left']&.last || item.sessions_left
+    }.compact
+  end
+
+  def check_in_details(item)
+    {
+      membership_name: item.membership&.customer_name,
+      package_name: item.membership&.package&.name,
+      sessions_after: item.membership&.sessions_left
+    }.compact
   end
 
   def version_action(version)
@@ -130,3 +140,4 @@ class FetchAuditLogsQuery
     end
   end
 end
+# rubocop:enable Metrics/ClassLength
