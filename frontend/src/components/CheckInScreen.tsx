@@ -1,27 +1,13 @@
-import React, { useEffect, useRef, useState } from "react"
-import {
-  AlertCircle,
-  Loader2,
-  QrCode,
-  Search,
-  User,
-  UserCheck,
-  X,
-} from "lucide-react"
-import { useDebounce } from "../hooks/useDebounce"
-import { useMembershipsApi } from "../hooks/useMembershipsApi"
-import { toCheckInError } from "../lib/errors"
-import {
-  extractMembershipIdFromQR,
-  isMembershipExhausted,
-  type Membership,
-} from "../lib/memberships"
-import { MembershipDetailModal } from "./MembershipDetailModal"
-import { RenewalModal } from "./RenewalModal"
-import { QRScannerModal } from "./QRScannerModal"
-import { ThermalReceiptModal, type ReceiptData } from "./ThermalReceiptModal"
-import { Toast } from "./ui/Toast"
+import { AlertCircle, Search, User } from "lucide-react"
+import { useCheckInScreen } from "../hooks/useCheckInScreen"
+import { CheckInHeader } from "./checkin/CheckInHeader"
+import { CheckInSearchInput } from "./checkin/CheckInSearchInput"
 import { MembershipResultList } from "./checkin/CheckInSearchResults"
+import { MembershipDetailModal } from "./MembershipDetailModal"
+import { QRScannerModal } from "./QRScannerModal"
+import { RenewalModal } from "./RenewalModal"
+import { ThermalReceiptModal } from "./ThermalReceiptModal"
+import { Toast } from "./ui/Toast"
 
 interface CheckInScreenProps {
   /** Optional staff ID to perform check-ins. */
@@ -31,192 +17,42 @@ interface CheckInScreenProps {
   shopPhone?: string | null
 }
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
-
 export function CheckInScreen({
   currentStaffId,
   shopName = "PunchBook Spa",
   shopAddress,
   shopPhone,
 }: CheckInScreenProps) {
-  const [query, setQuery] = useState("")
-  const debouncedQuery = useDebounce(query, 300)
-
-  const [memberships, setMemberships] = useState<Membership[]>([])
-  const [checkingInId, setCheckingInId] = useState<string | null>(null)
-  const [checkInMessage, setCheckInMessage] = useState<{
-    id: string
-    type: "success" | "error"
-    text: string
-  } | null>(null)
-  const [toast, setToast] = useState<{
-    message: string
-    type?: "success" | "error"
-  } | null>(null)
-  const [isQRScannerOpen, setIsQRScannerOpen] = useState(false)
-  const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null)
-
-  const inputRef = useRef<HTMLInputElement>(null)
-  const { search, checkIn, searchLoading, error: apiError } = useMembershipsApi()
-
-  // Modal state for detail & renewal
-  const [detailMembershipId, setDetailMembershipId] = useState<string | null>(null)
-  const [renewingMembership, setRenewingMembership] = useState<Membership | null>(null)
-
-  // Track if input is currently being debounced (300ms delay has not passed yet)
-  const isDebouncing = query !== debouncedQuery
-
-  function handlePrintReceipt(membership: Membership, checkedInAt?: string) {
-    setSelectedReceipt({
-      shopName,
-      shopAddress,
-      shopPhone,
-      customerName: membership.customer_name,
-      customerPhone: membership.phone,
-      packageName: membership.package.name,
-      sessionsLeft: membership.sessions_left,
-      expiresAt: membership.expires_at,
-      checkedInAt: checkedInAt || new Date().toISOString(),
-    })
-  }
-
-  // Fetch memberships using debounced query
-  useEffect(() => {
-    let isCancelled = false
-
-    search(debouncedQuery)
-      .then((results) => {
-        if (!isCancelled) {
-          setMemberships(results)
-        }
-      })
-      .catch(() => {
-        // Error handling managed by useMembershipsApi hook
-      })
-
-    return () => {
-      isCancelled = true
-    }
-  }, [debouncedQuery, search])
-
-  function handleClear() {
-    setQuery("")
-    if (inputRef.current) {
-      inputRef.current.focus()
-    }
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
-      e.preventDefault()
-      const firstAvailable = memberships.find((m) => !isMembershipExhausted(m) && !m.checked_in_today)
-      if (firstAvailable && checkingInId !== firstAvailable.id) {
-        void handleCheckIn(firstAvailable.id)
-      }
-    } else if (e.key === "Escape") {
-      e.preventDefault()
-      handleClear()
-    }
-  }
-
-  async function handleCheckIn(membershipId: string) {
-    const membership = memberships.find((m) => m.id === membershipId)
-    if (!membership || isMembershipExhausted(membership)) return
-
-    // Snapshot for rollback
-    const previousSessionsLeft = membership.sessions_left
-
-    // Disable button immediately (prevents double-click)
-    setCheckingInId(membershipId)
-    setCheckInMessage(null)
-
-    // Optimistic update: decrement by 1 right now
-    setMemberships((prev) =>
-      prev.map((m) =>
-        m.id === membershipId && m.sessions_left !== null
-          ? { ...m, sessions_left: m.sessions_left - 1 }
-          : m,
-      ),
-    )
-
-    try {
-      const result = await checkIn(membershipId, currentStaffId)
-      // Apply server-confirmed value
-      setMemberships((prev) =>
-        prev.map((m) =>
-          m.id === membershipId
-            ? {
-                ...m,
-                sessions_left: result.membership.sessions_left,
-                checked_in_today: true,
-                last_checked_in_at: result.check_in.checked_in_at,
-              }
-            : m,
-        ),
-      )
-      setCheckInMessage({
-        id: membershipId,
-        type: "success",
-        text: `Check-in thành công! (Còn lại ${result.membership.sessions_left ?? "không giới hạn"} buổi)`,
-      })
-      setToast({
-        message: `Đã check-in thành công cho ${membership.customer_name}`,
-        type: "success",
-      })
-    } catch (err) {
-      // Rollback to the state before the optimistic update
-      setMemberships((prev) =>
-        prev.map((m) =>
-          m.id === membershipId
-            ? { ...m, sessions_left: previousSessionsLeft }
-            : m,
-        ),
-      )
-      setCheckInMessage({
-        id: membershipId,
-        type: "error",
-        text: toCheckInError(err),
-      })
-    } finally {
-      setCheckingInId(null)
-    }
-  }
-
-  async function handleQRScan(scannedText: string) {
-    setIsQRScannerOpen(false)
-    const targetId = extractMembershipIdFromQR(scannedText)
-
-    // 1. Search locally in `memberships` list
-    const existing = memberships.find((m) => m.id === targetId || m.phone === targetId)
-    if (existing) {
-      void handleCheckIn(existing.id)
-      return
-    }
-
-    // 2. Search via API with targetId
-    try {
-      const results = await search(targetId)
-      if (results.length > 0) {
-        setMemberships(results)
-        const matched = results.find((m) => m.id === targetId || m.phone === targetId) ?? results[0]
-        if (matched && !isMembershipExhausted(matched)) {
-          void handleCheckIn(matched.id)
-        }
-      } else {
-        setToast({
-          message: "Không tìm thấy hội viên từ mã QR này",
-          type: "error",
-        })
-      }
-    } catch {
-      setToast({
-        message: "Không thể kiểm tra mã QR",
-        type: "error",
-      })
-    }
-  }
-
-  const isLoading = searchLoading || isDebouncing
+  const {
+    query,
+    setQuery,
+    memberships,
+    checkingInId,
+    checkInMessage,
+    toast,
+    setToast,
+    isQRScannerOpen,
+    setIsQRScannerOpen,
+    selectedReceipt,
+    setSelectedReceipt,
+    inputRef,
+    detailMembershipId,
+    setDetailMembershipId,
+    renewingMembership,
+    setRenewingMembership,
+    isLoading,
+    apiError,
+    handleClear,
+    handleKeyDown,
+    handleCheckIn,
+    handleQRScan,
+    handlePrintReceipt,
+  } = useCheckInScreen({
+    currentStaffId,
+    shopName,
+    shopAddress,
+    shopPhone,
+  })
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
@@ -229,67 +65,17 @@ export function CheckInScreen({
       )}
 
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="flex items-center gap-2.5 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-            <UserCheck className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
-            Check-in Hội Viên
-          </h2>
-          <p className="mt-1 text-base text-slate-500 dark:text-slate-400">
-            Tìm kiếm theo tên hoặc số điện thoại để điểm danh hội viên
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setIsQRScannerOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-5 py-3.5 text-base font-semibold text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-500 dark:shadow-none"
-        >
-          <QrCode className="h-5 w-5" />
-          <span>Quét mã QR</span>
-        </button>
-      </div>
+      <CheckInHeader onOpenQRScanner={() => setIsQRScannerOpen(true)} />
 
       {/* Search Input Box */}
-      <div className="relative">
-        <div className="relative flex items-center">
-          <Search
-            aria-hidden="true"
-            className="pointer-events-none absolute left-4 h-6 w-6 text-slate-400"
-          />
-
-          <input
-            ref={inputRef}
-            type="text"
-            role="searchbox"
-            aria-label="Tìm kiếm hội viên theo tên hoặc số điện thoại"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Nhập tên hoặc số điện thoại (ví dụ: 0901234567)..."
-            className="w-full rounded-2xl border border-slate-200 bg-white py-4 pl-12 pr-12 text-lg font-medium text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-600 sm:py-5"
-          />
-
-          {isLoading ? (
-            <div
-              role="status"
-              aria-label="Đang tìm kiếm..."
-              className="absolute right-4"
-            >
-              <Loader2 className="h-6 w-6 animate-spin text-indigo-600 dark:text-indigo-400" />
-            </div>
-          ) : query ? (
-            <button
-              type="button"
-              onClick={handleClear}
-              aria-label="Xóa nội dung tìm kiếm"
-              className="absolute right-4 rounded-xl p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          ) : null}
-        </div>
-      </div>
+      <CheckInSearchInput
+        inputRef={inputRef}
+        query={query}
+        onQueryChange={setQuery}
+        onKeyDown={handleKeyDown}
+        onClear={handleClear}
+        isLoading={isLoading}
+      />
 
       {/* API Error Alert */}
       {apiError && (
