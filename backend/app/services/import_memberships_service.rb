@@ -131,4 +131,3 @@ class ImportMembershipsService
     errors << { row: line_num, customer_name: name.presence || '-', phone: phone.presence || '-', error: msg }
   end
 end
-
