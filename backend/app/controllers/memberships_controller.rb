@@ -100,8 +100,6 @@ class MembershipsController < ApiController
   end
 
   def fetch_paginated_memberships(relation, page, per_page)
-    records = paginate_relation(relation.includes(:package).order(:customer_name), page, per_page)
-    ActiveRecord::Associations::Preloader.new(records: records, associations: :check_ins).call
-    records
+    paginate_relation(relation.includes(:package, :check_ins).order(:customer_name), page, per_page)
   end
 end
