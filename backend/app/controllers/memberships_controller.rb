@@ -12,7 +12,7 @@ class MembershipsController < ApiController
 
     render json: {
       memberships: memberships.map(&:as_api_json),
-      meta: build_pagination_meta(relation.count, page, per_page)
+      meta: build_pagination_meta(memberships, page, per_page)
     }
   end
 
