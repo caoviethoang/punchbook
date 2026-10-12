@@ -1,79 +1,29 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
+import { AppHeader, type AppView } from "./components/AppHeader"
 import { CheckInScreen } from "./components/CheckInScreen"
 import { DashboardScreen } from "./components/DashboardScreen"
 import { LoginScreen } from "./components/LoginScreen"
 import { MembershipsScreen } from "./components/MembershipsScreen"
 import { PackagesScreen } from "./components/PackagesScreen"
 import { SettingsScreen } from "./components/SettingsScreen"
-import {
-  clearStoredToken,
-  fetchCurrentAuth,
-  getStoredToken,
-  type Shop,
-  type Staff,
-} from "./lib/auth"
-
-type AppView = "dashboard" | "checkin" | "packages" | "members" | "settings"
-
-interface NavItem {
-  view: AppView
-  label: string
-  adminOnly?: boolean
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { view: "dashboard", label: "Dashboard", adminOnly: true },
-  { view: "checkin", label: "Check-in" },
-  { view: "members", label: "Hội viên" },
-  { view: "packages", label: "Gói dịch vụ", adminOnly: true },
-  { view: "settings", label: "Cài đặt", adminOnly: true },
-]
+import { useAppAuth } from "./hooks/useAppAuth"
 
 function App() {
-  const [shop, setShop] = useState<Shop | null>(null)
-  const [staff, setStaff] = useState<Staff | null>(null)
-  const [authLoading, setAuthLoading] = useState(() => getStoredToken() !== null)
+  const { shop, setShop, staff, authLoading, handleLogout, handleAuthSuccess } =
+    useAppAuth()
   const [view, setView] = useState<AppView>("dashboard")
 
   const isAdmin = !staff || staff.role === "admin"
-  const visibleNavItems = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin)
   const activeView =
-    !isAdmin && (view === "dashboard" || view === "settings" || view === "packages")
+    !isAdmin &&
+    (view === "dashboard" || view === "settings" || view === "packages")
       ? "checkin"
       : view
 
-  useEffect(() => {
-    const token = getStoredToken()
-    if (!token) return
-
-    fetchCurrentAuth(token)
-      .then(({ shop: s, staff: st }) => {
-        setShop(s)
-        setStaff(st)
-      })
-      .catch(() => clearStoredToken())
-      .finally(() => setAuthLoading(false))
-  }, [])
-
-  function handleLogout() {
-    clearStoredToken()
-    setShop(null)
-    setStaff(null)
+  const onLogout = () => {
+    handleLogout()
     setView("dashboard")
   }
-
-  function handleAuthSuccess(s: Shop, st?: Staff | null) {
-    setShop(s)
-    if (st !== undefined) setStaff(st)
-  }
-
-  useEffect(() => {
-    if (shop?.name) {
-      document.title = `${shop.name} - PunchBook`
-    } else {
-      document.title = "PunchBook"
-    }
-  }, [shop?.name])
 
   if (authLoading) {
     return (
@@ -93,58 +43,13 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400">
-              {shop.name}
-            </h1>
-            {staff && (
-              <span className="rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                {staff.role === "admin" ? "Admin" : "Lễ tân"}
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
-            <nav className="flex flex-wrap rounded-xl border border-slate-200 p-1 dark:border-slate-700">
-              {visibleNavItems.map(({ view: v, label }) => (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => setView(v)}
-                  className={`rounded-lg px-3 py-1.5 font-semibold transition ${
-                    activeView === v
-                      ? "bg-indigo-600 text-white"
-                      : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </nav>
-            <span>
-              Plan:{" "}
-              <strong
-                className={`font-bold ${
-                  shop.plan === "paid"
-                    ? "text-amber-500 dark:text-amber-400"
-                    : "text-slate-700 dark:text-slate-200"
-                }`}
-              >
-                {shop.plan_details || (shop.plan === "paid" ? "Premium" : "Free")}
-              </strong>
-            </span>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
+      <AppHeader
+        shop={shop}
+        staff={staff}
+        activeView={activeView}
+        onSelectView={setView}
+        onLogout={onLogout}
+      />
 
       <main className="mx-auto max-w-5xl px-4 py-6">
         {activeView === "dashboard" ? (
@@ -161,7 +66,11 @@ function App() {
         ) : activeView === "packages" ? (
           <PackagesScreen currentStaff={staff} />
         ) : (
-          <SettingsScreen shop={shop} currentStaff={staff} onShopUpdated={setShop} />
+          <SettingsScreen
+            shop={shop}
+            currentStaff={staff}
+            onShopUpdated={setShop}
+          />
         )}
       </main>
     </div>
