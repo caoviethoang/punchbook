@@ -12,6 +12,13 @@ export interface AuditLogEntry {
   created_at: string
 }
 
+export const ACTION_LABELS: Record<string, { label: string; icon: string }> = {
+  check_in: { label: "Check-in", icon: "✓" },
+  membership_created: { label: "Thêm hội viên", icon: "+" },
+  membership_renewed: { label: "Gia hạn hội viên", icon: "↺" },
+  shop_plan_upgraded: { label: "Nâng cấp gói shop", icon: "⭐" },
+}
+
 export function useAuditLogs(shopId: string) {
   const [logs, setLogs] = useState<AuditLogEntry[]>([])
   const [loading, setLoading] = useState(true)

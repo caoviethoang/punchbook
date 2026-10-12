@@ -1,14 +1,7 @@
 import { Clock, User } from "lucide-react"
-import type { AuditLogEntry } from "../../hooks/useAuditLogs"
+import { ACTION_LABELS, type AuditLogEntry } from "../../hooks/useAuditLogs"
 
-export const ACTION_LABELS: Record<string, { label: string; icon: string }> = {
-  check_in: { label: "Check-in", icon: "✓" },
-  membership_created: { label: "Thêm hội viên", icon: "+" },
-  membership_renewed: { label: "Gia hạn hội viên", icon: "↺" },
-  shop_plan_upgraded: { label: "Nâng cấp gói shop", icon: "⭐" },
-}
-
-export function formatRelativeTime(isoString: string): string {
+function formatRelativeTime(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime()
   const mins = Math.floor(diff / 60000)
   if (mins < 1) return "vừa xong"

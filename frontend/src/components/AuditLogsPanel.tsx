@@ -1,6 +1,6 @@
 import { AlertCircle, Shield, X } from "lucide-react"
-import { useAuditLogs } from "../hooks/useAuditLogs"
-import { AuditLogItem, ACTION_LABELS } from "./audit-logs/AuditLogItem"
+import { useAuditLogs, ACTION_LABELS } from "../hooks/useAuditLogs"
+import { AuditLogItem } from "./audit-logs/AuditLogItem"
 
 interface AuditLogsPanelProps {
   shopId: string
