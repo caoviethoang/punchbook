@@ -22,9 +22,7 @@ export function useMembershipDetail(membershipId: string) {
       .catch((err) => {
         if (!isCancelled) {
           setError(
-            err instanceof Error
-              ? err.message
-              : "Không thể tải thông tin chi tiết hội viên.",
+            err instanceof Error ? err.message : "Không thể tải thông tin chi tiết hội viên.",
           )
         }
       })

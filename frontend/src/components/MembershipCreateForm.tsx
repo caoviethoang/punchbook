@@ -14,9 +14,7 @@ interface MembershipCreateFormProps {
 }
 
 function packageLabel(pkg: PackageItem): string {
-  const detail = pkg.sessions_count
-    ? `${pkg.sessions_count} buổi`
-    : `${pkg.duration_days} ngày`
+  const detail = pkg.sessions_count ? `${pkg.sessions_count} buổi` : `${pkg.duration_days} ngày`
   return `${pkg.name} (${detail})`
 }
 
@@ -100,9 +98,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
   return (
     <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-5">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-          Thêm hội viên
-        </h2>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Thêm hội viên</h2>
         <p className="text-xs text-slate-500 dark:text-slate-400">
           Nhập tên, SĐT và chọn gói — sau đó có thể tìm ở màn Check-in
         </p>
@@ -116,8 +112,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
                 ✓ Thêm hội viên thành công!
               </p>
               <p className="mt-1 text-sm text-emerald-800 dark:text-emerald-400">
-                <strong>{created.customer_name}</strong> · {created.phone} ·{" "}
-                {created.package.name}
+                <strong>{created.customer_name}</strong> · {created.phone} · {created.package.name}
                 {created.sessions_left !== null
                   ? ` · ${created.sessions_left} buổi`
                   : created.expires_at

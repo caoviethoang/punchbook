@@ -58,9 +58,7 @@ export function ShopProfileSection({
           <Building2 className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-            Thông tin Cửa hàng
-          </h3>
+          <h3 className="font-semibold text-slate-900 dark:text-slate-100">Thông tin Cửa hàng</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Cập nhật tên tiệm, số điện thoại và địa chỉ liên hệ.
           </p>
@@ -148,8 +146,8 @@ export function ShopProfileSection({
             {!isAdmin
               ? "Chỉ xem (Không có quyền sửa)"
               : profileLoading
-              ? "Đang lưu..."
-              : "Lưu thông tin tiệm & ngân hàng"}
+                ? "Đang lưu..."
+                : "Lưu thông tin tiệm & ngân hàng"}
           </button>
         </div>
       </form>

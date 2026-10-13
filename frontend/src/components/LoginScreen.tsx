@@ -176,9 +176,21 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
 
       {mode === "login" && (
         <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3 text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
-          <p className="font-semibold text-slate-700 dark:text-slate-300">Tài khoản mẫu (Demo Seed):</p>
-          <p className="mt-1">🔑 Chủ shop: <code className="font-mono text-indigo-600 dark:text-indigo-400">studio1@punchbook.test</code> / <code className="font-mono">password123</code></p>
-          <p className="mt-0.5">🔑 Lễ tân: <code className="font-mono text-indigo-600 dark:text-indigo-400">letan_studio1</code> / <code className="font-mono">password123</code></p>
+          <p className="font-semibold text-slate-700 dark:text-slate-300">
+            Tài khoản mẫu (Demo Seed):
+          </p>
+          <p className="mt-1">
+            🔑 Chủ shop:{" "}
+            <code className="font-mono text-indigo-600 dark:text-indigo-400">
+              studio1@punchbook.test
+            </code>{" "}
+            / <code className="font-mono">password123</code>
+          </p>
+          <p className="mt-0.5">
+            🔑 Lễ tân:{" "}
+            <code className="font-mono text-indigo-600 dark:text-indigo-400">letan_studio1</code> /{" "}
+            <code className="font-mono">password123</code>
+          </p>
         </div>
       )}
     </div>

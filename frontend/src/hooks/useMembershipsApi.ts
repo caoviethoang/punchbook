@@ -26,19 +26,16 @@ export function useMembershipsApi() {
     }
   }, [])
 
-  const checkIn = useCallback(
-    async (id: string, staffId?: string): Promise<CheckInResult> => {
-      setError(null)
-      try {
-        return await checkInRequest(id, staffId)
-      } catch (err) {
-        const message = toApiError(err, "Check-in thất bại.")
-        setError(message)
-        throw err
-      }
-    },
-    [],
-  )
+  const checkIn = useCallback(async (id: string, staffId?: string): Promise<CheckInResult> => {
+    setError(null)
+    try {
+      return await checkInRequest(id, staffId)
+    } catch (err) {
+      const message = toApiError(err, "Check-in thất bại.")
+      setError(message)
+      throw err
+    }
+  }, [])
 
   return { search, checkIn, searchLoading, error }
 }

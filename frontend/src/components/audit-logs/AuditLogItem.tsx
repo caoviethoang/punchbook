@@ -47,7 +47,7 @@ export function AuditLogItem({ log }: AuditLogItemProps) {
           {log.action === "membership_renewed" &&
             `Hội viên: ${log.details.customer_name} • Trước: ${log.details.sessions_before} buổi → Sau: ${log.details.sessions_after} buổi`}
           {log.action === "shop_plan_upgraded" &&
-            `Gia hạn: ${log.details.months} tháng • Số tiền: ${(Number(log.details.amount)).toLocaleString("vi-VN")}đ`}
+            `Gia hạn: ${log.details.months} tháng • Số tiền: ${Number(log.details.amount).toLocaleString("vi-VN")}đ`}
         </p>
         <div className="mt-1.5 flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500">
           <Clock className="h-3 w-3" />

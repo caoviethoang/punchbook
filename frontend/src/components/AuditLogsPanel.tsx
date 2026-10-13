@@ -7,7 +7,13 @@ interface AuditLogsPanelProps {
   onClose?: () => void
 }
 
-const FILTER_OPTIONS = ["", "check_in", "membership_created", "membership_renewed", "shop_plan_upgraded"]
+const FILTER_OPTIONS = [
+  "",
+  "check_in",
+  "membership_created",
+  "membership_renewed",
+  "shop_plan_upgraded",
+]
 
 export function AuditLogsPanel({ shopId, onClose }: AuditLogsPanelProps) {
   const { logs, loading, error, filter, handleFilterChange } = useAuditLogs(shopId)
@@ -22,8 +28,12 @@ export function AuditLogsPanel({ shopId, onClose }: AuditLogsPanelProps) {
               <Shield className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">Nhật ký thao tác</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Lịch sử hoạt động của nhân viên</p>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">
+                Nhật ký thao tác
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Lịch sử hoạt động của nhân viên
+              </p>
             </div>
           </div>
           {onClose && (

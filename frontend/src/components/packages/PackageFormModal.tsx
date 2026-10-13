@@ -89,9 +89,7 @@ function PackageFormContent({
       setNewCatName("")
       setShowNewCatInput(false)
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Tạo loại dịch vụ mới thất bại",
-      )
+      setError(err instanceof Error ? err.message : "Tạo loại dịch vụ mới thất bại")
     } finally {
       setCreatingCat(false)
     }
@@ -157,8 +155,8 @@ function PackageFormContent({
         err instanceof Error
           ? err.message
           : editingPackage
-          ? "Cập nhật gói thất bại"
-          : "Tạo gói thất bại",
+            ? "Cập nhật gói thất bại"
+            : "Tạo gói thất bại",
       )
     } finally {
       setLoading(false)

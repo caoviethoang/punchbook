@@ -15,9 +15,7 @@ export function CheckInHistoryTab({ checkIns, onPrintReceipt }: CheckInHistoryTa
         <p className="text-base font-semibold text-slate-700 dark:text-slate-300">
           Chưa có lịch sử Check-in
         </p>
-        <p className="mt-1 text-sm">
-          Hội viên này chưa thực hiện lượt check-in nào.
-        </p>
+        <p className="mt-1 text-sm">Hội viên này chưa thực hiện lượt check-in nào.</p>
       </div>
     )
   }

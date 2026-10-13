@@ -1,11 +1,9 @@
 import { getStoredToken } from "./auth"
 
-const graphqlUrl =
-  import.meta.env.VITE_GRAPHQL_API_URL || "http://localhost:3000/graphql"
+const graphqlUrl = import.meta.env.VITE_GRAPHQL_API_URL || "http://localhost:3000/graphql"
 
 export const apiBaseUrl =
-  import.meta.env.VITE_API_BASE_URL ||
-  graphqlUrl.replace(/\/graphql\/?$/, "")
+  import.meta.env.VITE_API_BASE_URL || graphqlUrl.replace(/\/graphql\/?$/, "")
 
 /**
  * Returns the raw stored token string.
@@ -53,10 +51,7 @@ export async function parseApiResponse<T>(response: Response): Promise<T> {
  * Downloads an authenticated binary resource and triggers a browser file download.
  * Reads `Content-Disposition` header for filename if available.
  */
-export async function downloadBlob(
-  path: string,
-  fallbackFilename: string,
-): Promise<void> {
+export async function downloadBlob(path: string, fallbackFilename: string): Promise<void> {
   const response = await fetch(`${apiBaseUrl}${path}`, {
     headers: authHeaders(),
   })
@@ -93,9 +88,7 @@ export async function downloadBlob(
 }
 
 function jsonHeaders(authenticated: boolean): HeadersInit {
-  return authenticated
-    ? authHeaders()
-    : { "Content-Type": "application/json" }
+  return authenticated ? authHeaders() : { "Content-Type": "application/json" }
 }
 
 function withQuery(path: string, query?: Record<string, string>): string {
@@ -146,10 +139,7 @@ export async function apiPatch<T>(
   return parseApiResponse<T>(response)
 }
 
-export async function apiDelete<T>(
-  path: string,
-  options?: { auth?: boolean },
-): Promise<T> {
+export async function apiDelete<T>(path: string, options?: { auth?: boolean }): Promise<T> {
   const response = await fetch(`${apiBaseUrl}${path}`, {
     method: "DELETE",
     headers: jsonHeaders(options?.auth !== false),

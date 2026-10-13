@@ -1,11 +1,5 @@
 import { useState } from "react"
-import {
-  Check,
-  Copy,
-  CreditCard,
-  QrCode,
-  Sparkles,
-} from "lucide-react"
+import { Check, Copy, CreditCard, QrCode, Sparkles } from "lucide-react"
 import type { Shop } from "../lib/auth"
 import type { Membership } from "../lib/memberships"
 import { formatVndInput } from "../lib/formatters"
@@ -82,9 +76,7 @@ export function MembershipPaymentQRModal({
               </p>
               <p className="text-lg font-bold text-slate-900 dark:text-slate-100">
                 {membership.customer_name}{" "}
-                <span className="text-sm font-normal text-slate-500">
-                  ({membership.phone})
-                </span>
+                <span className="text-sm font-normal text-slate-500">({membership.phone})</span>
               </p>
             </div>
             <div className="text-right">
@@ -174,7 +166,8 @@ export function MembershipPaymentQRModal({
               Chưa cài đặt Tài khoản Ngân hàng
             </h4>
             <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">
-              Vào mục <strong>Cài đặt &rarr; Thông tin Cửa hàng</strong> để điền số tài khoản ngân hàng của tiệm. Hệ thống sẽ tự động xuất QR VietQR cho các lần thu phí hội viên!
+              Vào mục <strong>Cài đặt &rarr; Thông tin Cửa hàng</strong> để điền số tài khoản ngân
+              hàng của tiệm. Hệ thống sẽ tự động xuất QR VietQR cho các lần thu phí hội viên!
             </p>
           </div>
         )}

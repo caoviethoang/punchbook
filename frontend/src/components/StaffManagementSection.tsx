@@ -122,9 +122,13 @@ export function StaffManagementSection({ currentStaff, onToast }: StaffManagemen
       </div>
 
       {loading ? (
-        <div className="py-8 text-center text-sm text-slate-400">Đang tải danh sách nhân viên...</div>
+        <div className="py-8 text-center text-sm text-slate-400">
+          Đang tải danh sách nhân viên...
+        </div>
       ) : staffs.length === 0 ? (
-        <div className="py-8 text-center text-sm text-slate-400">Chưa có tài khoản nhân viên nào.</div>
+        <div className="py-8 text-center text-sm text-slate-400">
+          Chưa có tài khoản nhân viên nào.
+        </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
