@@ -1,10 +1,15 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import { render, screen, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 import { DashboardScreen } from '../../components/DashboardScreen';
 
 // Mock the useDashboard hook
-jest.mock('../../hooks/useDashboard', () => ({
+
+afterEach(() => {
+  cleanup();
+});
+vi.mock('../../hooks/useDashboard', () => ({
   useDashboard: () => ({
     data: {
       revenue_this_month: 1000000,
@@ -16,7 +21,7 @@ jest.mock('../../hooks/useDashboard', () => ({
     },
     loading: false,
     error: null,
-    load: jest.fn(),
+    load: vi.fn().mockResolvedValue(undefined),
   }),
 }));
 
@@ -26,6 +31,7 @@ describe('DashboardScreen', () => {
     const chartHeader = screen.getByText(/Phân tích & Thống kê Kinh doanh/i);
     expect(chartHeader).toBeInTheDocument();
   });
+    cleanup();
 
   it('does not render AnalyticsCharts for non‑admin staff', () => {
     const staff = { role: 'staff' } as any;
