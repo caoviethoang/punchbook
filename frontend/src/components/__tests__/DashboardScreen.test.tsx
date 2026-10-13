@@ -1,8 +1,8 @@
-import React from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { DashboardScreen } from '../../components/DashboardScreen';
+import type { Staff } from '../../lib/auth';
 
 // Mock the useDashboard hook
 
@@ -34,7 +34,7 @@ describe('DashboardScreen', () => {
     
 
   it('does not render AnalyticsCharts for non‑admin staff', () => {
-    const staff = { role: 'staff' } as any;
+    const staff = { role: 'staff' } as unknown as Staff;
     render(<DashboardScreen currentStaff={staff} />);
     const chartHeader = screen.queryByText(/Phân tích & Thống kê Kinh doanh/i);
     expect(chartHeader).not.toBeInTheDocument();
