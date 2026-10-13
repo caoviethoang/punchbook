@@ -28,9 +28,7 @@ export function SubscriptionSection({
             <ShieldCheck className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-              Thông tin Gói cước
-            </h3>
+            <h3 className="font-semibold text-slate-900 dark:text-slate-100">Thông tin Gói cước</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Chi tiết trạng thái tài khoản và thời hạn đăng ký dịch vụ PunchBook.
             </p>
@@ -45,7 +43,9 @@ export function SubscriptionSection({
                 : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
             }`}
           >
-            {shop.plan === "paid" && <Sparkles className="h-3.5 w-3.5 fill-current text-amber-500" />}
+            {shop.plan === "paid" && (
+              <Sparkles className="h-3.5 w-3.5 fill-current text-amber-500" />
+            )}
             Gói {shop.plan === "paid" ? "Premium (Paid)" : "Miễn phí (Free)"}
           </span>
 
@@ -70,19 +70,25 @@ export function SubscriptionSection({
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Tài khoản Email</span>
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            Tài khoản Email
+          </span>
           <p className="mt-1 font-semibold text-slate-900 dark:text-slate-100">{shop.email}</p>
         </div>
 
         <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Loại gói dịch vụ</span>
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            Loại gói dịch vụ
+          </span>
           <p className="mt-1 font-semibold capitalize text-slate-900 dark:text-slate-100">
             {shop.plan === "paid" ? "Trả phí (Paid)" : "Miễn phí (Free)"}
           </p>
         </div>
 
         <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Ngày hết hạn gói</span>
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            Ngày hết hạn gói
+          </span>
           <p className="mt-1 font-semibold text-slate-900 dark:text-slate-100">
             {formatExpirationDate(shop.plan_expires_at)}
           </p>
@@ -95,10 +101,13 @@ export function SubscriptionSection({
           <div>
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-amber-400 fill-current" />
-              <h4 className="text-base font-extrabold text-white">Nâng cấp lên PunchBook Premium</h4>
+              <h4 className="text-base font-extrabold text-white">
+                Nâng cấp lên PunchBook Premium
+              </h4>
             </div>
             <p className="mt-1 text-xs text-slate-300">
-              Mở khóa không giới hạn hội viên, báo cáo doanh thu chi tiết và tự động nhắc nợ Zalo/SMS.
+              Mở khóa không giới hạn hội viên, báo cáo doanh thu chi tiết và tự động nhắc nợ
+              Zalo/SMS.
             </p>
           </div>
           <button

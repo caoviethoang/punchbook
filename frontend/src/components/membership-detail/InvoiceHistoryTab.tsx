@@ -15,9 +15,7 @@ export function InvoiceHistoryTab({ invoices }: InvoiceHistoryTabProps) {
         <p className="text-base font-semibold text-slate-700 dark:text-slate-300">
           Chưa có lịch sử Thanh toán
         </p>
-        <p className="mt-1 text-sm">
-          Hội viên này chưa có hóa đơn giao hạn hoặc tạo mới nào.
-        </p>
+        <p className="mt-1 text-sm">Hội viên này chưa có hóa đơn giao hạn hoặc tạo mới nào.</p>
       </div>
     )
   }
@@ -35,10 +33,7 @@ export function InvoiceHistoryTab({ invoices }: InvoiceHistoryTabProps) {
         </thead>
         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
           {invoices.map((inv) => (
-            <tr
-              key={inv.id}
-              className="transition hover:bg-slate-50/60 dark:hover:bg-slate-800/40"
-            >
+            <tr key={inv.id} className="transition hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
               <td className="px-4 py-3 font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
                 #{inv.id.slice(0, 8)}
               </td>

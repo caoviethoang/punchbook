@@ -43,9 +43,7 @@ export function PackageCategoryFilter({
       </button>
 
       {categories.map((cat) => {
-        const count = packages.filter(
-          (p) => p.package_category_id === cat.id,
-        ).length
+        const count = packages.filter((p) => p.package_category_id === cat.id).length
         const isActive = selectedCategory === cat.id
         return (
           <button

@@ -16,11 +16,7 @@ export function DeletePackageModal({
   onConfirm,
 }: DeletePackageModalProps) {
   return (
-    <Modal
-      isOpen={packageItem !== null}
-      onClose={onClose}
-      maxWidthClass="max-w-md"
-    >
+    <Modal isOpen={packageItem !== null} onClose={onClose} maxWidthClass="max-w-md">
       {packageItem && (
         <div className="p-6">
           <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">

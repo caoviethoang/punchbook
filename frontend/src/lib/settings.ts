@@ -25,15 +25,11 @@ export async function fetchSettings(): Promise<SettingsResponse> {
   return apiGet<SettingsResponse>("/settings")
 }
 
-export async function updateShopProfile(
-  input: UpdateProfileInput,
-): Promise<SettingsResponse> {
+export async function updateShopProfile(input: UpdateProfileInput): Promise<SettingsResponse> {
   return apiPatch<SettingsResponse>("/settings/profile", input)
 }
 
-export async function changeShopPassword(
-  input: ChangePasswordInput,
-): Promise<SettingsResponse> {
+export async function changeShopPassword(input: ChangePasswordInput): Promise<SettingsResponse> {
   return apiPatch<SettingsResponse>("/settings/password", input)
 }
 

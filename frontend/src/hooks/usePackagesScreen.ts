@@ -18,8 +18,7 @@ export function usePackagesScreen() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const [selectedCategoryFilter, setSelectedCategoryFilter] =
-    useState<string>("all")
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all")
 
   const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -42,11 +41,7 @@ export function usePackagesScreen() {
       })
       .catch((err) => {
         if (!isCancelled) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Không thể tải dữ liệu gói dịch vụ",
-          )
+          setError(err instanceof Error ? err.message : "Không thể tải dữ liệu gói dịch vụ")
         }
       })
       .finally(() => {
@@ -97,9 +92,7 @@ export function usePackagesScreen() {
   function handleCategoryUpdated(cat: PackageCategory) {
     setCategories((prev) => prev.map((c) => (c.id === cat.id ? cat : c)))
     setPackages((prev) =>
-      prev.map((p) =>
-        p.package_category_id === cat.id ? { ...p, category_name: cat.name } : p,
-      ),
+      prev.map((p) => (p.package_category_id === cat.id ? { ...p, category_name: cat.name } : p)),
     )
     setToast({
       message: `Đã đổi tên bộ môn thành "${cat.name}"!`,
@@ -111,9 +104,7 @@ export function usePackagesScreen() {
     setCategories((prev) => prev.filter((c) => c.id !== id))
     setPackages((prev) =>
       prev.map((p) =>
-        p.package_category_id === id
-          ? { ...p, package_category_id: null, category_name: null }
-          : p,
+        p.package_category_id === id ? { ...p, package_category_id: null, category_name: null } : p,
       ),
     )
     if (selectedCategoryFilter === id) {
@@ -138,8 +129,7 @@ export function usePackagesScreen() {
       setDeletingPackage(null)
     } catch (err) {
       setToast({
-        message:
-          err instanceof Error ? err.message : "Xóa gói dịch vụ thất bại",
+        message: err instanceof Error ? err.message : "Xóa gói dịch vụ thất bại",
         type: "error",
       })
     } finally {
@@ -150,8 +140,7 @@ export function usePackagesScreen() {
   // Filter packages based on category tab
   const filteredPackages = packages.filter((pkg) => {
     if (selectedCategoryFilter === "all") return true
-    if (selectedCategoryFilter === "uncategorized")
-      return !pkg.package_category_id
+    if (selectedCategoryFilter === "uncategorized") return !pkg.package_category_id
     return pkg.package_category_id === selectedCategoryFilter
   })
 

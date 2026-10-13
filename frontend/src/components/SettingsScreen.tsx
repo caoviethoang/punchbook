@@ -55,13 +55,7 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
 
   return (
     <div className="space-y-8">
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
@@ -78,7 +72,8 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
           <div className="text-xs sm:text-sm">
             <p className="font-bold">Chế độ chỉ xem (Dành cho Lễ tân)</p>
             <p className="mt-0.5 text-amber-700 dark:text-amber-300">
-              Tài khoản của bạn không có quyền chỉnh sửa thông tin cửa hàng, đổi mật khẩu hoặc quản lý nhân viên.
+              Tài khoản của bạn không có quyền chỉnh sửa thông tin cửa hàng, đổi mật khẩu hoặc quản
+              lý nhân viên.
             </p>
           </div>
         </div>
@@ -119,10 +114,7 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
       </div>
 
       {/* Section 2.5: Staff Management for Shop Admin */}
-      <StaffManagementSection
-        currentStaff={currentStaff}
-        onToast={handleToast}
-      />
+      <StaffManagementSection currentStaff={currentStaff} onToast={handleToast} />
 
       {/* Section 3: Subscription Plan Info & Upgrade CTA */}
       <SubscriptionSection

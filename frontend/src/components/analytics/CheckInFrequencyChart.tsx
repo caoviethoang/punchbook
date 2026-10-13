@@ -7,10 +7,7 @@ interface CheckInFrequencyChartProps {
   peakHour: PeakHourData | null
 }
 
-export function CheckInFrequencyChart({
-  checkInFrequency,
-  peakHour,
-}: CheckInFrequencyChartProps) {
+export function CheckInFrequencyChart({ checkInFrequency, peakHour }: CheckInFrequencyChartProps) {
   const [hoveredHourIndex, setHoveredHourIndex] = useState<number | null>(null)
 
   const maxCheckIns = Math.max(...checkInFrequency.map((h) => h.count), 1)
@@ -24,9 +21,7 @@ export function CheckInFrequencyChart({
           <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
           <div>
             <h4 className="text-sm font-bold">Gợi ý phân bổ nhân sự</h4>
-            <p className="mt-0.5 text-xs font-medium leading-relaxed">
-              {peakHour.recommendation}
-            </p>
+            <p className="mt-0.5 text-xs font-medium leading-relaxed">{peakHour.recommendation}</p>
           </div>
         </div>
       ) : (
@@ -40,10 +35,7 @@ export function CheckInFrequencyChart({
       <div className="relative">
         <div className="flex h-56 items-end gap-1 border-b border-slate-100 pb-6 pt-8 dark:border-slate-800">
           {checkInFrequency.map((item, idx) => {
-            const heightPercent = Math.max(
-              (item.count / maxCheckIns) * 100,
-              item.count > 0 ? 8 : 2,
-            )
+            const heightPercent = Math.max((item.count / maxCheckIns) * 100, item.count > 0 ? 8 : 2)
             const isPeak = peakHour?.hour === item.hour && item.count > 0
             const isHovered = hoveredHourIndex === idx
 

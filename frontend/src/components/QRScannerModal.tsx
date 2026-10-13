@@ -9,11 +9,7 @@ interface QRScannerModalProps {
   onScanSuccess: (scannedText: string) => void
 }
 
-export function QRScannerModal({
-  isOpen,
-  onClose,
-  onScanSuccess,
-}: QRScannerModalProps) {
+export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModalProps) {
   const [activeTab, setActiveTab] = useState<"camera" | "upload" | "manual">("camera")
   const [manualInput, setManualInput] = useState("")
   const [error, setError] = useState<string | null>(null)
@@ -227,12 +223,7 @@ export function QRScannerModal({
               <span className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Hỗ trợ PNG, JPG, JPEG, WebP
               </span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
+              <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
             </label>
           </div>
         )}
