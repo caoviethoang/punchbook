@@ -51,7 +51,7 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
   const [listLoading, setListLoading] = useState(false)
 
   useEffect(() => {
-    void load().catch(() => {
+    load().catch(() => {
       // Ignored
     })
   }, [load])
@@ -182,11 +182,13 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
       </div>
 
       {/* Analytics Charts (30-day Revenue & 24h Check-in Frequency) */}
-      <AnalyticsCharts
-        dailyRevenue={data.daily_revenue_30_days}
-        checkInFrequency={data.check_in_frequency_by_hour}
-        peakHour={data.peak_check_in_hour}
-      />
+      {(!currentStaff || currentStaff.role === "admin") ? (
+        <AnalyticsCharts
+          dailyRevenue={data.daily_revenue_30_days}
+          checkInFrequency={data.check_in_frequency_by_hour}
+          peakHour={data.peak_check_in_hour}
+        />
+      ) : null}
 
       {/* Memberships Table with search & pagination */}
       <DashboardMembershipsTable
