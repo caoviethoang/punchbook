@@ -115,9 +115,7 @@ export function DashboardMembershipsTable({
                       <p className="font-semibold text-slate-900 group-hover/btn:text-indigo-600 dark:text-slate-50 dark:group-hover/btn:text-indigo-400">
                         {membership.customer_name}
                       </p>
-                      <p className="text-slate-500 dark:text-slate-400">
-                        {membership.phone}
-                      </p>
+                      <p className="text-slate-500 dark:text-slate-400">{membership.phone}</p>
                     </button>
                   </td>
                   <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
@@ -164,7 +162,8 @@ export function DashboardMembershipsTable({
       {paginationMeta && paginationMeta.total_pages > 1 && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-1 py-2">
           <span className="text-xs text-slate-500 dark:text-slate-400">
-            Trang {paginationMeta.page} / {paginationMeta.total_pages} (Tổng {paginationMeta.total} hội viên)
+            Trang {paginationMeta.page} / {paginationMeta.total_pages} (Tổng {paginationMeta.total}{" "}
+            hội viên)
           </span>
           <div className="flex items-center gap-2">
             <button

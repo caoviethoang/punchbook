@@ -1,4 +1,13 @@
-import { apiGet, apiPost, apiPatch, apiDelete, authToken, downloadBlob, parseApiResponse, apiBaseUrl } from "./api"
+import {
+  apiGet,
+  apiPost,
+  apiPatch,
+  apiDelete,
+  authToken,
+  downloadBlob,
+  parseApiResponse,
+  apiBaseUrl,
+} from "./api"
 
 export interface MembershipPackage {
   id: string
@@ -167,9 +176,7 @@ export interface UpdateMembershipPayload {
 }
 
 /** POST /memberships — create member; backend inits sessions_left / expires_at from package. */
-export async function createMembership(
-  payload: CreateMembershipPayload,
-): Promise<Membership> {
+export async function createMembership(payload: CreateMembershipPayload): Promise<Membership> {
   const body = await apiPost<{ membership: Membership }>("/memberships", {
     membership: payload,
   })
@@ -208,10 +215,7 @@ export interface ImportMembershipsResult {
 
 /** GET /memberships/import_template — download template .xlsx file. */
 export async function downloadImportTemplate(): Promise<void> {
-  return downloadBlob(
-    "/memberships/import_template",
-    "template_import_memberships.xlsx",
-  )
+  return downloadBlob("/memberships/import_template", "template_import_memberships.xlsx")
 }
 
 /** POST /memberships/import — upload Excel/CSV file to batch create memberships. */
@@ -234,10 +238,7 @@ export async function importMemberships(file: File): Promise<ImportMembershipsRe
  * POST /memberships/:id/check_in
  * staffId is optional — backend defaults to current shop staff if omitted.
  */
-export async function checkIn(
-  id: string,
-  staffId?: string,
-): Promise<CheckInResult> {
+export async function checkIn(id: string, staffId?: string): Promise<CheckInResult> {
   return apiPost<CheckInResult>(`/memberships/${id}/check_in`, {
     staff_id: staffId || undefined,
   })

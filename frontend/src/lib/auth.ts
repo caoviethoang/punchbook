@@ -42,11 +42,15 @@ export function clearStoredToken(): void {
   localStorage.removeItem(TOKEN_KEY)
 }
 
-export async function login(loginInput: string, password: string, shopEmail?: string): Promise<AuthResponse> {
+export async function login(
+  loginInput: string,
+  password: string,
+  shopEmail?: string,
+): Promise<AuthResponse> {
   return apiPost<AuthResponse>(
     "/auth/login",
     { email: loginInput, username: loginInput, password, shop_email: shopEmail },
-    { auth: false }
+    { auth: false },
   )
 }
 
@@ -60,7 +64,9 @@ export async function register(input: {
   return apiPost<AuthResponse>("/auth/register", input, { auth: false })
 }
 
-export async function fetchCurrentAuth(token: string): Promise<{ shop: Shop; staff: Staff | null }> {
+export async function fetchCurrentAuth(
+  token: string,
+): Promise<{ shop: Shop; staff: Staff | null }> {
   const body = await apiGet<{ shop: Shop; staff: Staff | null }>("/auth/me", { token })
   return { shop: body.shop, staff: body.staff }
 }

@@ -1,22 +1,12 @@
 import { useCallback, useEffect, useState } from "react"
-import {
-  AlertCircle,
-  CalendarClock,
-  Loader2,
-  Users,
-  Wallet,
-} from "lucide-react"
+import { AlertCircle, CalendarClock, Loader2, Users, Wallet } from "lucide-react"
 import type { Staff } from "../lib/auth"
 import { AuditLogsPanel } from "./AuditLogsPanel"
 import { useDashboard } from "../hooks/useDashboard"
 import type { DashboardMembership } from "../lib/dashboard"
 import { toApiError } from "../lib/errors"
 import { formatVnd } from "../lib/formatters"
-import {
-  fetchMemberships,
-  type PaginationMeta,
-  type StatusFilterType,
-} from "../lib/memberships"
+import { fetchMemberships, type PaginationMeta, type StatusFilterType } from "../lib/memberships"
 import { downloadExcelReport } from "../lib/reports"
 import { AnalyticsCharts } from "./AnalyticsCharts"
 import { DashboardHeader } from "./dashboard/DashboardHeader"
@@ -35,8 +25,9 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
   const { data, loading, error, load } = useDashboard()
   const [selectedMembershipForRenewal, setSelectedMembershipForRenewal] =
     useState<DashboardMembership | null>(null)
-  const [selectedMembershipIdForDetail, setSelectedMembershipIdForDetail] =
-    useState<string | null>(null)
+  const [selectedMembershipIdForDetail, setSelectedMembershipIdForDetail] = useState<string | null>(
+    null,
+  )
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
@@ -51,7 +42,7 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
   const [listLoading, setListLoading] = useState(false)
 
   useEffect(() => {
-    void load().catch(() => {
+    load().catch(() => {
       // Ignored
     })
   }, [load])
@@ -182,11 +173,13 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
       </div>
 
       {/* Analytics Charts (30-day Revenue & 24h Check-in Frequency) */}
-      <AnalyticsCharts
-        dailyRevenue={data.daily_revenue_30_days}
-        checkInFrequency={data.check_in_frequency_by_hour}
-        peakHour={data.peak_check_in_hour}
-      />
+      {!currentStaff || currentStaff.role === "admin" ? (
+        <AnalyticsCharts
+          dailyRevenue={data.daily_revenue_30_days}
+          checkInFrequency={data.check_in_frequency_by_hour}
+          peakHour={data.peak_check_in_hour}
+        />
+      ) : null}
 
       {/* Memberships Table with search & pagination */}
       <DashboardMembershipsTable
@@ -236,12 +229,7 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
         }}
       />
 
-      {isAuditLogsOpen && (
-        <AuditLogsPanel
-          shopId=""
-          onClose={() => setIsAuditLogsOpen(false)}
-        />
-      )}
+      {isAuditLogsOpen && <AuditLogsPanel shopId="" onClose={() => setIsAuditLogsOpen(false)} />}
     </div>
   )
 }
