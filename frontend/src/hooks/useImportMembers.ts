@@ -1,5 +1,9 @@
 import { useState } from "react"
-import { downloadImportTemplate, importMemberships, type ImportMembershipsResult } from "../lib/memberships"
+import {
+  downloadImportTemplate,
+  importMemberships,
+  type ImportMembershipsResult,
+} from "../lib/memberships"
 
 export function useImportMembers(onSuccessCallback?: () => void) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -14,9 +18,7 @@ export function useImportMembers(onSuccessCallback?: () => void) {
       setGeneralError(null)
       await downloadImportTemplate()
     } catch (err) {
-      setGeneralError(
-        err instanceof Error ? err.message : "Không thể tải file mẫu."
-      )
+      setGeneralError(err instanceof Error ? err.message : "Không thể tải file mẫu.")
     } finally {
       setIsDownloadingTemplate(false)
     }
@@ -48,9 +50,7 @@ export function useImportMembers(onSuccessCallback?: () => void) {
         onSuccessCallback()
       }
     } catch (err) {
-      setGeneralError(
-        err instanceof Error ? err.message : "Import dữ liệu thất bại."
-      )
+      setGeneralError(err instanceof Error ? err.message : "Import dữ liệu thất bại.")
     } finally {
       setIsUploading(false)
     }

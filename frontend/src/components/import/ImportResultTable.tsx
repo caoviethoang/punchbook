@@ -59,12 +59,8 @@ export function ImportResultTable({ importResult }: ImportResultTableProps) {
                     <td className="px-3 py-2 font-medium text-slate-900 dark:text-slate-100">
                       {err.customer_name}
                     </td>
-                    <td className="px-3 py-2 text-slate-600 dark:text-slate-400">
-                      {err.phone}
-                    </td>
-                    <td className="px-3 py-2 text-rose-600 dark:text-rose-400">
-                      {err.error}
-                    </td>
+                    <td className="px-3 py-2 text-slate-600 dark:text-slate-400">{err.phone}</td>
+                    <td className="px-3 py-2 text-rose-600 dark:text-rose-400">{err.error}</td>
                   </tr>
                 ))}
               </tbody>

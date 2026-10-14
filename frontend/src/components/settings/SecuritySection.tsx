@@ -32,9 +32,7 @@ export function SecuritySection({
           <KeyRound className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-            Đổi mật khẩu
-          </h3>
+          <h3 className="font-semibold text-slate-900 dark:text-slate-100">Đổi mật khẩu</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Bảo vệ tài khoản với mật khẩu mới.
           </p>
@@ -79,8 +77,8 @@ export function SecuritySection({
             {!isAdmin
               ? "Chỉ xem (Không có quyền sửa)"
               : passwordLoading
-              ? "Đang xử lý..."
-              : "Cập nhật mật khẩu"}
+                ? "Đang xử lý..."
+                : "Cập nhật mật khẩu"}
           </button>
         </div>
       </form>

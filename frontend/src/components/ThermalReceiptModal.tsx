@@ -145,7 +145,9 @@ export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalPro
               <div className="flex justify-between text-sm font-bold">
                 <span>Buổi còn lại:</span>
                 <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">
-                  {receipt.sessionsLeft !== null ? `${receipt.sessionsLeft} buổi` : "Không giới hạn"}
+                  {receipt.sessionsLeft !== null
+                    ? `${receipt.sessionsLeft} buổi`
+                    : "Không giới hạn"}
                 </span>
               </div>
 

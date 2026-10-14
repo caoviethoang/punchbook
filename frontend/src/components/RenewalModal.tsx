@@ -1,11 +1,5 @@
 import { useEffect, useState } from "react"
-import {
-  Check,
-  Copy,
-  CreditCard,
-  Loader2,
-  RefreshCw,
-} from "lucide-react"
+import { Check, Copy, CreditCard, Loader2, RefreshCw } from "lucide-react"
 import { formatVndInput } from "../lib/formatters"
 import { fetchSettings } from "../lib/settings"
 import { getMembershipDetail } from "../lib/memberships"
@@ -100,9 +94,7 @@ export function RenewalModal({ membership, onClose }: RenewalModalProps) {
           <RefreshCw className="h-6 w-6" />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-slate-900 dark:text-slate-50">
-            Gia hạn hội viên
-          </h3>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-slate-50">Gia hạn hội viên</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {membership.customer_name} &bull; {membership.phone}
           </p>
@@ -112,17 +104,11 @@ export function RenewalModal({ membership, onClose }: RenewalModalProps) {
       {/* Package info card */}
       <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
         <div className="flex items-center justify-between text-sm">
-          <span className="font-medium text-slate-500 dark:text-slate-400">
-            Gói dịch vụ:
-          </span>
-          <span className="font-semibold text-slate-900 dark:text-slate-100">
-            {packageName}
-          </span>
+          <span className="font-medium text-slate-500 dark:text-slate-400">Gói dịch vụ:</span>
+          <span className="font-semibold text-slate-900 dark:text-slate-100">{packageName}</span>
         </div>
         <div className="mt-2 flex items-center justify-between text-sm border-t border-slate-200/60 pt-2 dark:border-slate-800">
-          <span className="font-medium text-slate-500 dark:text-slate-400">
-            Giá gói / Số tiền:
-          </span>
+          <span className="font-medium text-slate-500 dark:text-slate-400">Giá gói / Số tiền:</span>
           <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
             {price > 0 ? `${formatVndInput(String(price))} VNĐ` : "0 VNĐ"}
           </span>
@@ -202,7 +188,8 @@ export function RenewalModal({ membership, onClose }: RenewalModalProps) {
             Chưa cài đặt Tài khoản Ngân hàng
           </h4>
           <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">
-            Vào mục <strong>Cài đặt &rarr; Thông tin Cửa hàng</strong> để điền số tài khoản ngân hàng của tiệm. Hệ thống sẽ tự động xuất mã VietQR để thu phí gia hạn!
+            Vào mục <strong>Cài đặt &rarr; Thông tin Cửa hàng</strong> để điền số tài khoản ngân
+            hàng của tiệm. Hệ thống sẽ tự động xuất mã VietQR để thu phí gia hạn!
           </p>
         </div>
       )}

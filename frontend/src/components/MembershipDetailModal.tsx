@@ -11,10 +11,7 @@ interface MembershipDetailModalProps {
   onClose: () => void
 }
 
-export function MembershipDetailModal({
-  membershipId,
-  onClose,
-}: MembershipDetailModalProps) {
+export function MembershipDetailModal({ membershipId, onClose }: MembershipDetailModalProps) {
   const {
     detail,
     loading,
@@ -59,7 +56,11 @@ export function MembershipDetailModal({
         {!loading && !error && detail && (
           <div className="flex flex-1 flex-col overflow-hidden">
             <div className="flex border-b border-slate-100 bg-slate-50/50 px-6 dark:border-slate-800 dark:bg-slate-950/40">
-              <button type="button" onClick={() => setActiveTab("check_ins")} className={tabClass("check_ins")}>
+              <button
+                type="button"
+                onClick={() => setActiveTab("check_ins")}
+                className={tabClass("check_ins")}
+              >
                 <UserCheck className="h-4 w-4" />
                 <span>Lịch sử Check-in</span>
                 <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
@@ -67,7 +68,11 @@ export function MembershipDetailModal({
                 </span>
               </button>
 
-              <button type="button" onClick={() => setActiveTab("invoices")} className={tabClass("invoices")}>
+              <button
+                type="button"
+                onClick={() => setActiveTab("invoices")}
+                className={tabClass("invoices")}
+              >
                 <Receipt className="h-4 w-4" />
                 <span>Lịch sử Thanh toán</span>
                 <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
@@ -91,10 +96,7 @@ export function MembershipDetailModal({
       </div>
 
       {selectedReceipt && (
-        <ThermalReceiptModal
-          receipt={selectedReceipt}
-          onClose={() => setSelectedReceipt(null)}
-        />
+        <ThermalReceiptModal receipt={selectedReceipt} onClose={() => setSelectedReceipt(null)} />
       )}
     </Modal>
   )

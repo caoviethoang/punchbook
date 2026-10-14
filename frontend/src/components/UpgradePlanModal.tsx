@@ -55,12 +55,7 @@ const PLAN_OPTIONS: PlanOption[] = [
   },
 ]
 
-export function UpgradePlanModal({
-  shop,
-  isOpen,
-  onClose,
-  onSuccess,
-}: UpgradePlanModalProps) {
+export function UpgradePlanModal({ shop, isOpen, onClose, onSuccess }: UpgradePlanModalProps) {
   const [selectedMonths, setSelectedMonths] = useState(12)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -196,7 +191,10 @@ export function UpgradePlanModal({
             </div>
             <ul className="space-y-2.5">
               {selectedOption.features.map((feat, idx) => (
-                <li key={idx} className="flex items-start gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
+                <li
+                  key={idx}
+                  className="flex items-start gap-2 text-xs font-medium text-slate-700 dark:text-slate-300"
+                >
                   <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-500" />
                   <span>{feat}</span>
                 </li>
@@ -228,11 +226,15 @@ export function UpgradePlanModal({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Số tài khoản:</span>
-                  <span className="font-mono font-bold text-slate-800 dark:text-slate-200">0346384750</span>
+                  <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                    0346384750
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Chủ tài khoản:</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">CAO VIET HOANG</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">
+                    CAO VIET HOANG
+                  </span>
                 </div>
                 <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800">
                   <span className="text-slate-500">Nội dung CK:</span>

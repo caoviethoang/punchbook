@@ -51,9 +51,7 @@ export function CategoryManagerModal({
       onCategoryAdded(cat)
       setNewCatName("")
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Tạo loại bộ môn mới thất bại",
-      )
+      setError(err instanceof Error ? err.message : "Tạo loại bộ môn mới thất bại")
     } finally {
       setAdding(false)
     }
@@ -75,9 +73,7 @@ export function CategoryManagerModal({
       onCategoryUpdated(updated)
       setEditingId(null)
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Cập nhật loại bộ môn thất bại",
-      )
+      setError(err instanceof Error ? err.message : "Cập nhật loại bộ môn thất bại")
     } finally {
       setSavingId(null)
     }
@@ -97,9 +93,7 @@ export function CategoryManagerModal({
       await deletePackageCategory(id)
       onCategoryDeleted(id)
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Xóa loại bộ môn thất bại",
-      )
+      setError(err instanceof Error ? err.message : "Xóa loại bộ môn thất bại")
     } finally {
       setDeletingId(null)
     }
@@ -139,11 +133,7 @@ export function CategoryManagerModal({
             disabled={adding || !newCatName.trim()}
             className="inline-flex shrink-0 items-center justify-center gap-1 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:opacity-50"
           >
-            {adding ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Plus className="h-4 w-4" />
-            )}
+            {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
             <span>Thêm</span>
           </button>
         </form>
@@ -156,9 +146,7 @@ export function CategoryManagerModal({
             </p>
           ) : (
             categories.map((cat) => {
-              const packageCount = packages.filter(
-                (p) => p.package_category_id === cat.id,
-              ).length
+              const packageCount = packages.filter((p) => p.package_category_id === cat.id).length
               const isEditing = editingId === cat.id
 
               return (
@@ -216,9 +204,7 @@ export function CategoryManagerModal({
                         </button>
                         <button
                           type="button"
-                          onClick={() =>
-                            handleDeleteCategory(cat.id, cat.name)
-                          }
+                          onClick={() => handleDeleteCategory(cat.id, cat.name)}
                           disabled={deletingId === cat.id}
                           className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-950/60"
                           title="Xóa bộ môn"

@@ -9,10 +9,7 @@ import {
   RefreshCw,
   UserCheck,
 } from "lucide-react"
-import {
-  isMembershipExhausted,
-  type Membership,
-} from "../../lib/memberships"
+import { isMembershipExhausted, type Membership } from "../../lib/memberships"
 import { formatDate } from "../../lib/formatters"
 
 // ─── Remaining indicator ──────────────────────────────────────────────────────
@@ -126,8 +123,7 @@ export function MembershipResultList({
         const isExhausted = isMembershipExhausted(membership)
         const isAlreadyCheckedIn = Boolean(membership.checked_in_today)
         const isDisabled = isCheckingIn || isExhausted || isAlreadyCheckedIn
-        const currentMessage =
-          checkInMessage?.id === membership.id ? checkInMessage : null
+        const currentMessage = checkInMessage?.id === membership.id ? checkInMessage : null
         const checkInTime = formatCheckInTime(membership.last_checked_in_at)
 
         return (
@@ -154,9 +150,7 @@ export function MembershipResultList({
                   {membership.checked_in_today && (
                     <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
                       <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                      <span>
-                        Đã check-in hôm nay{checkInTime ? ` (${checkInTime})` : ""}
-                      </span>
+                      <span>Đã check-in hôm nay{checkInTime ? ` (${checkInTime})` : ""}</span>
                     </span>
                   )}
                 </div>
