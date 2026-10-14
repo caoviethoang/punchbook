@@ -9,7 +9,7 @@ import {
   RefreshCw,
   UserCheck,
 } from "lucide-react"
-import { isMembershipExhausted, type Membership } from "../../lib/memberships"
+import { computeMembershipStatus, isMembershipExhausted, type Membership } from "../../lib/memberships"
 import { formatDate } from "../../lib/formatters"
 
 // ─── Remaining indicator ──────────────────────────────────────────────────────
@@ -48,12 +48,31 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
   }
 
   if (sessionsLeft !== null) {
+    const isExpiring = sessionsLeft <= 3 && sessionsLeft > 0
     return (
-      <div className="flex min-w-20 flex-col items-center justify-center rounded-xl bg-emerald-50 px-4 py-3 text-center dark:bg-emerald-950/40">
-        <span className="text-2xl font-extrabold leading-none text-emerald-600 dark:text-emerald-400">
+      <div
+        className={`flex min-w-20 flex-col items-center justify-center rounded-xl px-4 py-3 text-center ${
+          isExpiring
+            ? "bg-amber-50 dark:bg-amber-950/40"
+            : "bg-emerald-50 dark:bg-emerald-950/40"
+        }`}
+      >
+        <span
+          className={`text-2xl font-extrabold leading-none ${
+            isExpiring
+              ? "text-amber-600 dark:text-amber-400"
+              : "text-emerald-600 dark:text-emerald-400"
+          }`}
+        >
           {sessionsLeft}
         </span>
-        <span className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-500">
+        <span
+          className={`mt-0.5 text-xs font-semibold uppercase tracking-wide ${
+            isExpiring
+              ? "text-amber-600 dark:text-amber-500"
+              : "text-emerald-600 dark:text-emerald-500"
+          }`}
+        >
           buổi còn lại
         </span>
       </div>
@@ -62,13 +81,38 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
 
   // Session-unlimited membership — show expiry date if available
   if (expiresAt) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const expiry = new Date(expiresAt)
+    expiry.setHours(0, 0, 0, 0)
+    const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    const isExpiring = diffDays <= 7 && diffDays > 0
+
     return (
-      <div className="flex min-w-20 flex-col items-center justify-center rounded-xl bg-indigo-50 px-4 py-3 text-center dark:bg-indigo-950/40">
-        <span className="text-base font-bold leading-tight text-indigo-700 dark:text-indigo-300">
+      <div
+        className={`flex min-w-20 flex-col items-center justify-center rounded-xl px-4 py-3 text-center ${
+          isExpiring
+            ? "bg-amber-50 dark:bg-amber-950/40"
+            : "bg-indigo-50 dark:bg-indigo-950/40"
+        }`}
+      >
+        <span
+          className={`text-base font-bold leading-tight ${
+            isExpiring
+              ? "text-amber-700 dark:text-amber-300"
+              : "text-indigo-700 dark:text-indigo-300"
+          }`}
+        >
           {formatDate(expiresAt)}
         </span>
-        <span className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-indigo-500 dark:text-indigo-400">
-          hạn dùng
+        <span
+          className={`mt-0.5 text-xs font-semibold uppercase tracking-wide ${
+            isExpiring
+              ? "text-amber-600 dark:text-amber-400"
+              : "text-indigo-500 dark:text-indigo-400"
+          }`}
+        >
+          {isExpiring ? `còn ${diffDays} ngày` : "hạn dùng"}
         </span>
       </div>
     )
@@ -151,6 +195,12 @@ export function MembershipResultList({
                     <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
                       <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                       <span>Đã check-in hôm nay{checkInTime ? ` (${checkInTime})` : ""}</span>
+                    </span>
+                  )}
+                  {computeMembershipStatus(membership) === "expiring" && !isExhausted && (
+                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 border border-amber-200 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                      <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                      <span>Sắp hết hạn</span>
                     </span>
                   )}
                 </div>

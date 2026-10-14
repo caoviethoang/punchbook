@@ -24,6 +24,7 @@ export interface Membership {
   sessions_left: number | null
   expires_at: string | null
   package: MembershipPackage
+  status?: "active" | "expiring" | "expired"
   checked_in_today?: boolean
   last_checked_in_at?: string | null
   qr_code_value?: string
@@ -77,24 +78,31 @@ export function isMembershipExhausted(
 
 /**
  * Derives a display status from the membership's expires_at and sessions_left.
- * Mirrors the backend logic used in the /dashboard endpoint.
+ * - Expired: sessions_left <= 0 OR expires_at is in the past
+ * - Expiring: sessions_left <= 3 (and > 0) OR expires_at is within the next 7 days
+ * - Active: otherwise
  */
 export function computeMembershipStatus(
   membership: Pick<Membership, "sessions_left" | "expires_at">,
 ): "active" | "expiring" | "expired" {
-  const now = new Date()
-
-  // Session-based: no sessions left
+  // Session-based
   if (membership.sessions_left !== null && membership.sessions_left !== undefined) {
-    if (membership.sessions_left === 0) return "expired"
+    if (membership.sessions_left <= 0) return "expired"
+    if (membership.sessions_left <= 3) return "expiring"
   }
 
   // Date-based
   if (membership.expires_at) {
-    const expiresAt = new Date(membership.expires_at)
-    if (expiresAt < now) return "expired"
-    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-    if (expiresAt <= sevenDaysFromNow) return "expiring"
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const expiry = new Date(membership.expires_at)
+    expiry.setHours(0, 0, 0, 0)
+
+    if (expiry < today) return "expired"
+
+    const sevenDaysFromNow = new Date(today)
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)
+    if (expiry <= sevenDaysFromNow) return "expiring"
   }
 
   return "active"

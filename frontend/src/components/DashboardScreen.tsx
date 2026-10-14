@@ -164,11 +164,21 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
           label="Hội viên active"
           value={String(data.active_memberships_count)}
           icon={<Users className="h-4 w-4" />}
+          active={statusFilter === "active"}
+          onClick={() => {
+            setStatusFilter((prev) => (prev === "active" ? "all" : "active"))
+            setPage(1)
+          }}
         />
         <MetricCard
-          label="Sắp hết hạn (7 ngày)"
+          label="Sắp hết hạn (<= 3 buổi / 7 ngày)"
           value={String(data.expiring_within_7_days_count)}
           icon={<CalendarClock className="h-4 w-4" />}
+          active={statusFilter === "expiring"}
+          onClick={() => {
+            setStatusFilter((prev) => (prev === "expiring" ? "all" : "expiring"))
+            setPage(1)
+          }}
         />
       </div>
 
