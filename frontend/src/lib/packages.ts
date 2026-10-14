@@ -34,9 +34,7 @@ export async function listPackages(): Promise<PackageItem[]> {
 }
 
 /** POST /packages — creates a new package for the current shop. */
-export async function createPackage(
-  payload: CreatePackagePayload,
-): Promise<PackageItem> {
+export async function createPackage(payload: CreatePackagePayload): Promise<PackageItem> {
   return apiPost<PackageItem>("/packages", { package: payload })
 }
 
@@ -55,26 +53,19 @@ export async function deletePackage(id: string): Promise<void> {
 
 /** GET /package_categories — lists all categories for the current shop. */
 export async function listPackageCategories(): Promise<PackageCategory[]> {
-  const body = await apiGet<{ categories: PackageCategory[] }>(
-    "/package_categories",
-  )
+  const body = await apiGet<{ categories: PackageCategory[] }>("/package_categories")
   return body.categories
 }
 
 /** POST /package_categories — creates or finds a category by name. */
-export async function createPackageCategory(
-  name: string,
-): Promise<PackageCategory> {
+export async function createPackageCategory(name: string): Promise<PackageCategory> {
   return apiPost<PackageCategory>("/package_categories", {
     package_category: { name },
   })
 }
 
 /** PATCH /package_categories/:id — updates category name. */
-export async function updatePackageCategory(
-  id: string,
-  name: string,
-): Promise<PackageCategory> {
+export async function updatePackageCategory(id: string, name: string): Promise<PackageCategory> {
   return apiPatch<PackageCategory>(`/package_categories/${id}`, {
     package_category: { name },
   })
@@ -112,4 +103,3 @@ export function formatPackageTypeBadge(pkg: PackageItem): string {
   if (days % 30 === 0) return `Gói ${days / 30} tháng`
   return `${days} ngày`
 }
-

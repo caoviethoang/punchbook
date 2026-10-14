@@ -39,11 +39,7 @@ export function CheckInSearchInput({
         />
 
         {isLoading ? (
-          <div
-            role="status"
-            aria-label="Đang tìm kiếm..."
-            className="absolute right-4"
-          >
+          <div role="status" aria-label="Đang tìm kiếm..." className="absolute right-4">
             <Loader2 className="h-6 w-6 animate-spin text-indigo-600 dark:text-indigo-400" />
           </div>
         ) : query ? (

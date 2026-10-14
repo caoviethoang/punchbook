@@ -56,13 +56,7 @@ export function CheckInScreen({
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Header */}
       <CheckInHeader onOpenQRScanner={() => setIsQRScannerOpen(true)} />
@@ -111,9 +105,7 @@ export function CheckInScreen({
           </h3>
           <p className="mt-1 text-base text-slate-500 dark:text-slate-400">
             Không có kết quả nào cho từ khóa &ldquo;
-            <span className="font-semibold text-slate-700 dark:text-slate-300">
-              {query}
-            </span>
+            <span className="font-semibold text-slate-700 dark:text-slate-300">{query}</span>
             &rdquo;. Vui lòng kiểm tra lại thông tin.
           </p>
         </div>
@@ -139,18 +131,12 @@ export function CheckInScreen({
 
       {/* Renewal Modal */}
       {renewingMembership && (
-        <RenewalModal
-          membership={renewingMembership}
-          onClose={() => setRenewingMembership(null)}
-        />
+        <RenewalModal membership={renewingMembership} onClose={() => setRenewingMembership(null)} />
       )}
 
       {/* Thermal Receipt Modal */}
       {selectedReceipt && (
-        <ThermalReceiptModal
-          receipt={selectedReceipt}
-          onClose={() => setSelectedReceipt(null)}
-        />
+        <ThermalReceiptModal receipt={selectedReceipt} onClose={() => setSelectedReceipt(null)} />
       )}
 
       {/* QR Scanner Modal */}

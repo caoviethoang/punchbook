@@ -46,9 +46,7 @@ export function FileDropzone({ selectedFile, onFileSelect, onReset }: FileDropzo
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
             <FileText className="h-6 w-6" />
           </div>
-          <p className="font-semibold text-slate-900 dark:text-slate-100">
-            {selectedFile.name}
-          </p>
+          <p className="font-semibold text-slate-900 dark:text-slate-100">{selectedFile.name}</p>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             {(selectedFile.size / 1024).toFixed(1)} KB
           </p>

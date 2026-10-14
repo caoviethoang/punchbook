@@ -1,4 +1,3 @@
-
 import { AlertTriangle, Download, FileSpreadsheet, Loader2 } from "lucide-react"
 import { useImportMembers } from "../hooks/useImportMembers"
 import { FileDropzone } from "./import/FileDropzone"
@@ -11,11 +10,7 @@ interface ImportMembersModalProps {
   onSuccess: () => void
 }
 
-export function ImportMembersModal({
-  isOpen,
-  onClose,
-  onSuccess,
-}: ImportMembersModalProps) {
+export function ImportMembersModal({ isOpen, onClose, onSuccess }: ImportMembersModalProps) {
   const {
     selectedFile,
     isDownloadingTemplate,
@@ -61,9 +56,7 @@ export function ImportMembersModal({
 
         <div className="flex flex-col gap-3 rounded-xl bg-slate-50 p-4 dark:bg-slate-950/60 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-xs text-slate-600 dark:text-slate-300">
-            <p className="font-semibold text-slate-900 dark:text-slate-100">
-              Chưa có file mẫu?
-            </p>
+            <p className="font-semibold text-slate-900 dark:text-slate-100">Chưa có file mẫu?</p>
             <p>Tải file Excel mẫu chuẩn format để chuẩn bị dữ liệu hội viên.</p>
           </div>
           <button
@@ -117,7 +110,7 @@ export function ImportMembersModal({
         ) : (
           <div className="space-y-4">
             <ImportResultTable importResult={importResult} />
-            
+
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 type="button"

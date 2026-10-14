@@ -46,9 +46,7 @@ export function MemberQRModal({ membership, onClose }: MemberQRModalProps) {
             <QrCode className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">
-              Mã QR Hội viên
-            </h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">Mã QR Hội viên</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Dùng để quét điểm danh tự động
             </p>
@@ -83,7 +81,10 @@ export function MemberQRModal({ membership, onClose }: MemberQRModalProps) {
             </div>
 
             <div className="mt-4 rounded-xl bg-white p-2.5 text-center font-mono text-xs text-slate-500 border border-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-              Mã: <span className="font-semibold text-slate-700 dark:text-slate-200">{membership.id}</span>
+              Mã:{" "}
+              <span className="font-semibold text-slate-700 dark:text-slate-200">
+                {membership.id}
+              </span>
             </div>
           </div>
         </div>

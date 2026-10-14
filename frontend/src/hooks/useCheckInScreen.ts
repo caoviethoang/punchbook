@@ -134,9 +134,7 @@ export function useCheckInScreen({
       // Rollback
       setMemberships((prev) =>
         prev.map((m) =>
-          m.id === membershipId
-            ? { ...m, sessions_left: previousSessionsLeft }
-            : m,
+          m.id === membershipId ? { ...m, sessions_left: previousSessionsLeft } : m,
         ),
       )
       setCheckInMessage({
@@ -152,7 +150,9 @@ export function useCheckInScreen({
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault()
-      const firstAvailable = memberships.find((m) => !isMembershipExhausted(m) && !m.checked_in_today)
+      const firstAvailable = memberships.find(
+        (m) => !isMembershipExhausted(m) && !m.checked_in_today,
+      )
       if (firstAvailable && checkingInId !== firstAvailable.id) {
         void handleCheckIn(firstAvailable.id)
       }

@@ -33,7 +33,9 @@ export function useShopSettings({ shop, isAdmin, onShopUpdated }: UseShopSetting
 
   const [daysLeft] = useState(() => {
     if (!shop.plan_expires_at) return 0
-    return Math.ceil((new Date(shop.plan_expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    return Math.ceil(
+      (new Date(shop.plan_expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+    )
   })
 
   const showRenewalButton = shop.plan !== "paid" || daysLeft <= 10

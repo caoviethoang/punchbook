@@ -1,9 +1,4 @@
-import {
-  ApolloClient,
-  InMemoryCache,
-  HttpLink,
-  from,
-} from "@apollo/client/core"
+import { ApolloClient, InMemoryCache, HttpLink, from } from "@apollo/client/core"
 import { setContext } from "@apollo/client/link/context"
 import { getStoredToken } from "./auth"
 

@@ -8,12 +8,7 @@ export interface ToastProps {
   duration?: number
 }
 
-export function Toast({
-  message,
-  type = "success",
-  onClose,
-  duration = 4000,
-}: ToastProps) {
+export function Toast({ message, type = "success", onClose, duration = 4000 }: ToastProps) {
   useEffect(() => {
     if (duration <= 0) return
     const timer = setTimeout(() => {
@@ -52,4 +47,3 @@ export function Toast({
     </div>
   )
 }
-

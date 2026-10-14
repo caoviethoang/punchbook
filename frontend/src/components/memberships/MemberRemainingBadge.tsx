@@ -19,16 +19,10 @@ export function MemberRemainingBadge({ membership }: { membership: Membership })
     const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
     if (days <= 0) {
-      return (
-        <span className="font-semibold text-red-600 dark:text-red-400">
-          Đã hết hạn
-        </span>
-      )
+      return <span className="font-semibold text-red-600 dark:text-red-400">Đã hết hạn</span>
     }
     return (
-      <span className="font-medium text-emerald-700 dark:text-emerald-300">
-        Còn {days} ngày
-      </span>
+      <span className="font-medium text-emerald-700 dark:text-emerald-300">Còn {days} ngày</span>
     )
   }
 

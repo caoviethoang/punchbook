@@ -15,7 +15,11 @@ const TABS = [
   { id: "checkins" as const, label: "Tần suất Check-in 24h", icon: Users },
 ]
 
-export function AnalyticsCharts({ dailyRevenue = [], checkInFrequency = [], peakHour }: AnalyticsChartsProps) {
+export function AnalyticsCharts({
+  dailyRevenue = [],
+  checkInFrequency = [],
+  peakHour,
+}: AnalyticsChartsProps) {
   const [activeTab, setActiveTab] = useState<"revenue" | "checkins">("revenue")
 
   return (
@@ -46,7 +50,11 @@ export function AnalyticsCharts({ dailyRevenue = [], checkInFrequency = [], peak
         </div>
       </div>
 
-      {activeTab === "revenue" ? <RevenueBarChart dailyRevenue={dailyRevenue} /> : <CheckInFrequencyChart checkInFrequency={checkInFrequency} peakHour={peakHour || null} />}
+      {activeTab === "revenue" ? (
+        <RevenueBarChart dailyRevenue={dailyRevenue} />
+      ) : (
+        <CheckInFrequencyChart checkInFrequency={checkInFrequency} peakHour={peakHour || null} />
+      )}
     </div>
   )
 }
