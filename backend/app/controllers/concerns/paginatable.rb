@@ -16,12 +16,13 @@ module Paginatable
     [page, per_page]
   end
 
-  def build_pagination_meta(total_count, page, per_page)
-    total_pages = [(total_count.to_f / per_page).ceil, 1].max
+  def build_pagination_meta(target, page, per_page)
+    total_count = target.respond_to?(:total_count) ? target.total_count : target
+    total_pages = target.respond_to?(:total_pages) ? target.total_pages : [(total_count.to_f / per_page).ceil, 1].max
     { total: total_count, page: page, per_page: per_page, total_pages: total_pages }
   end
 
   def paginate_relation(relation, page, per_page)
-    relation.offset((page - 1) * per_page).limit(per_page)
+    relation.page(page).per(per_page)
   end
 end
