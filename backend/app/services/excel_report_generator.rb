@@ -31,7 +31,6 @@ class ExcelReportGenerator
 
   attr_reader :shop
 
-  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   def add_invoices_sheet(workbook)
     workbook.add_worksheet(name: 'Doanh thu') do |sheet|
       sheet.add_row [
@@ -39,17 +38,7 @@ class ExcelReportGenerator
         'Số tiền (VND)', 'Trạng thái', 'Mã giao dịch payOS'
       ]
 
-      invoices.each do |invoice|
-        sheet.add_row [
-          invoice.id,
-          invoice.created_at.strftime('%d/%m/%Y %H:%M'),
-          invoice.membership.customer_name,
-          invoice.membership.package.name,
-          invoice.amount,
-          invoice.status == 'paid' ? 'Đã thanh toán' : 'Chờ thanh toán',
-          invoice.payos_transaction_id || '-'
-        ]
-      end
+      invoices.each { |invoice| sheet.add_row invoice_row(invoice) }
     end
   end
 
@@ -57,16 +46,7 @@ class ExcelReportGenerator
     workbook.add_worksheet(name: 'Hội viên') do |sheet|
       sheet.add_row ['Tên khách hàng', 'Số điện thoại', 'Gói dịch vụ', 'Buổi còn lại', 'Ngày hết hạn', 'Trạng thái']
 
-      memberships.each do |m|
-        sheet.add_row [
-          m.customer_name,
-          m.phone,
-          m.package.name,
-          m.sessions_left.presence || 'Theo ngày',
-          m.expires_at ? m.expires_at.strftime('%d/%m/%Y') : 'Không giới hạn',
-          membership_status_label(m.status)
-        ]
-      end
+      memberships.each { |m| sheet.add_row membership_row(m) }
     end
   end
 
@@ -74,18 +54,47 @@ class ExcelReportGenerator
     workbook.add_worksheet(name: 'Lịch sử check-in') do |sheet|
       sheet.add_row ['Thời gian', 'Khách hàng', 'Số điện thoại', 'Gói dịch vụ', 'Nhân viên']
 
-      check_ins.each do |c|
-        sheet.add_row [
-          c.checked_in_at&.strftime('%d/%m/%Y %H:%M') || c.created_at.strftime('%d/%m/%Y %H:%M'),
-          c.membership.customer_name,
-          c.membership.phone,
-          c.membership.package.name,
-          c.staff&.name || '-'
-        ]
-      end
+      check_ins.each { |c| sheet.add_row check_in_row(c) }
     end
   end
-  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
+
+  def invoice_row(invoice)
+    [
+      invoice.id,
+      invoice.created_at.strftime('%d/%m/%Y %H:%M'),
+      invoice.membership.customer_name,
+      invoice.membership.package.name,
+      invoice.amount,
+      invoice.status == 'paid' ? 'Đã thanh toán' : 'Chờ thanh toán',
+      invoice.payos_transaction_id || '-'
+    ]
+  end
+
+  def membership_row(membership)
+    [
+      membership.customer_name,
+      membership.phone,
+      membership.package.name,
+      membership.sessions_left.presence || 'Theo ngày',
+      membership.expires_at ? membership.expires_at.strftime('%d/%m/%Y') : 'Không giới hạn',
+      membership_status_label(membership.status)
+    ]
+  end
+
+  def check_in_row(check_in)
+    [
+      check_in_time(check_in),
+      check_in.membership.customer_name,
+      check_in.membership.phone,
+      check_in.membership.package.name,
+      check_in.staff&.name || '-'
+    ]
+  end
+
+  def check_in_time(check_in)
+    time = check_in.checked_in_at || check_in.created_at
+    time.strftime('%d/%m/%Y %H:%M')
+  end
 
   def invoices
     Invoice.joins('INNER JOIN memberships ON memberships.id = invoices.membership_id')
