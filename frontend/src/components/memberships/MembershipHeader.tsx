@@ -1,9 +1,11 @@
-import { Plus, Upload } from "lucide-react"
+import { FileSpreadsheet, Loader2, Plus, Upload } from "lucide-react"
 import type { PaginationMeta } from "../../lib/memberships"
 
 interface MembershipHeaderProps {
   meta: PaginationMeta | null
   isAdmin: boolean
+  exporting?: boolean
+  onExport?: () => void
   onOpenImportModal: () => void
   onOpenCreateModal: () => void
 }
@@ -11,6 +13,8 @@ interface MembershipHeaderProps {
 export function MembershipHeader({
   meta,
   isAdmin,
+  exporting = false,
+  onExport,
   onOpenImportModal,
   onOpenCreateModal,
 }: MembershipHeaderProps) {
@@ -27,6 +31,22 @@ export function MembershipHeader({
 
       {isAdmin && (
         <div className="flex flex-wrap items-center gap-2">
+          {onExport && (
+            <button
+              type="button"
+              onClick={onExport}
+              disabled={exporting}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              {exporting ? (
+                <Loader2 className="h-4 w-4 animate-spin text-emerald-600 dark:text-emerald-400" />
+              ) : (
+                <FileSpreadsheet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              )}
+              <span>{exporting ? "Đang xuất..." : "Xuất Excel"}</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onOpenImportModal}
