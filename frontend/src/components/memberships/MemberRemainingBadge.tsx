@@ -5,6 +5,20 @@ export function MemberRemainingBadge({ membership }: { membership: Membership })
 
   if (sessionsCount !== null && sessionsCount !== undefined) {
     const rem = membership.sessions_left ?? 0
+    if (rem <= 0) {
+      return (
+        <span className="font-semibold text-red-600 dark:text-red-400">
+          Hết buổi (0/{sessionsCount})
+        </span>
+      )
+    }
+    if (rem <= 3) {
+      return (
+        <span className="font-semibold text-amber-600 dark:text-amber-400">
+          Còn {rem}/{sessionsCount} buổi
+        </span>
+      )
+    }
     return (
       <span className="font-medium text-indigo-700 dark:text-indigo-300">
         Còn {rem}/{sessionsCount} buổi
@@ -20,6 +34,13 @@ export function MemberRemainingBadge({ membership }: { membership: Membership })
 
     if (days <= 0) {
       return <span className="font-semibold text-red-600 dark:text-red-400">Đã hết hạn</span>
+    }
+    if (days <= 7) {
+      return (
+        <span className="font-semibold text-amber-600 dark:text-amber-400">
+          Còn {days} ngày
+        </span>
+      )
     }
     return (
       <span className="font-medium text-emerald-700 dark:text-emerald-300">Còn {days} ngày</span>
