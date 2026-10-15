@@ -1,12 +1,14 @@
-import { type KeyboardEvent, useEffect, useRef, useState } from "react"
+import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from "react"
 import { useDebounce } from "./useDebounce"
 import { useMembershipsApi } from "./useMembershipsApi"
 import type { Staff } from "../lib/auth"
-import { toCheckInError } from "../lib/errors"
+import { toApiError, toCheckInError } from "../lib/errors"
 import {
   extractMembershipIdFromQR,
+  fetchMemberships,
   isMembershipExhausted,
   type Membership,
+  type PaginationMeta,
 } from "../lib/memberships"
 import { fetchStaffs } from "../lib/staffs"
 import type { ReceiptData } from "../components/ThermalReceiptModal"
@@ -26,7 +28,7 @@ export function useCheckInScreen({
   shopAddress,
   shopPhone,
 }: UseCheckInScreenProps) {
-  const [query, setQuery] = useState("")
+  const [query, setQueryState] = useState("")
   const debouncedQuery = useDebounce(query, 300)
 
   const [memberships, setMemberships] = useState<Membership[]>([])
@@ -53,12 +55,22 @@ export function useCheckInScreen({
   const inputRef = useRef<HTMLInputElement>(null)
   const { search, checkIn, searchLoading, error: apiError } = useMembershipsApi()
 
+  const [page, setPage] = useState(1)
+  const setQuery = useCallback((nextQuery: string | ((prev: string) => string)) => {
+    setQueryState(nextQuery)
+    setPage(1)
+  }, [])
+  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null)
+  const [fetchLoading, setFetchLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+
   // Modal state for detail & renewal
   const [detailMembershipId, setDetailMembershipId] = useState<string | null>(null)
   const [renewingMembership, setRenewingMembership] = useState<Membership | null>(null)
 
   const isDebouncing = query !== debouncedQuery
-  const isLoading = searchLoading || isDebouncing
+  const isLoading = fetchLoading || searchLoading || isDebouncing
+  const combinedError = fetchError || apiError
 
   // Fetch staff list if user is admin
   useEffect(() => {
@@ -104,24 +116,41 @@ export function useCheckInScreen({
     })
   }
 
-  // Fetch memberships using debounced query
+  // Fetch memberships using debounced query and pagination
   useEffect(() => {
     let isCancelled = false
 
-    search(debouncedQuery)
-      .then((results) => {
+    const loadMemberships = async () => {
+      setFetchLoading(true)
+      setFetchError(null)
+
+      try {
+        const res = await fetchMemberships({
+          query: debouncedQuery,
+          page,
+          per_page: 20,
+        })
         if (!isCancelled) {
-          setMemberships(results)
+          setMemberships(res.memberships)
+          if (res.meta) setPaginationMeta(res.meta)
         }
-      })
-      .catch(() => {
-        // Error handling managed by useMembershipsApi hook
-      })
+      } catch (err) {
+        if (!isCancelled) {
+          setFetchError(toApiError(err, "Không thể tải danh sách hội viên."))
+        }
+      } finally {
+        if (!isCancelled) {
+          setFetchLoading(false)
+        }
+      }
+    }
+
+    void loadMemberships()
 
     return () => {
       isCancelled = true
     }
-  }, [debouncedQuery, search])
+  }, [debouncedQuery, page])
 
   function handleClear() {
     setQuery("")
@@ -253,8 +282,11 @@ export function useCheckInScreen({
     setDetailMembershipId,
     renewingMembership,
     setRenewingMembership,
+    page,
+    setPage,
+    paginationMeta,
     isLoading,
-    apiError,
+    apiError: combinedError,
     handleClear,
     handleKeyDown,
     handleCheckIn,
