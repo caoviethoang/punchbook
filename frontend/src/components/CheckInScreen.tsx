@@ -7,9 +7,12 @@ import { MembershipDetailModal } from "./MembershipDetailModal"
 import { QRScannerModal } from "./QRScannerModal"
 import { RenewalModal } from "./RenewalModal"
 import { ThermalReceiptModal } from "./ThermalReceiptModal"
+import type { Staff } from "../lib/auth"
 import { Toast } from "./ui/Toast"
 
 interface CheckInScreenProps {
+  /** Optional active staff object. */
+  currentStaff?: Staff | null
   /** Optional staff ID to perform check-ins. */
   currentStaffId?: string
   shopName?: string
@@ -18,6 +21,7 @@ interface CheckInScreenProps {
 }
 
 export function CheckInScreen({
+  currentStaff,
   currentStaffId,
   shopName = "PunchBook Spa",
   shopAddress,
@@ -47,7 +51,12 @@ export function CheckInScreen({
     handleCheckIn,
     handleQRScan,
     handlePrintReceipt,
+    staffs,
+    loadingStaffs,
+    selectedStaffId,
+    setSelectedStaffId,
   } = useCheckInScreen({
+    currentStaff,
     currentStaffId,
     shopName,
     shopAddress,
@@ -59,7 +68,14 @@ export function CheckInScreen({
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Header */}
-      <CheckInHeader onOpenQRScanner={() => setIsQRScannerOpen(true)} />
+      <CheckInHeader
+        onOpenQRScanner={() => setIsQRScannerOpen(true)}
+        currentStaff={currentStaff}
+        staffs={staffs}
+        selectedStaffId={selectedStaffId}
+        onSelectStaff={setSelectedStaffId}
+        loadingStaffs={loadingStaffs}
+      />
 
       {/* Search Input Box */}
       <CheckInSearchInput

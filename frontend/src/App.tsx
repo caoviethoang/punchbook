@@ -56,6 +56,7 @@ function App() {
           <DashboardScreen currentStaff={staff} />
         ) : activeView === "checkin" ? (
           <CheckInScreen
+            currentStaff={staff}
             currentStaffId={staff?.id}
             shopName={shop.name}
             shopAddress={shop.address}

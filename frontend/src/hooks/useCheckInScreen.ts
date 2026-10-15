@@ -1,15 +1,18 @@
 import { type KeyboardEvent, useEffect, useRef, useState } from "react"
 import { useDebounce } from "./useDebounce"
 import { useMembershipsApi } from "./useMembershipsApi"
+import type { Staff } from "../lib/auth"
 import { toCheckInError } from "../lib/errors"
 import {
   extractMembershipIdFromQR,
   isMembershipExhausted,
   type Membership,
 } from "../lib/memberships"
+import { fetchStaffs } from "../lib/staffs"
 import type { ReceiptData } from "../components/ThermalReceiptModal"
 
 interface UseCheckInScreenProps {
+  currentStaff?: Staff | null
   currentStaffId?: string
   shopName?: string
   shopAddress?: string | null
@@ -17,6 +20,7 @@ interface UseCheckInScreenProps {
 }
 
 export function useCheckInScreen({
+  currentStaff,
   currentStaffId,
   shopName = "PunchBook Spa",
   shopAddress,
@@ -26,6 +30,13 @@ export function useCheckInScreen({
   const debouncedQuery = useDebounce(query, 300)
 
   const [memberships, setMemberships] = useState<Membership[]>([])
+  const [staffs, setStaffs] = useState<Staff[]>([])
+  const [loadingStaffs, setLoadingStaffs] = useState(
+    () => !currentStaff || currentStaff.role === "admin",
+  )
+  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(
+    () => currentStaff?.id || currentStaffId || null,
+  )
   const [checkingInId, setCheckingInId] = useState<string | null>(null)
   const [checkInMessage, setCheckInMessage] = useState<{
     id: string
@@ -49,7 +60,36 @@ export function useCheckInScreen({
   const isDebouncing = query !== debouncedQuery
   const isLoading = searchLoading || isDebouncing
 
+  // Fetch staff list if user is admin
+  useEffect(() => {
+    const isAdmin = !currentStaff || currentStaff.role === "admin"
+    if (!isAdmin) return
+
+    let isCancelled = false
+    fetchStaffs()
+      .then((list) => {
+        if (!isCancelled) {
+          setStaffs(list)
+        }
+      })
+      .catch(() => {
+        // Ignore gracefully if cannot load staffs
+      })
+      .finally(() => {
+        if (!isCancelled) setLoadingStaffs(false)
+      })
+
+    return () => {
+      isCancelled = true
+    }
+  }, [currentStaff])
+
   function handlePrintReceipt(membership: Membership, checkedInAt?: string) {
+    const effectiveStaffId = selectedStaffId || currentStaff?.id || currentStaffId || undefined
+    const activeStaff = staffs.find((s) => s.id === effectiveStaffId) || currentStaff
+    const staffName =
+      activeStaff?.name || (currentStaff?.name ?? (effectiveStaffId ? undefined : "Admin"))
+
     setSelectedReceipt({
       shopName,
       shopAddress,
@@ -60,6 +100,7 @@ export function useCheckInScreen({
       sessionsLeft: membership.sessions_left,
       expiresAt: membership.expires_at,
       checkedInAt: checkedInAt || new Date().toISOString(),
+      staffName,
     })
   }
 
@@ -108,7 +149,8 @@ export function useCheckInScreen({
     )
 
     try {
-      const result = await checkIn(membershipId, currentStaffId)
+      const effectiveStaffId = selectedStaffId || currentStaff?.id || currentStaffId || undefined
+      const result = await checkIn(membershipId, effectiveStaffId)
       setMemberships((prev) =>
         prev.map((m) =>
           m.id === membershipId
@@ -218,5 +260,9 @@ export function useCheckInScreen({
     handleCheckIn,
     handleQRScan,
     handlePrintReceipt,
+    staffs,
+    loadingStaffs,
+    selectedStaffId,
+    setSelectedStaffId,
   }
 }
