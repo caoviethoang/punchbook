@@ -1,4 +1,4 @@
-import { type KeyboardEvent, useEffect, useRef, useState } from "react"
+import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from "react"
 import { useDebounce } from "./useDebounce"
 import { useMembershipsApi } from "./useMembershipsApi"
 import type { Staff } from "../lib/auth"
@@ -28,7 +28,7 @@ export function useCheckInScreen({
   shopAddress,
   shopPhone,
 }: UseCheckInScreenProps) {
-  const [query, setQuery] = useState("")
+  const [query, setQueryState] = useState("")
   const debouncedQuery = useDebounce(query, 300)
 
   const [memberships, setMemberships] = useState<Membership[]>([])
@@ -56,6 +56,10 @@ export function useCheckInScreen({
   const { search, checkIn, searchLoading, error: apiError } = useMembershipsApi()
 
   const [page, setPage] = useState(1)
+  const setQuery = useCallback((nextQuery: string | ((prev: string) => string)) => {
+    setQueryState(nextQuery)
+    setPage(1)
+  }, [])
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null)
   const [fetchLoading, setFetchLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -112,36 +116,36 @@ export function useCheckInScreen({
     })
   }
 
-  // Reset page when search query changes
-  useEffect(() => {
-    setPage(1)
-  }, [debouncedQuery])
-
   // Fetch memberships using debounced query and pagination
   useEffect(() => {
     let isCancelled = false
-    setFetchLoading(true)
-    setFetchError(null)
 
-    fetchMemberships({
-      query: debouncedQuery,
-      page,
-      per_page: 20,
-    })
-      .then((res) => {
+    const loadMemberships = async () => {
+      setFetchLoading(true)
+      setFetchError(null)
+
+      try {
+        const res = await fetchMemberships({
+          query: debouncedQuery,
+          page,
+          per_page: 20,
+        })
         if (!isCancelled) {
           setMemberships(res.memberships)
           if (res.meta) setPaginationMeta(res.meta)
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         if (!isCancelled) {
           setFetchError(toApiError(err, "Không thể tải danh sách hội viên."))
         }
-      })
-      .finally(() => {
-        if (!isCancelled) setFetchLoading(false)
-      })
+      } finally {
+        if (!isCancelled) {
+          setFetchLoading(false)
+        }
+      }
+    }
+
+    void loadMemberships()
 
     return () => {
       isCancelled = true
@@ -150,7 +154,6 @@ export function useCheckInScreen({
 
   function handleClear() {
     setQuery("")
-    setPage(1)
     if (inputRef.current) {
       inputRef.current.focus()
     }
