@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import "@testing-library/jest-dom/vitest"
 import { CheckInScreen } from "../CheckInScreen"
 import * as checkInHook from "../../hooks/useCheckInScreen"
-import type { Membership } from "../../lib/memberships"
+import type { Membership, PaginationMeta } from "../../lib/memberships"
 import type { Staff } from "../../lib/auth"
 
 afterEach(() => {
@@ -53,6 +53,9 @@ describe("CheckInScreen component", () => {
     query: "",
     setQuery: vi.fn(),
     memberships: [] as Membership[],
+    page: 1,
+    setPage: vi.fn(),
+    paginationMeta: null as PaginationMeta | null,
     checkingInId: null as string | null,
     checkInMessage: null as { id: string; type: "success" | "error"; text: string } | null,
     toast: null as { message: string; type?: "success" | "error" } | null,
@@ -307,5 +310,28 @@ describe("CheckInScreen component", () => {
 
     expect(setRenewingMembershipMock).toHaveBeenCalledWith(null)
     expect(refreshMembershipsMock).toHaveBeenCalledTimes(1)
+  })
+
+  it("renders pagination controls when total_pages > 1 and handles page clicks", () => {
+    const setPageMock = vi.fn()
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      memberships: [dummyMember1, dummyMember2],
+      page: 1,
+      setPage: setPageMock,
+      paginationMeta: { page: 1, per_page: 20, total: 25, total_pages: 2 },
+    })
+
+    render(<CheckInScreen />)
+
+    expect(screen.getByText(/Hiển thị trang 1 \/ 2/i)).toBeInTheDocument()
+    expect(screen.getByText(/Tổng 25 hội viên/i)).toBeInTheDocument()
+    const nextBtn = screen.getByRole("button", { name: "Trang sau" })
+    expect(nextBtn).toBeInTheDocument()
+    fireEvent.click(nextBtn)
+    expect(setPageMock).toHaveBeenCalledWith(2)
+
+    const prevBtn = screen.getByRole("button", { name: "Trang trước" })
+    expect(prevBtn).toBeDisabled()
   })
 })
