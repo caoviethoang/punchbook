@@ -69,11 +69,11 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
         <span
           className={`mt-0.5 text-xs font-semibold uppercase tracking-wide ${
             isExpiring
-              ? "text-amber-600 dark:text-amber-500"
+              ? "text-amber-600 dark:text-amber-400"
               : "text-emerald-600 dark:text-emerald-500"
           }`}
         >
-          buổi còn lại
+          {isExpiring ? "sắp hết buổi" : "buổi còn lại"}
         </span>
       </div>
     )

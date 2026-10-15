@@ -65,11 +65,16 @@ export interface CheckInResult {
   check_in: CheckInRecord
 }
 
+export const EXPIRING_SESSIONS_THRESHOLD = 3
+export const EXPIRING_DAYS_WINDOW = 7
+
 /** True when the member has no sessions left or the day-based pass is past expires_at. */
 export function isMembershipExhausted(
   membership: Pick<Membership, "sessions_left" | "expires_at">,
 ): boolean {
-  if (membership.sessions_left === 0) return true
+  if (membership.sessions_left !== null && membership.sessions_left !== undefined) {
+    return membership.sessions_left <= 0
+  }
   if (membership.expires_at && new Date(membership.expires_at) < new Date()) {
     return true
   }
@@ -88,7 +93,7 @@ export function computeMembershipStatus(
   // Session-based
   if (membership.sessions_left !== null && membership.sessions_left !== undefined) {
     if (membership.sessions_left <= 0) return "expired"
-    if (membership.sessions_left <= 3) return "expiring"
+    if (membership.sessions_left <= EXPIRING_SESSIONS_THRESHOLD) return "expiring"
   }
 
   // Date-based
@@ -100,9 +105,9 @@ export function computeMembershipStatus(
 
     if (expiry < today) return "expired"
 
-    const sevenDaysFromNow = new Date(today)
-    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)
-    if (expiry <= sevenDaysFromNow) return "expiring"
+    const thresholdDate = new Date(today)
+    thresholdDate.setDate(thresholdDate.getDate() + EXPIRING_DAYS_WINDOW)
+    if (expiry <= thresholdDate) return "expiring"
   }
 
   return "active"

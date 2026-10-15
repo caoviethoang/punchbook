@@ -1,5 +1,10 @@
-import { describe, it, expect } from "vitest"
-import { computeMembershipStatus } from "../memberships"
+import { describe, expect, it } from "vitest"
+import {
+  computeMembershipStatus,
+  EXPIRING_DAYS_WINDOW,
+  EXPIRING_SESSIONS_THRESHOLD,
+  isMembershipExhausted,
+} from "../memberships"
 
 describe("computeMembershipStatus", () => {
   describe("session-based memberships", () => {
@@ -23,7 +28,7 @@ describe("computeMembershipStatus", () => {
         computeMembershipStatus({ sessions_left: 2, expires_at: null }),
       ).toBe("expiring")
       expect(
-        computeMembershipStatus({ sessions_left: 3, expires_at: null }),
+        computeMembershipStatus({ sessions_left: EXPIRING_SESSIONS_THRESHOLD, expires_at: null }),
       ).toBe("expiring")
     })
 
@@ -70,7 +75,7 @@ describe("computeMembershipStatus", () => {
       ).toBe("expiring")
 
       const in7Days = new Date()
-      in7Days.setDate(in7Days.getDate() + 7)
+      in7Days.setDate(in7Days.getDate() + EXPIRING_DAYS_WINDOW)
       expect(
         computeMembershipStatus({
           sessions_left: null,
@@ -81,7 +86,7 @@ describe("computeMembershipStatus", () => {
 
     it("returns active when expires_at is more than 7 days away", () => {
       const in10Days = new Date()
-      in10Days.setDate(in10Days.getDate() + 10)
+      in10Days.setDate(in10Days.getDate() + EXPIRING_DAYS_WINDOW + 3)
       expect(
         computeMembershipStatus({
           sessions_left: null,
@@ -97,5 +102,27 @@ describe("computeMembershipStatus", () => {
         computeMembershipStatus({ sessions_left: null, expires_at: null }),
       ).toBe("active")
     })
+  })
+})
+
+describe("isMembershipExhausted", () => {
+  it("returns true when sessions_left is 0 or negative", () => {
+    expect(isMembershipExhausted({ sessions_left: 0, expires_at: null })).toBe(true)
+    expect(isMembershipExhausted({ sessions_left: -1, expires_at: null })).toBe(true)
+  })
+
+  it("returns false when sessions_left is positive", () => {
+    expect(isMembershipExhausted({ sessions_left: 1, expires_at: null })).toBe(false)
+    expect(isMembershipExhausted({ sessions_left: 3, expires_at: null })).toBe(false)
+  })
+
+  it("returns true when expires_at has passed", () => {
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    expect(isMembershipExhausted({ sessions_left: null, expires_at: yesterday })).toBe(true)
+  })
+
+  it("returns false when expires_at is in the future", () => {
+    const future = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    expect(isMembershipExhausted({ sessions_left: null, expires_at: future })).toBe(false)
   })
 })
