@@ -1,4 +1,8 @@
+import { useState } from "react"
+import { AlertCircle } from "lucide-react"
 import { type Shop, type Staff } from "../lib/auth"
+import { toApiError } from "../lib/errors"
+import { exportMemberships } from "../lib/memberships"
 import { useMembershipsQuery } from "../hooks/useMembershipsQuery"
 
 import { DeleteMemberModal } from "./memberships/DeleteMemberModal"
@@ -19,6 +23,8 @@ interface MembershipsScreenProps {
 
 export function MembershipsScreen({ shop, currentStaff }: MembershipsScreenProps) {
   const isAdmin = !currentStaff || currentStaff.role === "admin"
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
 
   const {
     memberships,
@@ -50,12 +56,38 @@ export function MembershipsScreen({ shop, currentStaff }: MembershipsScreenProps
     handleDelete,
   } = useMembershipsQuery()
 
+  const handleExport = async () => {
+    try {
+      setExporting(true)
+      setExportError(null)
+      await exportMemberships({
+        query: debouncedQuery.trim() || undefined,
+        status,
+      })
+    } catch (err) {
+      setExportError(toApiError(err, "Xuất danh sách hội viên thất bại."))
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
+      {exportError && (
+        <div className="rounded-xl bg-amber-50 p-4 text-sm font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <span>{exportError}</span>
+          </div>
+        </div>
+      )}
+
       {/* Top Action Header */}
       <MembershipHeader
         meta={meta}
         isAdmin={isAdmin}
+        exporting={exporting}
+        onExport={() => void handleExport()}
         onOpenImportModal={() => setShowImportModal(true)}
         onOpenCreateModal={() => setShowCreateModal(true)}
       />

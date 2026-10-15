@@ -213,6 +213,20 @@ export interface ImportMembershipsResult {
   errors: ImportErrorDetail[]
 }
 
+export interface ExportMembershipsParams {
+  query?: string
+  status?: StatusFilterType
+}
+
+/** GET /memberships/export — download filtered memberships as .xlsx file. */
+export async function exportMemberships(params?: ExportMembershipsParams): Promise<void> {
+  const searchParams = new URLSearchParams()
+  if (params?.query) searchParams.set("query", params.query)
+  if (params?.status && params.status !== "all") searchParams.set("status", params.status)
+  const qs = searchParams.toString()
+  return downloadBlob(`/memberships/export${qs ? `?${qs}` : ""}`, "memberships.xlsx")
+}
+
 /** GET /memberships/import_template — download template .xlsx file. */
 export async function downloadImportTemplate(): Promise<void> {
   return downloadBlob("/memberships/import_template", "template_import_memberships.xlsx")
