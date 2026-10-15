@@ -1,4 +1,5 @@
 import type { Shop, Staff } from "../lib/auth"
+import { ThemeToggle } from "./ui/ThemeToggle"
 
 export type AppView = "dashboard" | "checkin" | "packages" | "members" | "settings"
 
@@ -77,6 +78,7 @@ export function AppHeader({
               {shop.plan_details || (shop.plan === "paid" ? "Premium" : "Free")}
             </strong>
           </span>
+          <ThemeToggle />
           <button
             type="button"
             onClick={onLogout}
