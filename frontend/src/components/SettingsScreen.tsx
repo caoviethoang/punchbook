@@ -1,6 +1,7 @@
 import { ShieldAlert } from "lucide-react"
 import type { Shop, Staff } from "../lib/auth"
 import { useShopSettings } from "../hooks/useShopSettings"
+import { AppearanceSection } from "./settings/AppearanceSection"
 import { SecuritySection } from "./settings/SecuritySection"
 import { ShopProfileSection } from "./settings/ShopProfileSection"
 import { SubscriptionSection } from "./settings/SubscriptionSection"
@@ -124,6 +125,9 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
         showRenewalButton={showRenewalButton}
         onOpenUpgradeModal={() => setShowUpgradeModal(true)}
       />
+
+      {/* Section 4: Display Appearance */}
+      <AppearanceSection />
 
       {/* Upgrade Plan Modal */}
       <UpgradePlanModal
