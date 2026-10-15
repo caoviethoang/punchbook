@@ -13,6 +13,7 @@ class MembershipSerializer
       only: %i[id customer_name phone sessions_left expires_at],
       include: { package: { only: %i[id name price sessions_count duration_days] } }
     ).merge(
+      'status' => membership.status,
       'checked_in_today' => membership.checked_in_today?,
       'last_checked_in_at' => membership.last_checked_in_at,
       'qr_code_value' => "PUNCHBOOK:#{membership.id}"
@@ -21,7 +22,7 @@ class MembershipSerializer
 
   # Used by DashboardController — adds the computed status field.
   def as_dashboard_json
-    as_api_json.merge('status' => membership.status)
+    as_api_json
   end
 
   # Used by MembershipsController#show — detailed view with check_ins and invoices.

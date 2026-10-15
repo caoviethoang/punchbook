@@ -48,13 +48,32 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
   }
 
   if (sessionsLeft !== null) {
+    const isWarning = sessionsLeft <= 3
     return (
-      <div className="flex min-w-20 flex-col items-center justify-center rounded-xl bg-emerald-50 px-4 py-3 text-center dark:bg-emerald-950/40">
-        <span className="text-2xl font-extrabold leading-none text-emerald-600 dark:text-emerald-400">
+      <div
+        className={`flex min-w-20 flex-col items-center justify-center rounded-xl px-4 py-3 text-center ${
+          isWarning
+            ? "bg-amber-50 dark:bg-amber-950/40"
+            : "bg-emerald-50 dark:bg-emerald-950/40"
+        }`}
+      >
+        <span
+          className={`text-2xl font-extrabold leading-none ${
+            isWarning
+              ? "text-amber-600 dark:text-amber-400"
+              : "text-emerald-600 dark:text-emerald-400"
+          }`}
+        >
           {sessionsLeft}
         </span>
-        <span className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-500">
-          buổi còn lại
+        <span
+          className={`mt-0.5 text-xs font-semibold uppercase tracking-wide ${
+            isWarning
+              ? "text-amber-600 dark:text-amber-400"
+              : "text-emerald-600 dark:text-emerald-500"
+          }`}
+        >
+          {isWarning ? "sắp hết buổi" : "buổi còn lại"}
         </span>
       </div>
     )
