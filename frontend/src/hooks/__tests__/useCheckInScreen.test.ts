@@ -319,4 +319,79 @@ describe("useCheckInScreen hook", () => {
       staffName: "Lan Receptionist",
     })
   })
+
+  describe("handleQRScan", () => {
+    it("immediately checks in when member is already present in list", async () => {
+      const checkInSpy = vi.spyOn(membershipsApi, "checkIn").mockResolvedValue({
+        membership: { ...dummyMember, sessions_left: 9 },
+        check_in: { id: "ci-qr-1", checked_in_at: "2026-10-16T10:05:00Z" },
+      })
+
+      const { result } = renderHook(() => useCheckInScreen({}))
+
+      // Preload members via query
+      act(() => {
+        result.current.setQuery("Nguyen")
+      })
+      await waitFor(() => {
+        expect(result.current.memberships).toHaveLength(1)
+      })
+
+      await act(async () => {
+        await result.current.handleQRScan(`PUNCHBOOK:${dummyMember.id}`)
+      })
+
+      expect(checkInSpy).toHaveBeenCalledWith(dummyMember.id, undefined)
+      expect(result.current.isQRScannerOpen).toBe(false)
+      expect(result.current.toast).toEqual({
+        message: "Đã check-in thành công cho Nguyen Van A",
+        type: "success",
+      })
+    })
+
+    it("searches and checks in member when not preloaded in list", async () => {
+      const newMember: Membership = {
+        id: "m-new",
+        customer_name: "Tran Van B",
+        phone: "0987654321",
+        sessions_left: 5,
+        expires_at: null,
+        package: { id: "pkg-2", name: "Gói 5 buổi" },
+      }
+
+      vi.spyOn(membershipsApi, "searchMemberships").mockResolvedValue([newMember])
+      const checkInSpy = vi.spyOn(membershipsApi, "checkIn").mockResolvedValue({
+        membership: { ...newMember, sessions_left: 4 },
+        check_in: { id: "ci-qr-2", checked_in_at: "2026-10-16T10:10:00Z" },
+      })
+
+      const { result } = renderHook(() => useCheckInScreen({}))
+
+      await act(async () => {
+        await result.current.handleQRScan(`PUNCHBOOK:${newMember.id}`)
+      })
+
+      expect(checkInSpy).toHaveBeenCalledWith(newMember.id, undefined)
+      expect(result.current.toast).toEqual({
+        message: "Đã check-in thành công cho Tran Van B",
+        type: "success",
+      })
+    })
+
+    it("shows error toast when scanned QR does not match any member", async () => {
+      vi.spyOn(membershipsApi, "searchMemberships").mockResolvedValue([])
+      vi.spyOn(membershipsApi, "getMembershipDetail").mockRejectedValue(new Error("Not found"))
+
+      const { result } = renderHook(() => useCheckInScreen({}))
+
+      await act(async () => {
+        await result.current.handleQRScan("PUNCHBOOK:unknown-id")
+      })
+
+      expect(result.current.toast).toEqual({
+        message: "Không tìm thấy hội viên từ mã QR này",
+        type: "error",
+      })
+    })
+  })
 })
