@@ -1,13 +1,14 @@
-import { Calendar, Package as PackageIcon } from "lucide-react"
+import { Calendar, Package as PackageIcon, QrCode } from "lucide-react"
 import type { MembershipDetail } from "../../lib/memberships"
 import { remainingLabel } from "../../lib/formatters"
 import { StatusBadge } from "../ui/StatusBadge"
 
 interface MembershipDetailHeaderProps {
   detail: MembershipDetail
+  onOpenCardTab?: () => void
 }
 
-export function MembershipDetailHeader({ detail }: MembershipDetailHeaderProps) {
+export function MembershipDetailHeader({ detail, onOpenCardTab }: MembershipDetailHeaderProps) {
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3 pr-8">
@@ -31,6 +32,16 @@ export function MembershipDetailHeader({ detail }: MembershipDetailHeaderProps) 
           <Calendar className="h-4 w-4 shrink-0 text-slate-500" />
           <span>{remainingLabel(detail)}</span>
         </div>
+        {onOpenCardTab && (
+          <button
+            type="button"
+            onClick={onOpenCardTab}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-1.5 font-semibold text-indigo-700 transition hover:bg-indigo-100 dark:border-indigo-900/60 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-900/60"
+          >
+            <QrCode className="h-4 w-4 shrink-0" />
+            <span>Thẻ QR</span>
+          </button>
+        )}
       </div>
     </div>
   )
