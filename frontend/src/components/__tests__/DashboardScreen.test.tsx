@@ -1,14 +1,15 @@
-import { render, screen, cleanup } from "@testing-library/react"
+import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react"
 import { describe, it, expect, vi, afterEach } from "vitest"
 import "@testing-library/jest-dom/vitest"
 import { DashboardScreen } from "../../components/DashboardScreen"
+import * as membershipsApi from "../../lib/memberships"
 import type { Staff } from "../../lib/auth"
-
-// Mock the useDashboard hook
 
 afterEach(() => {
   cleanup()
+  vi.clearAllMocks()
 })
+
 vi.mock("../../hooks/useDashboard", () => ({
   useDashboard: () => ({
     data: {
@@ -37,5 +38,29 @@ describe("DashboardScreen", () => {
     render(<DashboardScreen currentStaff={staff} />)
     const chartHeader = screen.queryByText(/Phân tích & Thống kê Kinh doanh/i)
     expect(chartHeader).not.toBeInTheDocument()
+  })
+
+  it("filters to expiring memberships when clicking the expiring metric card", async () => {
+    const fetchSpy = vi.spyOn(membershipsApi, "fetchMemberships").mockResolvedValue({
+      memberships: [],
+      meta: { page: 1, per_page: 20, total: 0, total_pages: 1 },
+    })
+
+    render(<DashboardScreen currentStaff={null} />)
+
+    const expiringCard = screen.getByRole("button", {
+      name: /Sắp hết hạn/i,
+    })
+    expect(expiringCard).toBeInTheDocument()
+
+    fireEvent.click(expiringCard)
+
+    await waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: "expiring",
+        }),
+      )
+    })
   })
 })

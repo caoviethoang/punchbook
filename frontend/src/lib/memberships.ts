@@ -24,6 +24,7 @@ export interface Membership {
   sessions_left: number | null
   expires_at: string | null
   package: MembershipPackage
+  status?: "active" | "expiring" | "expired"
   checked_in_today?: boolean
   last_checked_in_at?: string | null
   qr_code_value?: string
@@ -64,11 +65,16 @@ export interface CheckInResult {
   check_in: CheckInRecord
 }
 
+export const EXPIRING_SESSIONS_THRESHOLD = 3
+export const EXPIRING_DAYS_WINDOW = 7
+
 /** True when the member has no sessions left or the day-based pass is past expires_at. */
 export function isMembershipExhausted(
   membership: Pick<Membership, "sessions_left" | "expires_at">,
 ): boolean {
-  if (membership.sessions_left === 0) return true
+  if (membership.sessions_left !== null && membership.sessions_left !== undefined) {
+    return membership.sessions_left <= 0
+  }
   if (membership.expires_at && new Date(membership.expires_at) < new Date()) {
     return true
   }
@@ -77,24 +83,31 @@ export function isMembershipExhausted(
 
 /**
  * Derives a display status from the membership's expires_at and sessions_left.
- * Mirrors the backend logic used in the /dashboard endpoint.
+ * - Expired: sessions_left <= 0 OR expires_at is in the past
+ * - Expiring: sessions_left <= 3 (and > 0) OR expires_at is within the next 7 days
+ * - Active: otherwise
  */
 export function computeMembershipStatus(
   membership: Pick<Membership, "sessions_left" | "expires_at">,
 ): "active" | "expiring" | "expired" {
-  const now = new Date()
-
-  // Session-based: no sessions left
+  // Session-based
   if (membership.sessions_left !== null && membership.sessions_left !== undefined) {
-    if (membership.sessions_left === 0) return "expired"
+    if (membership.sessions_left <= 0) return "expired"
+    if (membership.sessions_left <= EXPIRING_SESSIONS_THRESHOLD) return "expiring"
   }
 
   // Date-based
   if (membership.expires_at) {
-    const expiresAt = new Date(membership.expires_at)
-    if (expiresAt < now) return "expired"
-    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-    if (expiresAt <= sevenDaysFromNow) return "expiring"
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const expiry = new Date(membership.expires_at)
+    expiry.setHours(0, 0, 0, 0)
+
+    if (expiry < today) return "expired"
+
+    const thresholdDate = new Date(today)
+    thresholdDate.setDate(thresholdDate.getDate() + EXPIRING_DAYS_WINDOW)
+    if (expiry <= thresholdDate) return "expiring"
   }
 
   return "active"

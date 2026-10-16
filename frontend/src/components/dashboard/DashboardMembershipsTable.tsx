@@ -1,11 +1,11 @@
 import { Eye, Loader2, RefreshCw, Search } from "lucide-react"
 import type { DashboardMembership } from "../../lib/dashboard"
-import { remainingLabel } from "../../lib/formatters"
 import {
   computeMembershipStatus,
   type PaginationMeta,
   type StatusFilterType,
 } from "../../lib/memberships"
+import { MemberRemainingBadge } from "../memberships/MemberRemainingBadge"
 import { StatusBadge } from "../ui/StatusBadge"
 
 const STATUS_TABS: { key: StatusFilterType; label: string }[] = [
@@ -121,8 +121,8 @@ export function DashboardMembershipsTable({
                   <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
                     {membership.package?.name}
                   </td>
-                  <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
-                    {remainingLabel(membership)}
+                  <td className="px-4 py-3">
+                    <MemberRemainingBadge membership={membership} />
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge
