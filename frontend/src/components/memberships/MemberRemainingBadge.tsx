@@ -14,7 +14,7 @@ export function MemberRemainingBadge({ membership }: { membership: Membership })
     }
     if (rem <= 3) {
       return (
-        <span className="font-semibold text-amber-600 dark:text-amber-400">
+        <span className="inline-flex items-center gap-1 font-semibold text-amber-600 dark:text-amber-400">
           Còn {rem}/{sessionsCount} buổi
         </span>
       )
@@ -37,7 +37,7 @@ export function MemberRemainingBadge({ membership }: { membership: Membership })
     }
     if (days <= 7) {
       return (
-        <span className="font-semibold text-amber-600 dark:text-amber-400">
+        <span className="inline-flex items-center gap-1 font-semibold text-amber-600 dark:text-amber-400">
           Còn {days} ngày
         </span>
       )

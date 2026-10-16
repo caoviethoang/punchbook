@@ -83,13 +83,13 @@ export function isMembershipExhausted(
 
 /**
  * Derives a display status from the membership's expires_at and sessions_left.
- * Mirrors the backend logic used in the /dashboard endpoint.
+ * - Expired: sessions_left <= 0 OR expires_at is in the past
+ * - Expiring: sessions_left <= 3 (and > 0) OR expires_at is within the next 7 days
+ * - Active: otherwise
  */
 export function computeMembershipStatus(
   membership: Pick<Membership, "sessions_left" | "expires_at">,
 ): "active" | "expiring" | "expired" {
-  const now = new Date()
-
   // Session-based
   if (membership.sessions_left !== null && membership.sessions_left !== undefined) {
     if (membership.sessions_left <= 0) return "expired"
@@ -98,10 +98,16 @@ export function computeMembershipStatus(
 
   // Date-based
   if (membership.expires_at) {
-    const expiresAt = new Date(membership.expires_at)
-    if (expiresAt < now) return "expired"
-    const thresholdDate = new Date(now.getTime() + EXPIRING_DAYS_WINDOW * 24 * 60 * 60 * 1000)
-    if (expiresAt <= thresholdDate) return "expiring"
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const expiry = new Date(membership.expires_at)
+    expiry.setHours(0, 0, 0, 0)
+
+    if (expiry < today) return "expired"
+
+    const thresholdDate = new Date(today)
+    thresholdDate.setDate(thresholdDate.getDate() + EXPIRING_DAYS_WINDOW)
+    if (expiry <= thresholdDate) return "expiring"
   }
 
   return "active"
