@@ -5,6 +5,7 @@ import type { Staff } from "../lib/auth"
 import { toCheckInError } from "../lib/errors"
 import {
   extractMembershipIdFromQR,
+  getMembershipDetail,
   isMembershipExhausted,
   type Membership,
 } from "../lib/memberships"
@@ -130,9 +131,17 @@ export function useCheckInScreen({
     }
   }
 
-  async function handleCheckIn(membershipId: string) {
-    const membership = memberships.find((m) => m.id === membershipId)
-    if (!membership || isMembershipExhausted(membership)) return
+  async function handleCheckIn(membershipId: string, targetMembership?: Membership) {
+    const membership = targetMembership || memberships.find((m) => m.id === membershipId)
+    if (!membership) return
+
+    if (isMembershipExhausted(membership)) {
+      setToast({
+        message: "Hội viên đã hết buổi hoặc hết hạn thẻ",
+        type: "error",
+      })
+      return
+    }
 
     const previousSessionsLeft = membership.sessions_left
 
@@ -140,13 +149,24 @@ export function useCheckInScreen({
     setCheckInMessage(null)
 
     // Optimistic update
-    setMemberships((prev) =>
-      prev.map((m) =>
-        m.id === membershipId && m.sessions_left !== null
-          ? { ...m, sessions_left: m.sessions_left - 1 }
-          : m,
-      ),
-    )
+    setMemberships((prev) => {
+      const exists = prev.some((m) => m.id === membershipId)
+      if (exists) {
+        return prev.map((m) =>
+          m.id === membershipId && m.sessions_left !== null
+            ? { ...m, sessions_left: m.sessions_left - 1 }
+            : m,
+        )
+      }
+      return [
+        {
+          ...membership,
+          sessions_left:
+            membership.sessions_left !== null ? membership.sessions_left - 1 : null,
+        },
+        ...prev,
+      ]
+    })
 
     try {
       const effectiveStaffId = selectedStaffId || currentStaff?.id || currentStaffId || undefined
@@ -210,24 +230,35 @@ export function useCheckInScreen({
 
     const existing = memberships.find((m) => m.id === targetId || m.phone === targetId)
     if (existing) {
-      void handleCheckIn(existing.id)
+      void handleCheckIn(existing.id, existing)
       return
     }
 
     try {
       const results = await search(targetId)
       if (results.length > 0) {
-        setMemberships(results)
         const matched = results.find((m) => m.id === targetId || m.phone === targetId) ?? results[0]
-        if (matched && !isMembershipExhausted(matched)) {
-          void handleCheckIn(matched.id)
-        }
-      } else {
-        setToast({
-          message: "Không tìm thấy hội viên từ mã QR này",
-          type: "error",
-        })
+        setMemberships(results)
+        void handleCheckIn(matched.id, matched)
+        return
       }
+
+      // Fallback: direct getMembershipDetail lookup if targetId is an ID
+      try {
+        const detail = await getMembershipDetail(targetId)
+        if (detail) {
+          setMemberships((prev) => [detail, ...prev.filter((m) => m.id !== detail.id)])
+          void handleCheckIn(detail.id, detail)
+          return
+        }
+      } catch {
+        // Fallback failed
+      }
+
+      setToast({
+        message: "Không tìm thấy hội viên từ mã QR này",
+        type: "error",
+      })
     } catch {
       setToast({
         message: "Không thể kiểm tra mã QR",
