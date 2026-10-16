@@ -95,7 +95,7 @@ class MembershipsController < ApiController
     if params[:staff_id].present?
       current_shop.staffs.find(params.expect(:staff_id))
     else
-      current_shop.staffs.first || current_shop.staffs.create!(name: 'Lễ tân', role: 'staff')
+      current_staff || current_shop.staffs.first
     end
   end
 
