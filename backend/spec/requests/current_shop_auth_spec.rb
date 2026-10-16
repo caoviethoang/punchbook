@@ -28,4 +28,16 @@ RSpec.describe 'Current shop authentication', type: :request do
 
     expect(response).to have_http_status(:unauthorized)
   end
+
+  it 'does not create staff records or write to database when authenticating a request' do
+    staff = shop.staffs.create!(name: 'Admin Owner', role: 'admin')
+    token = JsonWebToken.encode({ shop_id: shop.id })
+
+    expect do
+      get '/auth/me', headers: { 'Authorization' => "Bearer #{token}" }
+    end.not_to change(Staff, :count)
+
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body.dig('staff', 'id')).to eq(staff.id)
+  end
 end

@@ -443,13 +443,17 @@ RSpec.describe 'Memberships', type: :request do
       expect(response.parsed_body['error']).to eq('Membership has expired')
     end
 
-    it 'checks in with default shop staff when staff_id is missing' do
+    it 'checks in with default shop staff when staff_id is missing without creating new staff' do
+      headers = auth_headers(shop)
+      initial_staff_count = shop.staffs.count
+
       expect do
-        post "/memberships/#{hoa.id}/check_in", headers: auth_headers(shop)
+        post "/memberships/#{hoa.id}/check_in", headers: headers
       end.to change(CheckIn, :count).by(1)
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.dig('membership', 'id')).to eq(hoa.id)
+      expect(shop.staffs.count).to eq(initial_staff_count)
     end
 
     it 'returns 404 for another shop membership and does not check in' do
