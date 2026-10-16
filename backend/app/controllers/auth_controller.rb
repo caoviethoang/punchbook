@@ -25,11 +25,7 @@ class AuthController < ApplicationController
       shop_context: params[:shop_email]
     )
 
-    if result.success?
-      render json: result.payload
-    else
-      render json: { error: result.error }, status: :unauthorized
-    end
+    render_login_result(result)
   end
 
   def me
@@ -43,5 +39,18 @@ class AuthController < ApplicationController
 
   def register_params
     params.permit(:name, :phone, :email, :password, :password_confirmation)
+  end
+
+  def render_login_result(result)
+    if result.success?
+      reset_login_rate_limit if defined?(Rack::Attack) && Rack::Attack.enabled
+      render json: result.payload
+    else
+      render json: { error: result.error }, status: :unauthorized
+    end
+  end
+
+  def reset_login_rate_limit
+    Rack::Attack::Allow2Ban.reset(request.ip, findtime: 5.minutes)
   end
 end
