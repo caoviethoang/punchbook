@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { login, register, setStoredToken, type Shop, type Staff } from "../lib/auth"
 import { FormField } from "./ui/FormField"
+import { ThemeToggle } from "./ui/ThemeToggle"
 
 type Mode = "login" | "register"
 type LoginType = "owner" | "staff"
@@ -50,9 +51,12 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
 
   return (
     <div className="mx-auto w-full max-w-md rounded-2xl bg-white p-8 shadow-xl dark:bg-slate-900 dark:shadow-2xl">
-      <h1 className="mb-2 text-3xl font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400">
-        PunchBook
-      </h1>
+      <div className="mb-2 flex items-center justify-between">
+        <h1 className="text-3xl font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400">
+          PunchBook
+        </h1>
+        <ThemeToggle />
+      </div>
       <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
         {mode === "login"
           ? loginType === "owner"
