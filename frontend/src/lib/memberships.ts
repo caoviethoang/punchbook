@@ -153,18 +153,43 @@ export interface PaginatedMembershipsResult {
   meta?: PaginationMeta
 }
 
+export const DEFAULT_MEMBERSHIPS_PER_PAGE = 20
+
+/** Generates a list of page numbers and ellipsis separators for pagination controls. */
+export function getPaginationRange(
+  currentPage: number,
+  totalPages: number,
+): (number | "...")[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1)
+  }
+
+  if (currentPage <= 4) {
+    return [1, 2, 3, 4, 5, "...", totalPages]
+  }
+
+  if (currentPage >= totalPages - 3) {
+    return [1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages]
+  }
+
+  return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages]
+}
+
 /** GET /memberships — shop-scoped search, status filter, and pagination. */
 export async function fetchMemberships(
   params: FetchMembershipsParams = {},
 ): Promise<PaginatedMembershipsResult> {
-  const queryParams: Record<string, string> = {}
+  const page = params.page ?? 1
+  const perPage = params.per_page ?? DEFAULT_MEMBERSHIPS_PER_PAGE
+  const queryParams: Record<string, string> = {
+    page: page.toString(),
+    per_page: perPage.toString(),
+  }
   if (params.query?.trim()) queryParams.query = params.query.trim()
   if (params.status && params.status !== "all") queryParams.status = params.status
-  if (params.page && params.page > 1) queryParams.page = params.page.toString()
-  if (params.per_page && params.per_page !== 20) queryParams.per_page = params.per_page.toString()
 
   return apiGet<PaginatedMembershipsResult>("/memberships", {
-    query: Object.keys(queryParams).length > 0 ? queryParams : undefined,
+    query: queryParams,
   })
 }
 
@@ -224,6 +249,20 @@ export interface ImportMembershipsResult {
   success_count: number
   failed_count: number
   errors: ImportErrorDetail[]
+}
+
+export interface ExportMembershipsParams {
+  query?: string
+  status?: StatusFilterType
+}
+
+/** GET /memberships/export — download filtered memberships as .xlsx file. */
+export async function exportMemberships(params?: ExportMembershipsParams): Promise<void> {
+  const searchParams = new URLSearchParams()
+  if (params?.query) searchParams.set("query", params.query)
+  if (params?.status && params.status !== "all") searchParams.set("status", params.status)
+  const qs = searchParams.toString()
+  return downloadBlob(`/memberships/export${qs ? `?${qs}` : ""}`, "memberships.xlsx")
 }
 
 /** GET /memberships/import_template — download template .xlsx file. */

@@ -50,6 +50,7 @@ export function useMembershipsQuery() {
     let active = true
 
     const fetchData = async () => {
+      setLoading(true)
       try {
         const [membershipsRes, pkgs] = await Promise.all([
           fetchMemberships({
@@ -64,6 +65,9 @@ export function useMembershipsQuery() {
         setMemberships(membershipsRes.memberships)
         if (membershipsRes.meta) {
           setMeta(membershipsRes.meta)
+          if (membershipsRes.meta.total_pages > 0 && page > membershipsRes.meta.total_pages) {
+            setPage(membershipsRes.meta.total_pages)
+          }
         }
         setPackages(pkgs)
         setError(null)

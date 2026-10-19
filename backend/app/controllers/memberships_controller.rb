@@ -3,7 +3,7 @@
 class MembershipsController < ApiController
   include Paginatable
 
-  before_action :require_admin!, only: %i[import import_template]
+  before_action :require_admin!, only: %i[import import_template export]
 
   def index
     page, per_page = parse_pagination_params
@@ -14,6 +14,16 @@ class MembershipsController < ApiController
       memberships: memberships.map(&:as_api_json),
       meta: build_pagination_meta(memberships, page, per_page)
     }
+  end
+
+  def export
+    excel_data = ExportMembershipsService.call(
+      shop: current_shop,
+      query: params[:query],
+      status: params[:status]
+    )
+    filename = "memberships_#{current_shop.id}_#{Time.current.strftime('%Y%m%d%H%M%S')}.xlsx"
+    send_excel(excel_data, filename)
   end
 
   def show
@@ -47,13 +57,7 @@ class MembershipsController < ApiController
   end
 
   def import_template
-    excel_data = ImportMembershipTemplateGenerator.call
-    send_data(
-      excel_data,
-      filename: 'template_import_memberships.xlsx',
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      disposition: 'attachment'
-    )
+    send_excel(ImportMembershipTemplateGenerator.call, 'template_import_memberships.xlsx')
   end
 
   def import
@@ -101,5 +105,14 @@ class MembershipsController < ApiController
 
   def fetch_paginated_memberships(relation, page, per_page)
     paginate_relation(relation.includes(:package, :check_ins).order(:customer_name), page, per_page)
+  end
+
+  def send_excel(data, filename)
+    send_data(
+      data,
+      filename: filename,
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      disposition: 'attachment'
+    )
   end
 end

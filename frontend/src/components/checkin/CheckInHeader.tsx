@@ -21,14 +21,14 @@ export function CheckInHeader({
   const isNonAdminStaff = Boolean(currentStaff && currentStaff.role !== "admin")
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="flex items-center gap-2.5 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-            <UserCheck className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+          <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 sm:text-2xl">
+            <UserCheck className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
             Check-in Hội Viên
           </h2>
-          <p className="mt-1 text-base text-slate-500 dark:text-slate-400">
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
             Tìm kiếm theo tên hoặc số điện thoại để điểm danh hội viên
           </p>
         </div>
@@ -36,19 +36,19 @@ export function CheckInHeader({
         <button
           type="button"
           onClick={onOpenQRScanner}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-5 py-3.5 text-base font-semibold text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-500 dark:shadow-none"
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-500 dark:shadow-none sm:text-sm"
         >
-          <QrCode className="h-5 w-5" />
+          <QrCode className="h-4 w-4" />
           <span>Quét mã QR</span>
         </button>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:px-4">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
-            <UserCheck className="h-4 w-4" />
+      <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-2xs dark:border-slate-800 dark:bg-slate-900 sm:px-3.5">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+            <UserCheck className="h-3.5 w-3.5" />
           </div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 sm:text-xs">
             Nhân viên trực ca:
           </span>
         </div>

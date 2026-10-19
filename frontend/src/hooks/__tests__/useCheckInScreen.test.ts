@@ -32,8 +32,14 @@ describe("useCheckInScreen hook", () => {
     { id: "staff-2", name: "Lễ tân B", role: "staff", username: "letanb" },
   ]
 
+  const dummyMeta = { total: 1, page: 1, per_page: 20, total_pages: 1 }
+
   beforeEach(() => {
     vi.spyOn(staffsApi, "fetchStaffs").mockResolvedValue(dummyStaffs)
+    vi.spyOn(membershipsApi, "fetchMemberships").mockResolvedValue({
+      memberships: [dummyMember],
+      meta: dummyMeta,
+    })
     vi.spyOn(membershipsApi, "searchMemberships").mockResolvedValue([dummyMember])
   })
 
@@ -80,7 +86,10 @@ describe("useCheckInScreen hook", () => {
   })
 
   it("searches memberships when query changes (debounced)", async () => {
-    const searchSpy = vi.spyOn(membershipsApi, "searchMemberships").mockResolvedValue([dummyMember])
+    const fetchSpy = vi.spyOn(membershipsApi, "fetchMemberships").mockResolvedValue({
+      memberships: [dummyMember],
+      meta: dummyMeta,
+    })
 
     const { result } = renderHook(() => useCheckInScreen({}))
 
@@ -92,7 +101,11 @@ describe("useCheckInScreen hook", () => {
 
     await waitFor(
       () => {
-        expect(searchSpy).toHaveBeenCalledWith("Nguyen")
+        expect(fetchSpy).toHaveBeenCalledWith({
+          query: "Nguyen",
+          page: 1,
+          per_page: 20,
+        })
         expect(result.current.memberships).toEqual([dummyMember])
       },
       { timeout: 1000 },
@@ -256,7 +269,10 @@ describe("useCheckInScreen hook", () => {
       id: "m-exhausted",
       sessions_left: 0,
     }
-    vi.spyOn(membershipsApi, "searchMemberships").mockResolvedValue([exhaustedMember])
+    vi.spyOn(membershipsApi, "fetchMemberships").mockResolvedValue({
+      memberships: [exhaustedMember],
+      meta: dummyMeta,
+    })
     const checkInSpy = vi.spyOn(membershipsApi, "checkIn")
 
     const { result } = renderHook(() => useCheckInScreen({}))
@@ -317,6 +333,57 @@ describe("useCheckInScreen hook", () => {
       expiresAt: null,
       checkedInAt: "2026-10-16T10:00:00Z",
       staffName: "Lan Receptionist",
+    })
+  })
+
+  it("refreshMemberships: explicitly re-fetches memberships with current query", async () => {
+    const fetchSpy = vi.spyOn(membershipsApi, "fetchMemberships").mockResolvedValue({
+      memberships: [dummyMember],
+      meta: dummyMeta,
+    })
+    const { result } = renderHook(() => useCheckInScreen({}))
+
+    await waitFor(() => {
+      expect(result.current.memberships).toEqual([dummyMember])
+    })
+
+    const updatedMember = { ...dummyMember, sessions_left: 9 }
+    fetchSpy.mockResolvedValue({
+      memberships: [updatedMember],
+      meta: dummyMeta,
+    })
+
+    await act(async () => {
+      await result.current.refreshMemberships()
+    })
+
+    expect(result.current.memberships).toEqual([updatedMember])
+    expect(fetchSpy).toHaveBeenCalledWith({
+      query: "",
+      page: 1,
+      per_page: 20,
+    })
+  })
+
+  it("supports pagination: updates page and fetches page data", async () => {
+    const fetchSpy = vi.spyOn(membershipsApi, "fetchMemberships").mockResolvedValue({
+      memberships: [dummyMember],
+      meta: { total: 40, page: 2, per_page: 20, total_pages: 2 },
+    })
+
+    const { result } = renderHook(() => useCheckInScreen({}))
+
+    act(() => {
+      result.current.setPage(2)
+    })
+
+    await waitFor(() => {
+      expect(result.current.page).toBe(2)
+      expect(fetchSpy).toHaveBeenCalledWith({
+        query: "",
+        page: 2,
+        per_page: 20,
+      })
     })
   })
 })
