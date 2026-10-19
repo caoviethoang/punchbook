@@ -1,4 +1,4 @@
-import { AlertCircle, Search, User } from "lucide-react"
+import { AlertCircle, Loader2, User, Users } from "lucide-react"
 import { useCheckInScreen } from "../hooks/useCheckInScreen"
 import { CheckInHeader } from "./checkin/CheckInHeader"
 import { CheckInSearchInput } from "./checkin/CheckInSearchInput"
@@ -9,6 +9,7 @@ import { RenewalModal } from "./RenewalModal"
 import { ThermalReceiptModal } from "./ThermalReceiptModal"
 import type { Staff } from "../lib/auth"
 import { Toast } from "./ui/Toast"
+import { cn } from "../lib/utils"
 
 interface CheckInScreenProps {
   /** Optional active staff object. */
@@ -55,6 +56,7 @@ export function CheckInScreen({
     loadingStaffs,
     selectedStaffId,
     setSelectedStaffId,
+    refreshMemberships,
   } = useCheckInScreen({
     currentStaff,
     currentStaffId,
@@ -99,42 +101,78 @@ export function CheckInScreen({
       )}
 
       {/* Results Section */}
-      {query.trim() === "" ? (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white/50 p-12 text-center dark:border-slate-800 dark:bg-slate-900/40">
+      {isLoading && memberships.length === 0 ? (
+        <div
+          role="status"
+          aria-label="Đang tải danh sách hội viên"
+          className="flex flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900"
+        >
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
-            <Search className="h-8 w-8" />
+            <Loader2 className="h-8 w-8 animate-spin" />
           </div>
           <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">
-            Nhập tên hoặc SĐT để bắt đầu
+            Đang tải danh sách hội viên...
           </h3>
           <p className="mt-1 text-base text-slate-500 dark:text-slate-400">
-            Hệ thống sẽ hiển thị danh sách gói tập tương ứng để bạn thực hiện điểm danh.
+            Vui lòng chờ trong giây lát
           </p>
         </div>
-      ) : !isLoading && memberships.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
-            <User className="h-8 w-8" />
+      ) : memberships.length === 0 ? (
+        query.trim() === "" ? (
+          <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white/50 p-12 text-center dark:border-slate-800 dark:bg-slate-900/40">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+              <Users className="h-8 w-8" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">
+              Chưa có hội viên nào trong hệ thống
+            </h3>
+            <p className="mt-1 text-base text-slate-500 dark:text-slate-400">
+              Các hội viên đăng ký gói tập sẽ xuất hiện tại đây để điểm danh nhanh.
+            </p>
           </div>
-          <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">
-            Không tìm thấy hội viên phù hợp
-          </h3>
-          <p className="mt-1 text-base text-slate-500 dark:text-slate-400">
-            Không có kết quả nào cho từ khóa &ldquo;
-            <span className="font-semibold text-slate-700 dark:text-slate-300">{query}</span>
-            &rdquo;. Vui lòng kiểm tra lại thông tin.
-          </p>
-        </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
+              <User className="h-8 w-8" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">
+              Không tìm thấy hội viên phù hợp
+            </h3>
+            <p className="mt-1 text-base text-slate-500 dark:text-slate-400">
+              Không có kết quả nào cho từ khóa &ldquo;
+              <span className="font-semibold text-slate-700 dark:text-slate-300">{query}</span>
+              &rdquo;. Vui lòng kiểm tra lại thông tin.
+            </p>
+          </div>
+        )
       ) : (
-        <MembershipResultList
-          memberships={memberships}
-          checkingInId={checkingInId}
-          checkInMessage={checkInMessage}
-          onCheckIn={(id) => void handleCheckIn(id)}
-          onRenew={(m) => setRenewingMembership(m)}
-          onViewDetail={(id) => setDetailMembershipId(id)}
-          onPrintReceipt={handlePrintReceipt}
-        />
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+              {query.trim() ? "Kết quả tìm kiếm" : "Danh sách hội viên"}
+            </h2>
+            <span
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-semibold",
+                query.trim()
+                  ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
+                  : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+              )}
+            >
+              {memberships.length} {query.trim() ? "kết quả" : "hội viên"}
+            </span>
+          </div>
+
+          <MembershipResultList
+            memberships={memberships}
+            checkingInId={checkingInId}
+            checkInMessage={checkInMessage}
+            onCheckIn={(id) => void handleCheckIn(id)}
+            onRenew={(m) => setRenewingMembership(m)}
+            onViewDetail={(id) => setDetailMembershipId(id)}
+            onPrintReceipt={handlePrintReceipt}
+          />
+        </div>
       )}
 
       {/* Membership Detail & History Modal */}
@@ -147,7 +185,13 @@ export function CheckInScreen({
 
       {/* Renewal Modal */}
       {renewingMembership && (
-        <RenewalModal membership={renewingMembership} onClose={() => setRenewingMembership(null)} />
+        <RenewalModal
+          membership={renewingMembership}
+          onClose={() => {
+            setRenewingMembership(null)
+            void refreshMemberships()
+          }}
+        />
       )}
 
       {/* Thermal Receipt Modal */}
