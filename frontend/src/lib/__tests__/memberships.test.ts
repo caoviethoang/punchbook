@@ -3,6 +3,7 @@ import {
   computeMembershipStatus,
   EXPIRING_DAYS_WINDOW,
   EXPIRING_SESSIONS_THRESHOLD,
+  extractMembershipIdFromQR,
   isMembershipExhausted,
   getPaginationRange,
   fetchMemberships,
@@ -196,5 +197,39 @@ describe("fetchMemberships", () => {
     })
 
     apiGetSpy.mockRestore()
+  })
+})
+
+describe("extractMembershipIdFromQR", () => {
+  it("extracts UUID from PUNCHBOOK:id prefix", () => {
+    expect(extractMembershipIdFromQR("PUNCHBOOK:123e4567-e89b-12d3-a456-426614174000")).toBe(
+      "123e4567-e89b-12d3-a456-426614174000",
+    )
+  })
+
+  it("handles whitespace around PUNCHBOOK: prefix", () => {
+    expect(extractMembershipIdFromQR("  PUNCHBOOK:uuid-abc-123  ")).toBe("uuid-abc-123")
+  })
+
+  it("returns raw trimmed string when no prefix is present", () => {
+    expect(extractMembershipIdFromQR("  123e4567-e89b-12d3-a456-426614174000  ")).toBe(
+      "123e4567-e89b-12d3-a456-426614174000",
+    )
+  })
+
+  it("extracts membership_id from JSON payload", () => {
+    expect(extractMembershipIdFromQR('{"membership_id": "mem-123", "action": "check_in"}')).toBe(
+      "mem-123",
+    )
+  })
+
+  it("extracts id from JSON payload", () => {
+    expect(extractMembershipIdFromQR('{"id": "mem-456"}')).toBe("mem-456")
+  })
+
+  it("extracts ID from URL path", () => {
+    expect(
+      extractMembershipIdFromQR("https://punchbook.vn/memberships/uuid-999?source=qr"),
+    ).toBe("uuid-999")
   })
 })

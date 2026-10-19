@@ -24,16 +24,20 @@ class Membership < ApplicationRecord
     return all if query.blank?
 
     raw_query = query.to_s.strip
+    clean_query = raw_query.sub(/\APUNCHBOOK:/i, '')
     name_pattern = "%#{sanitize_sql_like(raw_query)}%"
+    clean_pattern = "%#{sanitize_sql_like(clean_query)}%"
     digits_only = raw_query.gsub(/\D/, '')
 
     if digits_only.present?
       phone_pattern = "%#{sanitize_sql_like(digits_only)}%"
       sql = 'memberships.customer_name ILIKE :q OR memberships.phone ILIKE :q OR ' \
-            "regexp_replace(memberships.phone, '\\D', '', 'g') ILIKE :pq"
-      where(sql, q: name_pattern, pq: phone_pattern)
+            "regexp_replace(memberships.phone, '\\D', '', 'g') ILIKE :pq OR " \
+            'memberships.id::text ILIKE :cq'
+      where(sql, q: name_pattern, pq: phone_pattern, cq: clean_pattern)
     else
-      where('memberships.customer_name ILIKE :q OR memberships.phone ILIKE :q', q: name_pattern)
+      where('memberships.customer_name ILIKE :q OR memberships.phone ILIKE :q OR memberships.id::text ILIKE :cq',
+            q: name_pattern, cq: clean_pattern)
     end
   }
   scope :needing_reminder, -> { PaidShopMembershipsNeedingReminderQuery.call(self) }
