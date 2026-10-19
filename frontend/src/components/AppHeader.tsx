@@ -38,8 +38,8 @@ export function AppHeader({
   return (
     <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
-        <div className="flex items-center gap-2.5">
-          <h1 className="text-2xl font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400">
+        <div className="flex items-center gap-2.5 shrink-0">
+          <h1 className="text-xl font-extrabold tracking-tight text-indigo-600 sm:text-2xl dark:text-indigo-400">
             {shop.name}
           </h1>
           {staff && (
@@ -49,14 +49,14 @@ export function AppHeader({
           )}
         </div>
 
-        <div className="flex items-center gap-3 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
-          <nav className="flex flex-wrap rounded-xl border border-slate-200 p-1 dark:border-slate-700">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs sm:gap-2.5 sm:text-sm md:justify-end md:gap-3 dark:text-slate-400">
+          <nav className="flex items-center rounded-xl border border-slate-200 p-0.5 sm:p-1 dark:border-slate-700">
             {visibleNavItems.map(({ view: v, label }) => (
               <button
                 key={v}
                 type="button"
                 onClick={() => onSelectView(v)}
-                className={`rounded-lg px-3 py-1.5 font-semibold transition ${
+                className={`whitespace-nowrap rounded-lg px-2.5 py-1 font-semibold transition sm:px-3 sm:py-1.5 ${
                   activeView === v
                     ? "bg-indigo-600 text-white"
                     : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
@@ -66,7 +66,7 @@ export function AppHeader({
               </button>
             ))}
           </nav>
-          <span>
+          <span className="shrink-0 whitespace-nowrap">
             Plan:{" "}
             <strong
               className={`font-bold ${
@@ -78,11 +78,11 @@ export function AppHeader({
               {shop.plan_details || (shop.plan === "paid" ? "Premium" : "Free")}
             </strong>
           </span>
-          <ThemeToggle />
+          <ThemeToggle className="shrink-0" />
           <button
             type="button"
             onClick={onLogout}
-            className="rounded-lg border border-slate-200 px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="shrink-0 rounded-lg border border-slate-200 px-2.5 py-1 font-medium text-slate-700 hover:bg-slate-100 sm:px-3 sm:py-1.5 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             Sign out
           </button>
