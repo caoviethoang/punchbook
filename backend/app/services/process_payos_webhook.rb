@@ -2,7 +2,6 @@
 
 # Service object for handling payOS webhook payloads.
 # Verifies HMAC signature before making any database updates.
-# rubocop:disable Metrics/ClassLength
 class ProcessPayosWebhook
   def self.call(payload)
     new(payload).call
@@ -15,15 +14,13 @@ class ProcessPayosWebhook
   def call
     return [false, :invalid_signature] unless valid_signature?
 
-    invoice = find_invoice
-    shop_plan_payment = find_shop_plan_payment
+    target = find_target
+    return [false, :invoice_not_found] if target.nil?
 
-    return [false, :invoice_not_found] if invoice.nil? && shop_plan_payment.nil?
-
-    if invoice.present?
-      process_invoice(invoice)
+    if target.is_a?(Invoice)
+      process_invoice(target)
     else
-      process_shop_plan_payment(shop_plan_payment)
+      process_shop_plan_payment(target)
     end
   end
 
@@ -55,44 +52,8 @@ class ProcessPayosWebhook
     data_hash['code'] || data_hash[:code] || payload['code'] || payload[:code]
   end
 
-  def find_invoice
-    return nil if order_code.blank?
-
-    if numeric_order_code?
-      Invoice.find_by(payos_order_code: order_code)
-    else
-      Invoice.find_by(id: order_code)
-    end
-  end
-
-  def find_shop_plan_payment
-    return nil if order_code.blank?
-
-    payment = find_payment_by_code
-    return payment if payment.present?
-
-    create_fallback_payment_for_shop
-  end
-
-  def find_payment_by_code
-    if numeric_order_code?
-      ShopPlanPayment.find_by(payos_order_code: order_code)
-    else
-      ShopPlanPayment.find_by(id: order_code)
-    end
-  end
-
-  def numeric_order_code?
-    order_code.to_s.match?(/\A\d+\z/)
-  end
-
-  def create_fallback_payment_for_shop
-    shop = Shop.find_by('id::text ILIKE ?', "#{order_code}%")
-    return nil if shop.nil?
-
-    amount = (data_hash['amount'] || data_hash[:amount] || 199_000).to_i
-    months = amount >= 1_990_000 ? 12 : 1
-    shop.shop_plan_payments.create!(amount: amount, months: months, status: 'pending')
+  def find_target
+    PayosWebhookTargetFinder.call(order_code, data_hash)
   end
 
   def process_invoice(invoice)
@@ -145,4 +106,3 @@ class ProcessPayosWebhook
     )
   end
 end
-# rubocop:enable Metrics/ClassLength

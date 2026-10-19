@@ -45,7 +45,6 @@ const PRECACHE_URLS = ${JSON.stringify(precache, null, 2)};
 function isApiRequest(request, url) {
   if (request.method !== "GET" && request.method !== "HEAD") return true;
   if (url.origin !== self.location.origin) return true;
-  if (url.pathname.includes("/graphql")) return true;
   return /^\\/(memberships|packages|dashboard|invoices|payos|webhooks|staffs|sessions|auth|login)/.test(
     url.pathname,
   );
@@ -132,7 +131,7 @@ export default defineConfig({
   test: { environment: "jsdom" },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
 })

@@ -64,6 +64,7 @@ RSpec.describe 'Memberships', type: :request do
         'customer_name' => 'Hoa Nguyen',
         'phone' => '0902000000',
         'sessions_left' => 3,
+        'status' => 'expiring',
         'checked_in_today' => false,
         'last_checked_in_at' => nil
       )

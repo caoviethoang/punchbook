@@ -1,9 +1,7 @@
 import { getStoredToken } from "./auth"
 
-const graphqlUrl = import.meta.env.VITE_GRAPHQL_API_URL || "http://localhost:3000/graphql"
-
 export const apiBaseUrl =
-  import.meta.env.VITE_API_BASE_URL || graphqlUrl.replace(/\/graphql\/?$/, "")
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"
 
 /**
  * Returns the raw stored token string.
