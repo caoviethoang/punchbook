@@ -113,4 +113,84 @@ describe("MembershipDetailModal", () => {
       expect(screen.getByText("Không thể kết nối đến máy chủ")).toBeInTheDocument()
     })
   })
+
+  it("displays internal notes prominently when present and allows editing", async () => {
+    const user = userEvent.setup()
+    const detailWithNotes: membershipsApi.MembershipDetail = {
+      ...mockDetail,
+      notes: "Khách dị ứng tinh dầu hoa hồng, ưu tiên kỹ thuật viên nữ",
+    }
+    vi.spyOn(membershipsApi, "getMembershipDetail").mockResolvedValue(detailWithNotes)
+    const updateSpy = vi.spyOn(membershipsApi, "updateMembership").mockResolvedValue({
+      ...detailWithNotes,
+      notes: "Cập nhật: đổi sang phòng đơn",
+    })
+
+    render(<MembershipDetailModal membershipId="mem-test-1" onClose={() => {}} />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Ghi chú nội bộ/i)).toBeInTheDocument()
+      expect(
+        screen.getByText("Khách dị ứng tinh dầu hoa hồng, ưu tiên kỹ thuật viên nữ"),
+      ).toBeInTheDocument()
+    })
+
+    // Click edit button
+    const editBtn = screen.getByRole("button", { name: /Sửa/i })
+    await user.click(editBtn)
+
+    const textarea = screen.getByPlaceholderText(/Nhập ghi chú riêng cho hội viên/i)
+    expect(textarea).toBeInTheDocument()
+    expect(textarea).toHaveValue("Khách dị ứng tinh dầu hoa hồng, ưu tiên kỹ thuật viên nữ")
+
+    // Update text
+    await user.clear(textarea)
+    await user.type(textarea, "Cập nhật: đổi sang phòng đơn")
+
+    const saveBtn = screen.getByRole("button", { name: /Lưu ghi chú/i })
+    await user.click(saveBtn)
+
+    expect(updateSpy).toHaveBeenCalledWith("mem-test-1", {
+      notes: "Cập nhật: đổi sang phòng đơn",
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText("Cập nhật: đổi sang phòng đơn")).toBeInTheDocument()
+    })
+  })
+
+  it("displays add notes button when empty and saves new note", async () => {
+    const user = userEvent.setup()
+    const detailWithoutNotes: membershipsApi.MembershipDetail = {
+      ...mockDetail,
+      notes: null,
+    }
+    vi.spyOn(membershipsApi, "getMembershipDetail").mockResolvedValue(detailWithoutNotes)
+    const updateSpy = vi.spyOn(membershipsApi, "updateMembership").mockResolvedValue({
+      ...detailWithoutNotes,
+      notes: "Ghi chú mới thêm",
+    })
+
+    render(<MembershipDetailModal membershipId="mem-test-1" onClose={() => {}} />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Thêm ghi chú nội bộ/i)).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByText(/Thêm ghi chú nội bộ/i))
+
+    const textarea = screen.getByPlaceholderText(/Nhập ghi chú riêng cho hội viên/i)
+    await user.type(textarea, "Ghi chú mới thêm")
+
+    const saveBtn = screen.getByRole("button", { name: /Lưu ghi chú/i })
+    await user.click(saveBtn)
+
+    expect(updateSpy).toHaveBeenCalledWith("mem-test-1", {
+      notes: "Ghi chú mới thêm",
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText("Ghi chú mới thêm")).toBeInTheDocument()
+    })
+  })
 })
