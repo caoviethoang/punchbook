@@ -13,11 +13,13 @@ RSpec.describe 'Rate Limiting (Rack::Attack)', type: :request do
     Rack::Attack.reset!
   end
 
-  describe 'POST /auth/login rate limiting' do
-    it 'allows up to 5 requests per minute and blocks the 6th request' do
-      5.times do
+  describe 'POST /auth/login rate limiting (Brute-force protection)' do
+    let(:shop) { create_shop(email: 'owner@example.com', password: 'password123') }
+
+    it 'allows up to 10 failed login attempts within 5 minutes and blocks the 11th request' do
+      10.times do
         post '/auth/login', params: { email: 'wrong@example.com', password: 'badpassword' }
-        expect(response.status).not_to eq(429)
+        expect(response).to have_http_status(:unauthorized)
       end
 
       post '/auth/login', params: { email: 'wrong@example.com', password: 'badpassword' }
@@ -26,6 +28,43 @@ RSpec.describe 'Rate Limiting (Rack::Attack)', type: :request do
       json = response.parsed_body
       expect(json['error']).to eq('Too Many Requests')
       expect(json['message']).to eq('Quá nhiều yêu cầu. Vui lòng thử lại sau.')
+    end
+
+    it 'logs blocked IP when rate limit is exceeded' do
+      allow(Rails.logger).to receive(:warn).and_call_original
+
+      10.times do
+        post '/auth/login', params: { email: 'wrong@example.com', password: 'badpassword' }
+        expect(response).to have_http_status(:unauthorized)
+      end
+
+      post '/auth/login', params: { email: 'wrong@example.com', password: 'badpassword' }
+      expect(response).to have_http_status(:too_many_requests)
+      expect(Rails.logger).to have_received(:warn).with(
+        %r{\[Rack::Attack\]\[blocklist\] Blocked IP: 127\.0\.0\.1 \| Rule: logins/ip \| Path: /auth/login}
+      )
+    end
+
+    it 'does not block legitimate users performing successful logins' do
+      12.times do
+        post '/auth/login', params: { email: shop.email, password: 'password123' }
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    it 'resets failure counter upon successful login' do
+      5.times do
+        post '/auth/login', params: { email: 'wrong@example.com', password: 'badpassword' }
+        expect(response).to have_http_status(:unauthorized)
+      end
+
+      post '/auth/login', params: { email: shop.email, password: 'password123' }
+      expect(response).to have_http_status(:ok)
+
+      6.times do
+        post '/auth/login', params: { email: 'wrong@example.com', password: 'badpassword' }
+        expect(response).to have_http_status(:unauthorized)
+      end
     end
   end
 
