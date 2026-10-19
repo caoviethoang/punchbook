@@ -117,6 +117,20 @@ RSpec.describe 'Memberships', type: :request do
       expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
     end
 
+    it 'searches by membership ID within current_shop' do
+      get '/memberships', params: { query: hoa.id }, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
+    end
+
+    it 'searches by PUNCHBOOK:id formatted QR value within current_shop' do
+      get '/memberships', params: { query: "PUNCHBOOK:#{hoa.id}" }, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
+    end
+
     it 'does not return another shop membership even when name/phone match' do
       other_shop = create_shop(name: 'Other Spa', email: 'other@example.com')
       other_package = Package.create!(shop: other_shop, name: 'Secret package', sessions_count: 5, price: 500_000)
@@ -162,7 +176,8 @@ RSpec.describe 'Memberships', type: :request do
       body = response.parsed_body['membership']
 
       expect(body).to include('id' => hoa.id, 'customer_name' => 'Hoa Nguyen', 'phone' => '0902000000',
-                              'status' => 'expiring')
+                              'status' => 'expiring', 'qr_code_value' => "PUNCHBOOK:#{hoa.id}")
+      expect(body['shop']).to include('id' => shop.id, 'name' => 'Lan Spa')
       expect(body['package']).to include('id' => package.id, 'name' => '10-session massage', 'price' => 1_000_000)
 
       expect(body['check_ins'].first).to include('id' => latest_check_in.id,

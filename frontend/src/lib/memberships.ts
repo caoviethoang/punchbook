@@ -17,6 +17,13 @@ export interface MembershipPackage {
   duration_days?: number | null
 }
 
+export interface MembershipShop {
+  id: string
+  name: string
+  phone?: string | null
+  address?: string | null
+}
+
 export interface Membership {
   id: string
   customer_name: string
@@ -24,6 +31,7 @@ export interface Membership {
   sessions_left: number | null
   expires_at: string | null
   package: MembershipPackage
+  shop?: MembershipShop
   status?: "active" | "expiring" | "expired"
   checked_in_today?: boolean
   last_checked_in_at?: string | null
@@ -115,6 +123,9 @@ export function computeMembershipStatus(
 
 export function extractMembershipIdFromQR(scannedText: string): string {
   const trimmed = scannedText.trim()
+  if (trimmed.startsWith("PUNCHBOOK:")) {
+    return trimmed.slice("PUNCHBOOK:".length).trim()
+  }
   if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
     try {
       const parsed = JSON.parse(trimmed) as Record<string, unknown>
