@@ -1,4 +1,4 @@
-import { type KeyboardEvent, useEffect, useRef, useState } from "react"
+import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from "react"
 import { useDebounce } from "./useDebounce"
 import { useMembershipsApi } from "./useMembershipsApi"
 import type { Staff } from "../lib/auth"
@@ -105,6 +105,15 @@ export function useCheckInScreen({
   }
 
   // Fetch memberships using debounced query
+  const refreshMemberships = useCallback(async () => {
+    try {
+      const results = await search(debouncedQuery)
+      setMemberships(results)
+    } catch {
+      // Error handling managed by useMembershipsApi hook
+    }
+  }, [debouncedQuery, search])
+
   useEffect(() => {
     let isCancelled = false
 
@@ -264,5 +273,6 @@ export function useCheckInScreen({
     loadingStaffs,
     selectedStaffId,
     setSelectedStaffId,
+    refreshMemberships,
   }
 }

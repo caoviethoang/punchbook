@@ -319,4 +319,23 @@ describe("useCheckInScreen hook", () => {
       staffName: "Lan Receptionist",
     })
   })
+
+  it("refreshMemberships: explicitly re-fetches memberships with current query", async () => {
+    const searchSpy = vi.spyOn(membershipsApi, "searchMemberships").mockResolvedValue([dummyMember])
+    const { result } = renderHook(() => useCheckInScreen({}))
+
+    await waitFor(() => {
+      expect(result.current.memberships).toEqual([dummyMember])
+    })
+
+    const updatedMember = { ...dummyMember, sessions_left: 9 }
+    searchSpy.mockResolvedValue([updatedMember])
+
+    await act(async () => {
+      await result.current.refreshMemberships()
+    })
+
+    expect(result.current.memberships).toEqual([updatedMember])
+    expect(searchSpy).toHaveBeenCalledWith("")
+  })
 })

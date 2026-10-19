@@ -77,6 +77,7 @@ describe("CheckInScreen component", () => {
     loadingStaffs: false,
     selectedStaffId: null as string | null,
     setSelectedStaffId: vi.fn(),
+    refreshMemberships: vi.fn(),
   }
 
   beforeEach(() => {
@@ -85,13 +86,43 @@ describe("CheckInScreen component", () => {
     })
   })
 
-  it("renders empty prompt when query is blank", () => {
+  it("renders empty state when query is blank and no memberships exist in system", () => {
     render(<CheckInScreen />)
 
-    expect(screen.getByText(/nhập tên hoặc sđt để bắt đầu/i)).toBeInTheDocument()
+    expect(screen.getByText(/chưa có hội viên nào trong hệ thống/i)).toBeInTheDocument()
     expect(
-      screen.getByText(/hệ thống sẽ hiển thị danh sách gói tập tương ứng để bạn thực hiện điểm danh/i),
+      screen.getByText(/các hội viên đăng ký gói tập sẽ xuất hiện tại đây để điểm danh nhanh/i),
     ).toBeInTheDocument()
+  })
+
+  it("renders loading state when initial loading is in progress", () => {
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      isLoading: true,
+      memberships: [],
+    })
+
+    render(<CheckInScreen />)
+
+    expect(
+      screen.getByRole("status", { name: /đang tải danh sách hội viên/i }),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/đang tải danh sách hội viên.../i)).toBeInTheDocument()
+  })
+
+  it("renders membership list with 'Danh sách hội viên' header when query is blank and memberships exist", () => {
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      query: "",
+      memberships: [dummyMember1, dummyMember2],
+    })
+
+    render(<CheckInScreen />)
+
+    expect(screen.getByText("Danh sách hội viên")).toBeInTheDocument()
+    expect(screen.getByText("2 hội viên")).toBeInTheDocument()
+    expect(screen.getByText("Nguyen Van A")).toBeInTheDocument()
+    expect(screen.getByText("Tran Thi B")).toBeInTheDocument()
   })
 
   it("renders 'không tìm thấy hội viên' when query has no matching results", () => {
@@ -108,7 +139,7 @@ describe("CheckInScreen component", () => {
     expect(screen.getByText("Không tồn tại")).toBeInTheDocument()
   })
 
-  it("renders memberships list when memberships exist", () => {
+  it("renders memberships list with 'Kết quả tìm kiếm' header when searching", () => {
     vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
       ...defaultHookState,
       query: "Nguyen",
@@ -116,6 +147,9 @@ describe("CheckInScreen component", () => {
     })
 
     render(<CheckInScreen />)
+
+    expect(screen.getByText("Kết quả tìm kiếm")).toBeInTheDocument()
+    expect(screen.getByText("2 kết quả")).toBeInTheDocument()
 
     // Verify member 1 details
     expect(screen.getByText("Nguyen Van A")).toBeInTheDocument()
@@ -253,5 +287,25 @@ describe("CheckInScreen component", () => {
     render(<CheckInScreen />)
 
     expect(screen.getByText("Đã check-in thành công cho Nguyen Van A")).toBeInTheDocument()
+  })
+
+  it("calls refreshMemberships when RenewalModal is closed", () => {
+    const refreshMembershipsMock = vi.fn()
+    const setRenewingMembershipMock = vi.fn()
+
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      renewingMembership: dummyMember1,
+      setRenewingMembership: setRenewingMembershipMock,
+      refreshMemberships: refreshMembershipsMock,
+    })
+
+    render(<CheckInScreen />)
+
+    const closeBtn = screen.getByRole("button", { name: /^đóng$/i })
+    fireEvent.click(closeBtn)
+
+    expect(setRenewingMembershipMock).toHaveBeenCalledWith(null)
+    expect(refreshMembershipsMock).toHaveBeenCalledTimes(1)
   })
 })
