@@ -21,6 +21,7 @@ Rails.application.routes.draw do
 
   resources :memberships, only: %i[index create show update destroy] do
     collection do
+      get :export
       get :import_template
       post :import
     end

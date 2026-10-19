@@ -486,6 +486,45 @@ RSpec.describe 'Memberships', type: :request do
     end
   end
 
+  describe 'GET /memberships/export' do
+    it 'returns 401 when unauthenticated' do
+      get '/memberships/export'
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'returns 403 when requested by non-admin staff' do
+      staff = Staff.create!(
+        shop: shop, name: 'Staff User', username: 'staff1', password: 'password123', role: 'staff'
+      )
+      token = JsonWebToken.encode({ shop_id: shop.id, staff_id: staff.id, role: 'staff' })
+
+      get '/memberships/export', headers: { 'Authorization' => "Bearer #{token}" }
+
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it 'returns 200 with an XLSX attachment when requested by admin' do
+      get '/memberships/export', headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.headers['Content-Type']).to include(
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      )
+      expect(response.headers['Content-Disposition']).to include('attachment; filename="memberships_')
+      expect(response.body.bytesize).to be > 0
+    end
+
+    it 'filters exported memberships by status and query params' do
+      get '/memberships/export', params: { query: 'Hoa', status: 'expiring' }, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      doc = Roo::Excelx.new(StringIO.new(response.body))
+      names = (2..doc.sheet(0).last_row).map { |r| doc.sheet(0).cell(r, 1) }
+      expect(names).to contain_exactly('Hoa Nguyen')
+    end
+  end
+
   describe 'GET /memberships/import_template' do
     it 'returns 401 when unauthenticated' do
       get '/memberships/import_template'
