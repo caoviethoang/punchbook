@@ -1,5 +1,6 @@
-import { AlertCircle, Loader2, User, Users } from "lucide-react"
+import { AlertCircle, ChevronLeft, ChevronRight, Loader2, User, Users } from "lucide-react"
 import { useCheckInScreen } from "../hooks/useCheckInScreen"
+import { getPaginationRange } from "../lib/memberships"
 import { CheckInHeader } from "./checkin/CheckInHeader"
 import { CheckInSearchInput } from "./checkin/CheckInSearchInput"
 import { MembershipResultList } from "./checkin/CheckInSearchResults"
@@ -32,6 +33,9 @@ export function CheckInScreen({
     query,
     setQuery,
     memberships,
+    page,
+    setPage,
+    paginationMeta,
     checkingInId,
     checkInMessage,
     toast,
@@ -148,9 +152,17 @@ export function CheckInScreen({
       ) : (
         <div className="space-y-3">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 sm:text-lg">
-              {query.trim() ? "Kết quả tìm kiếm" : "Danh sách hội viên"}
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 sm:text-lg">
+                {query.trim() ? "Kết quả tìm kiếm" : "Danh sách hội viên"}
+              </h2>
+              {isLoading && (
+                <span className="inline-flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span>Đang tải...</span>
+                </span>
+              )}
+            </div>
             <span
               className={cn(
                 "rounded-full px-2.5 py-0.5 text-xs font-semibold",
@@ -159,7 +171,7 @@ export function CheckInScreen({
                   : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
               )}
             >
-              {memberships.length} {query.trim() ? "kết quả" : "hội viên"}
+              {paginationMeta?.total ?? memberships.length} {query.trim() ? "kết quả" : "hội viên"}
             </span>
           </div>
 
@@ -172,6 +184,66 @@ export function CheckInScreen({
             onViewDetail={(id) => setDetailMembershipId(id)}
             onPrintReceipt={handlePrintReceipt}
           />
+
+          {paginationMeta && paginationMeta.total_pages > 1 && (
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-2 py-2">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                Hiển thị trang {paginationMeta.page} / {paginationMeta.total_pages} (Tổng {paginationMeta.total} hội viên)
+              </p>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  disabled={page <= 1 || isLoading}
+                  onClick={() => setPage(page - 1)}
+                  className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                  aria-label="Trang trước"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="hidden sm:inline">Trang trước</span>
+                </button>
+
+                <div className="flex items-center gap-1">
+                  {getPaginationRange(paginationMeta.page, paginationMeta.total_pages).map((item, idx) =>
+                    item === "..." ? (
+                      <span
+                        key={`ellipsis-${idx}`}
+                        className="px-2 py-1 text-xs text-slate-400 select-none"
+                      >
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={item}
+                        type="button"
+                        disabled={isLoading}
+                        onClick={() => setPage(item)}
+                        aria-label={`Trang ${item}`}
+                        aria-current={item === page ? "page" : undefined}
+                        className={`min-w-[32px] rounded-xl px-2.5 py-1.5 text-xs font-semibold transition ${
+                          item === page
+                            ? "bg-indigo-600 text-white shadow-sm hover:bg-indigo-500"
+                            : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={page >= paginationMeta.total_pages || isLoading}
+                  onClick={() => setPage(page + 1)}
+                  className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                  aria-label="Trang sau"
+                >
+                  <span className="hidden sm:inline">Trang sau</span>
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
