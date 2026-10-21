@@ -13,6 +13,7 @@ module MembershipStatusable
       expiring_date = today + EXPIRING_DAYS_WINDOW.days
 
       case status
+      when 'not_checked_in' then not_checked_in_status_query(today)
       when 'expired' then expired_status_query(today)
       when 'expiring' then expiring_status_query(today, expiring_date)
       when 'active' then active_status_query(expiring_date)
@@ -20,7 +21,29 @@ module MembershipStatusable
       end
     end
 
+    def checked_in_today_subquery
+      sanitize_sql_array(
+        [
+          'EXISTS (SELECT 1 FROM check_ins ' \
+          'WHERE check_ins.membership_id = memberships.id ' \
+          'AND check_ins.checked_in_at BETWEEN :start AND :end)',
+          { start: Time.zone.now.beginning_of_day, end: Time.zone.now.end_of_day }
+        ]
+      )
+    end
+
     private
+
+    def not_checked_in_status_query(today)
+      joins(:package).where(
+        "NOT (#{checked_in_today_subquery}) AND (" \
+        '(packages.sessions_count IS NOT NULL AND memberships.sessions_left > 0) OR ' \
+        '(packages.duration_days IS NOT NULL AND ' \
+        '(memberships.expires_at IS NULL OR memberships.expires_at >= :today))' \
+        ')',
+        today: today
+      )
+    end
 
     def expired_status_query(today)
       joins(:package).where(

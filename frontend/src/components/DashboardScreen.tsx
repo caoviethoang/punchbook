@@ -85,7 +85,7 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
 
   if (error && !data) {
     return (
-      <div className="mx-4 rounded-xl bg-red-50 p-4 text-base font-medium text-red-700 dark:bg-red-950/40 dark:text-red-300 sm:mx-6">
+      <div className="rounded-xl bg-red-50 p-4 text-base font-medium text-red-700 dark:bg-red-950/40 dark:text-red-300">
         <div className="flex items-center gap-3">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <span>{error}</span>
@@ -104,7 +104,7 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
   if (!data) return null
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
+    <div className="space-y-6">
       {exportError && (
         <div className="rounded-xl bg-amber-50 p-4 text-sm font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
           <div className="flex items-center gap-2">

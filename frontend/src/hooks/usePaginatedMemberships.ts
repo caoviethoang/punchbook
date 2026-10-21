@@ -76,6 +76,9 @@ export function usePaginatedMemberships(options: UsePaginatedMembershipsOptions 
         setMemberships(res.memberships)
         if (res.meta) {
           setMeta(res.meta)
+          if (res.meta.total_pages > 0 && page > res.meta.total_pages) {
+            setPageState(res.meta.total_pages)
+          }
         }
         setError(null)
       } catch (err) {

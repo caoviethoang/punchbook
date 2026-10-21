@@ -117,6 +117,20 @@ RSpec.describe 'Memberships', type: :request do
       expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
     end
 
+    it 'searches by membership ID within current_shop' do
+      get '/memberships', params: { query: hoa.id }, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
+    end
+
+    it 'searches by PUNCHBOOK:id formatted QR value within current_shop' do
+      get '/memberships', params: { query: "PUNCHBOOK:#{hoa.id}" }, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
+    end
+
     it 'does not return another shop membership even when name/phone match' do
       other_shop = create_shop(name: 'Other Spa', email: 'other@example.com')
       other_package = Package.create!(shop: other_shop, name: 'Secret package', sessions_count: 5, price: 500_000)
@@ -141,6 +155,65 @@ RSpec.describe 'Memberships', type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['memberships']).to eq([])
     end
+
+    context 'with sort=checkin_priority' do
+      it 'returns unchecked-in active members first, checked-in second, exhausted last' do
+        staff = Staff.create!(shop: shop, name: 'Receptionist', role: 'staff')
+        day_package = Package.create!(shop: shop, name: 'Monthly gym', duration_days: 30, price: 500_000)
+        Membership.create!(
+          shop: shop, package: package, customer_name: 'Alpha Exhausted',
+          phone: '0900000001', sessions_left: 0
+        )
+        Membership.create!(
+          shop: shop, package: day_package, customer_name: 'Beta Expired Day',
+          phone: '0900000002', sessions_left: nil, expires_at: Date.current - 5.days
+        )
+        CheckIn.create!(membership: hoa, staff: staff, checked_in_at: Time.current)
+
+        get '/memberships', params: { sort: 'checkin_priority' }, headers: auth_headers(shop)
+
+        expect(response).to have_http_status(:ok)
+        names = response.parsed_body['memberships'].pluck('customer_name')
+
+        expect(names.index('Lan Tran')).to be < names.index('Hoa Nguyen')
+        expect(names.index('Hoa Nguyen')).to be < names.index('Alpha Exhausted')
+        expect(names.index('Hoa Nguyen')).to be < names.index('Beta Expired Day')
+      end
+
+      it 'falls back to alphabetical order when sort is not checkin_priority' do
+        get '/memberships', headers: auth_headers(shop)
+
+        expect(response).to have_http_status(:ok)
+        names = response.parsed_body['memberships'].pluck('customer_name')
+        expect(names).to eq(names.sort)
+      end
+    end
+
+    context 'with status=not_checked_in' do
+      it 'returns only eligible members who have not checked in today' do
+        staff = Staff.create!(shop: shop, name: 'Receptionist', role: 'staff')
+        day_package = Package.create!(shop: shop, name: 'Monthly gym', duration_days: 30, price: 500_000)
+        Membership.create!(
+          shop: shop, package: package, customer_name: 'Exhausted Zero',
+          phone: '0900000003', sessions_left: 0
+        )
+        Membership.create!(
+          shop: shop, package: day_package, customer_name: 'Expired Past',
+          phone: '0900000004', sessions_left: nil, expires_at: Date.current - 1.day
+        )
+        CheckIn.create!(membership: hoa, staff: staff, checked_in_at: Time.current)
+
+        get '/memberships', params: { status: 'not_checked_in' }, headers: auth_headers(shop)
+
+        expect(response).to have_http_status(:ok)
+        names = response.parsed_body['memberships'].pluck('customer_name')
+
+        expect(names).to include('Lan Tran')
+        expect(names).not_to include('Hoa Nguyen')
+        expect(names).not_to include('Exhausted Zero')
+        expect(names).not_to include('Expired Past')
+      end
+    end
   end
 
   describe 'GET /memberships/:id' do
@@ -162,7 +235,8 @@ RSpec.describe 'Memberships', type: :request do
       body = response.parsed_body['membership']
 
       expect(body).to include('id' => hoa.id, 'customer_name' => 'Hoa Nguyen', 'phone' => '0902000000',
-                              'status' => 'expiring')
+                              'status' => 'expiring', 'qr_code_value' => "PUNCHBOOK:#{hoa.id}")
+      expect(body['shop']).to include('id' => shop.id, 'name' => 'Lan Spa')
       expect(body['package']).to include('id' => package.id, 'name' => '10-session massage', 'price' => 1_000_000)
 
       expect(body['check_ins'].first).to include('id' => latest_check_in.id,
