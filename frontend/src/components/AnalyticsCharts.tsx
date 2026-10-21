@@ -1,17 +1,20 @@
 import { useState } from "react"
-import { BarChart3, TrendingUp, Users } from "lucide-react"
-import type { DailyRevenueData, HourlyCheckInData, PeakHourData } from "../lib/dashboard"
+import { BarChart3, PieChart, TrendingUp, Users } from "lucide-react"
+import type { DailyRevenueData, HourlyCheckInData, PackageRevenueData, PeakHourData } from "../lib/dashboard"
 import { RevenueBarChart } from "./analytics/RevenueBarChart"
 import { CheckInFrequencyChart } from "./analytics/CheckInFrequencyChart"
+import { PackageRevenueChart } from "./analytics/PackageRevenueChart"
 
 interface AnalyticsChartsProps {
   dailyRevenue?: DailyRevenueData[]
   checkInFrequency?: HourlyCheckInData[]
   peakHour?: PeakHourData | null
+  packageRevenue?: PackageRevenueData[]
 }
 
 const TABS = [
   { id: "revenue" as const, label: "Doanh thu 30 ngày", icon: TrendingUp },
+  { id: "packages" as const, label: "Doanh thu theo gói", icon: PieChart },
   { id: "checkins" as const, label: "Tần suất Check-in 24h", icon: Users },
 ]
 
@@ -19,8 +22,9 @@ export function AnalyticsCharts({
   dailyRevenue = [],
   checkInFrequency = [],
   peakHour,
+  packageRevenue = [],
 }: AnalyticsChartsProps) {
-  const [activeTab, setActiveTab] = useState<"revenue" | "checkins">("revenue")
+  const [activeTab, setActiveTab] = useState<"revenue" | "packages" | "checkins">("revenue")
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-7">
@@ -31,7 +35,7 @@ export function AnalyticsCharts({
             Phân tích & Thống kê Kinh doanh
           </h3>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Theo dõi xu hướng doanh thu và phân bố lượt khách ghé tiệm
+            Theo dõi xu hướng doanh thu, cơ cấu gói dịch vụ và phân bố lượt khách ghé tiệm
           </p>
         </div>
 
@@ -50,9 +54,9 @@ export function AnalyticsCharts({
         </div>
       </div>
 
-      {activeTab === "revenue" ? (
-        <RevenueBarChart dailyRevenue={dailyRevenue} />
-      ) : (
+      {activeTab === "revenue" && <RevenueBarChart dailyRevenue={dailyRevenue} />}
+      {activeTab === "packages" && <PackageRevenueChart packageRevenue={packageRevenue} />}
+      {activeTab === "checkins" && (
         <CheckInFrequencyChart checkInFrequency={checkInFrequency} peakHour={peakHour || null} />
       )}
     </div>

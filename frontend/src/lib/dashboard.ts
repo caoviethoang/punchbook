@@ -25,6 +25,15 @@ export interface PeakHourData {
   recommendation: string
 }
 
+export interface PackageRevenueData {
+  package_id: string
+  package_name: string
+  sales_count: number
+  invoices_count: number
+  total_revenue: number
+  percentage: number
+}
+
 export interface DashboardData {
   revenue_this_month: number
   active_memberships_count: number
@@ -32,6 +41,7 @@ export interface DashboardData {
   daily_revenue_30_days?: DailyRevenueData[]
   check_in_frequency_by_hour?: HourlyCheckInData[]
   peak_check_in_hour?: PeakHourData | null
+  revenue_by_package?: PackageRevenueData[]
   memberships: DashboardMembership[]
 }
 
