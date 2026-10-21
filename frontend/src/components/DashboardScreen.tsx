@@ -154,12 +154,13 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
         />
       </div>
 
-      {/* Analytics Charts (30-day Revenue & 24h Check-in Frequency) */}
+      {/* Analytics Charts (30-day Revenue, Package Revenue & 24h Check-in Frequency) */}
       {!currentStaff || currentStaff.role === "admin" ? (
         <AnalyticsCharts
           dailyRevenue={data.daily_revenue_30_days}
           checkInFrequency={data.check_in_frequency_by_hour}
           peakHour={data.peak_check_in_hour}
+          packageRevenue={data.revenue_by_package}
         />
       ) : null}
 

@@ -103,6 +103,31 @@ RSpec.describe 'Dashboard', type: :request do
       expect(body['peak_check_in_hour']['label']).to include('14:00')
     end
 
+    it 'returns revenue_by_package aggregation breakdown in current month' do
+      member1 = create_member(package: session_package, name: 'Member A', phone: '0901111111', sessions_left: 5)
+      member2 = create_member(package: day_package, name: 'Member B', phone: '0902222222', sessions_left: 3)
+      Invoice.create!(membership: member1, amount: 1_000_000, status: 'paid')
+      Invoice.create!(membership: member1, amount: 1_000_000, status: 'paid')
+      Invoice.create!(membership: member2, amount: 500_000, status: 'paid')
+      Invoice.create!(membership: member2, amount: 500_000, status: 'pending')
+      seed_other_shop_paid_invoice!
+
+      get '/dashboard', headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      breakdown = response.parsed_body['revenue_by_package']
+      expect(breakdown).to be_an(Array)
+      expect(breakdown.length).to eq(2)
+      expect(breakdown.first).to include(
+        'package_id' => session_package.id, 'package_name' => '10-session massage',
+        'sales_count' => 2, 'total_revenue' => 2_000_000, 'percentage' => 80.0
+      )
+      expect(breakdown.second).to include(
+        'package_id' => day_package.id, 'package_name' => 'Monthly gym',
+        'sales_count' => 1, 'total_revenue' => 500_000, 'percentage' => 20.0
+      )
+    end
+
     it 'does not N+1 query when memberships grow', :aggregate_failures do
       create_member(package: session_package, name: 'Member 1', phone: '0901000001', sessions_left: 5)
 

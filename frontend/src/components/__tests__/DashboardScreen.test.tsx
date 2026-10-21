@@ -19,6 +19,16 @@ vi.mock("../../hooks/useDashboard", () => ({
       daily_revenue_30_days: [],
       check_in_frequency_by_hour: [],
       peak_check_in_hour: null,
+      revenue_by_package: [
+        {
+          package_id: "pkg-1",
+          package_name: "Gói Massage 10 buổi",
+          sales_count: 2,
+          invoices_count: 2,
+          total_revenue: 1000000,
+          percentage: 100.0,
+        },
+      ],
     },
     loading: false,
     error: null,
@@ -62,5 +72,17 @@ describe("DashboardScreen", () => {
         }),
       )
     })
+  })
+
+  it("allows switching to package revenue breakdown tab in AnalyticsCharts", () => {
+    render(<DashboardScreen currentStaff={null} />)
+
+    const packageTab = screen.getByRole("button", { name: /Doanh thu theo gói/i })
+    expect(packageTab).toBeInTheDocument()
+
+    fireEvent.click(packageTab)
+
+    expect(screen.getAllByText("Gói Massage 10 buổi").length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText("100%").length).toBeGreaterThanOrEqual(1)
   })
 })
