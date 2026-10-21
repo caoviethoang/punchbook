@@ -6,6 +6,7 @@ import {
   type PaginationMeta,
   type StatusFilterType,
 } from "../lib/memberships"
+import { useDebounce } from "./useDebounce"
 
 export interface UsePaginatedMembershipsOptions {
   initialStatus?: StatusFilterType
@@ -24,27 +25,25 @@ export function usePaginatedMemberships(options: UsePaginatedMembershipsOptions 
 
   const [memberships, setMemberships] = useState<Membership[]>([])
   const [meta, setMeta] = useState<PaginationMeta | null>(null)
-  const [query, setQuery] = useState("")
-  const [debouncedQuery, setDebouncedQuery] = useState("")
+  const [query, setQueryState] = useState("")
+  const debouncedQuery = useDebounce(query, debounceMs)
   const [status, setStatusState] = useState<StatusFilterType>(initialStatus)
   const [page, setPageState] = useState(initialPage)
-  const [loading, setLoading] = useState(true)
+  const [fetchLoading, setFetchLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [refreshIndex, setRefreshIndex] = useState(0)
 
-  // Debounce search query
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(true)
-      setDebouncedQuery(query)
-      setPageState(1)
-    }, debounceMs)
-    return () => clearTimeout(timer)
-  }, [query, debounceMs])
+  const isDebouncing = query !== debouncedQuery
+  const loading = fetchLoading || isDebouncing
+
+  const setQuery = useCallback((newQuery: string) => {
+    setQueryState(newQuery)
+    setPageState(1)
+  }, [])
 
   const setStatus = useCallback(
     (nextStatus: StatusFilterType | ((prev: StatusFilterType) => StatusFilterType)) => {
-      setLoading(true)
+      setFetchLoading(true)
       setStatusState(nextStatus)
       setPageState(1)
     },
@@ -52,12 +51,12 @@ export function usePaginatedMemberships(options: UsePaginatedMembershipsOptions 
   )
 
   const setPage = useCallback((nextPage: number | ((prev: number) => number)) => {
-    setLoading(true)
+    setFetchLoading(true)
     setPageState(nextPage)
   }, [])
 
   const reloadData = useCallback(() => {
-    setLoading(true)
+    setFetchLoading(true)
     setRefreshIndex((prev) => prev + 1)
   }, [])
 
@@ -65,6 +64,7 @@ export function usePaginatedMemberships(options: UsePaginatedMembershipsOptions 
     let active = true
 
     const fetchData = async () => {
+      setFetchLoading(true)
       try {
         const res = await fetchMemberships({
           query: debouncedQuery,
@@ -85,7 +85,7 @@ export function usePaginatedMemberships(options: UsePaginatedMembershipsOptions 
         if (!active) return
         setError(toApiError(err, "Không thể tải danh sách hội viên."))
       } finally {
-        if (active) setLoading(false)
+        if (active) setFetchLoading(false)
       }
     }
 
