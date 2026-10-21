@@ -54,6 +54,8 @@ export function MembershipsScreen({ shop, currentStaff }: MembershipsScreenProps
     deleting,
     reloadData,
     handleDelete,
+    restoringMemberId,
+    handleRestore,
   } = useMembershipsQuery()
 
   const handleExport = async () => {
@@ -101,6 +103,7 @@ export function MembershipsScreen({ shop, currentStaff }: MembershipsScreenProps
           setStatus(s)
           setPage(1)
         }}
+        isAdmin={isAdmin}
       />
 
       {/* Content Table / State */}
@@ -118,6 +121,8 @@ export function MembershipsScreen({ shop, currentStaff }: MembershipsScreenProps
         onOpenDetail={setDetailMemberId}
         onOpenEdit={setEditingMember}
         onOpenDelete={setDeletingMember}
+        onRestore={(m) => void handleRestore(m)}
+        restoringId={restoringMemberId}
       />
 
       {/* Modals Integration */}

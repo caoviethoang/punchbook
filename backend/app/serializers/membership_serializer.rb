@@ -15,7 +15,7 @@ class MembershipSerializer
   # Used by MembershipsController (index, create, check_in) and InvoicesController.
   def as_api_json
     membership.as_json(
-      only: %i[id customer_name phone sessions_left expires_at],
+      only: %i[id customer_name phone sessions_left expires_at discarded_at],
       include: ASSOCIATION_INCLUDES
     ).merge(status_and_qr_hash)
   end
@@ -39,8 +39,10 @@ class MembershipSerializer
   attr_reader :membership
 
   def status_and_qr_hash
+    status = membership.discarded? ? 'deleted' : membership.status
     {
-      'status' => membership.status,
+      'status' => status,
+      'discarded_at' => membership.discarded_at,
       'checked_in_today' => membership.checked_in_today?,
       'last_checked_in_at' => membership.last_checked_in_at,
       'qr_code_value' => "PUNCHBOOK:#{membership.id}"
