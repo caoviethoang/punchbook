@@ -214,6 +214,29 @@ RSpec.describe 'Memberships', type: :request do
         expect(names).not_to include('Expired Past')
       end
     end
+
+    context 'with status=deleted' do
+      it 'returns 403 when requested by non-admin staff' do
+        staff = Staff.create!(shop: shop, name: 'Staff User', username: 'staff_del', password: 'password123',
+                              role: 'staff')
+        token = JsonWebToken.encode({ shop_id: shop.id, staff_id: staff.id, role: 'staff' })
+
+        get '/memberships', params: { status: 'deleted' }, headers: { 'Authorization' => "Bearer #{token}" }
+
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it 'returns only discarded memberships for admin' do
+        hoa.discard
+
+        get '/memberships', params: { status: 'deleted' }, headers: auth_headers(shop)
+
+        expect(response).to have_http_status(:ok)
+        ids = response.parsed_body['memberships'].pluck('id')
+        expect(ids).to eq([hoa.id])
+        expect(response.parsed_body['memberships'].first['status']).to eq('deleted')
+      end
+    end
   end
 
   describe 'GET /memberships/:id' do
@@ -653,6 +676,47 @@ RSpec.describe 'Memberships', type: :request do
       expect(body['success_count']).to eq(1)
       expect(body['failed_count']).to eq(0)
       expect(body['errors']).to be_empty
+    end
+  end
+
+  describe 'DELETE /memberships/:id' do
+    it 'soft deletes the membership' do
+      delete "/memberships/#{hoa.id}", headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      expect(hoa.reload).to be_discarded
+    end
+  end
+
+  describe 'POST /memberships/:id/restore' do
+    it 'returns 403 when requested by non-admin staff' do
+      hoa.discard
+      staff = Staff.create!(shop: shop, name: 'Staff User', username: 'staff_rst', password: 'password123',
+                            role: 'staff')
+      token = JsonWebToken.encode({ shop_id: shop.id, staff_id: staff.id, role: 'staff' })
+
+      post "/memberships/#{hoa.id}/restore", headers: { 'Authorization' => "Bearer #{token}" }
+
+      expect(response).to have_http_status(:forbidden)
+      expect(hoa.reload).to be_discarded
+    end
+
+    it 'restores discarded membership when requested by admin' do
+      hoa.discard
+      expect(hoa.reload).to be_discarded
+
+      post "/memberships/#{hoa.id}/restore", headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['message']).to eq('Đã khôi phục hội viên thành công')
+      expect(hoa.reload).not_to be_discarded
+      expect(hoa.status).to eq('expiring')
+    end
+
+    it 'returns 404 when membership is not discarded or does not exist' do
+      post "/memberships/#{hoa.id}/restore", headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 end

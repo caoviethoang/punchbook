@@ -1,11 +1,12 @@
 import { Search } from "lucide-react"
 import type { StatusFilterType } from "../../lib/memberships"
 
-const FILTER_TABS: { key: StatusFilterType; label: string }[] = [
+const FILTER_TABS: { key: StatusFilterType; label: string; adminOnly?: boolean }[] = [
   { key: "all", label: "Tất cả" },
   { key: "active", label: "Còn hạn" },
   { key: "expiring", label: "Sắp hết" },
   { key: "expired", label: "Đã hết" },
+  { key: "deleted", label: "Đã xóa", adminOnly: true },
 ]
 
 interface MembershipFilterBarProps {
@@ -13,6 +14,7 @@ interface MembershipFilterBarProps {
   onQueryChange: (q: string) => void
   status: StatusFilterType
   onStatusChange: (s: StatusFilterType) => void
+  isAdmin?: boolean
 }
 
 export function MembershipFilterBar({
@@ -20,7 +22,10 @@ export function MembershipFilterBar({
   onQueryChange,
   status,
   onStatusChange,
+  isAdmin = false,
 }: MembershipFilterBarProps) {
+  const visibleTabs = FILTER_TABS.filter((tab) => !tab.adminOnly || isAdmin)
+
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="relative flex-1 max-w-md">
@@ -35,7 +40,7 @@ export function MembershipFilterBar({
       </div>
 
       <div className="flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-800 dark:bg-slate-900/60">
-        {FILTER_TABS.map((tab) => (
+        {visibleTabs.map((tab) => (
           <button
             key={tab.key}
             type="button"

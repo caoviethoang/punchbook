@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { toApiError } from "../lib/errors"
 import {
   deleteMembership,
+  restoreMembership,
   type Membership,
 } from "../lib/memberships"
 import { listPackages, type PackageItem } from "../lib/packages"
@@ -19,6 +20,7 @@ export function useMembershipsQuery() {
   const [detailMemberId, setDetailMemberId] = useState<string | null>(null)
   const [deletingMember, setDeletingMember] = useState<Membership | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [restoringMemberId, setRestoringMemberId] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
@@ -48,6 +50,18 @@ export function useMembershipsQuery() {
     }
   }
 
+  const handleRestore = async (member: Membership) => {
+    setRestoringMemberId(member.id)
+    try {
+      await restoreMembership(member.id)
+      pagination.reloadData()
+    } catch (err) {
+      alert(toApiError(err, "Khôi phục hội viên thất bại."))
+    } finally {
+      setRestoringMemberId(null)
+    }
+  }
+
   return {
     ...pagination,
     packages,
@@ -65,5 +79,7 @@ export function useMembershipsQuery() {
     setDeletingMember,
     deleting,
     handleDelete,
+    restoringMemberId,
+    handleRestore,
   }
 }
