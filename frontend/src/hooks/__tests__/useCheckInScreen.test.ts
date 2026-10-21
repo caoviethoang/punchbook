@@ -51,6 +51,7 @@ describe("useCheckInScreen hook", () => {
     )
 
     expect(result.current.query).toBe("")
+    expect(result.current.filter).toBe("not_checked_in")
     expect(result.current.checkingInId).toBeNull()
     expect(result.current.checkInMessage).toBeNull()
     expect(result.current.toast).toBeNull()
@@ -105,6 +106,8 @@ describe("useCheckInScreen hook", () => {
           query: "Nguyen",
           page: 1,
           per_page: 20,
+          sort: "checkin_priority",
+          status: "not_checked_in",
         })
         expect(result.current.memberships).toEqual([dummyMember])
       },
@@ -362,6 +365,8 @@ describe("useCheckInScreen hook", () => {
       query: "",
       page: 1,
       per_page: 20,
+      sort: "checkin_priority",
+      status: "not_checked_in",
     })
   })
 
@@ -383,6 +388,35 @@ describe("useCheckInScreen hook", () => {
         query: "",
         page: 2,
         per_page: 20,
+        sort: "checkin_priority",
+        status: "not_checked_in",
+      })
+    })
+  })
+
+  it("supports status filter: updates filter, resets page, and fetches filtered data", async () => {
+    const fetchSpy = vi.spyOn(membershipsApi, "fetchMemberships").mockResolvedValue({
+      memberships: [dummyMember],
+      meta: dummyMeta,
+    })
+
+    const { result } = renderHook(() => useCheckInScreen({}))
+
+    act(() => {
+      result.current.setPage(2)
+      result.current.setFilter("expiring")
+    })
+
+    expect(result.current.filter).toBe("expiring")
+    expect(result.current.page).toBe(1)
+
+    await waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalledWith({
+        query: "",
+        page: 1,
+        per_page: 20,
+        sort: "checkin_priority",
+        status: "expiring",
       })
     })
   })

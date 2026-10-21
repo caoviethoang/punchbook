@@ -48,6 +48,29 @@ class Membership < ApplicationRecord
     by_status_query(status.to_s)
   }
 
+  # Sorts members for the check-in screen: not-checked-in & active first,
+  # checked-in today second, exhausted (0 sessions / expired) last.
+  scope :checkin_priority_order, lambda {
+    checked_in_sql = klass.checked_in_today_subquery
+
+    exhausted_sql = <<~SQL.squish
+      CASE
+        WHEN memberships.sessions_left IS NOT NULL
+             AND memberships.sessions_left <= 0 THEN 1
+        WHEN memberships.sessions_left IS NULL
+             AND memberships.expires_at IS NOT NULL
+             AND memberships.expires_at < CURRENT_DATE THEN 1
+        ELSE 0
+      END
+    SQL
+
+    order(
+      Arel.sql("(#{exhausted_sql}) ASC"),
+      Arel.sql("(#{checked_in_sql})::int ASC"),
+      :customer_name
+    )
+  }
+
   def checked_in_today?
     today_range = Time.zone.now.all_day
     if check_ins.loaded?
