@@ -8,6 +8,7 @@ import {
   fetchMemberships,
   getMembershipDetail,
   isMembershipExhausted,
+  type CheckInFilterType,
   type Membership,
   type PaginationMeta,
 } from "../lib/memberships"
@@ -56,9 +57,14 @@ export function useCheckInScreen({
   const inputRef = useRef<HTMLInputElement>(null)
   const { search, checkIn, searchLoading, error: apiError } = useMembershipsApi()
 
+  const [filter, setFilterState] = useState<CheckInFilterType>("not_checked_in")
   const [page, setPage] = useState(1)
   const setQuery = useCallback((nextQuery: string | ((prev: string) => string)) => {
     setQueryState(nextQuery)
+    setPage(1)
+  }, [])
+  const setFilter = useCallback((nextFilter: CheckInFilterType) => {
+    setFilterState(nextFilter)
     setPage(1)
   }, [])
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null)
@@ -117,11 +123,13 @@ export function useCheckInScreen({
     })
   }
 
-  // Fetch memberships using debounced query and pagination
+  // Fetch memberships using debounced query, filter status, sort and pagination
   const refreshMemberships = useCallback(async () => {
     try {
       const res = await fetchMemberships({
         query: debouncedQuery,
+        status: filter,
+        sort: "checkin_priority",
         page,
         per_page: 20,
       })
@@ -130,7 +138,7 @@ export function useCheckInScreen({
     } catch {
       // Error handling managed by hook
     }
-  }, [debouncedQuery, page])
+  }, [debouncedQuery, filter, page])
 
   useEffect(() => {
     let isCancelled = false
@@ -142,6 +150,8 @@ export function useCheckInScreen({
       try {
         const res = await fetchMemberships({
           query: debouncedQuery,
+          status: filter,
+          sort: "checkin_priority",
           page,
           per_page: 20,
         })
@@ -165,7 +175,7 @@ export function useCheckInScreen({
     return () => {
       isCancelled = true
     }
-  }, [debouncedQuery, page])
+  }, [debouncedQuery, filter, page])
 
   function handleClear() {
     setQuery("")
@@ -313,6 +323,8 @@ export function useCheckInScreen({
   return {
     query,
     setQuery,
+    filter,
+    setFilter,
     memberships,
     checkingInId,
     checkInMessage,
