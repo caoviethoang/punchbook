@@ -1,8 +1,9 @@
-import { AlertCircle, Loader2, Receipt, UserCheck } from "lucide-react"
-import { useMembershipDetail } from "../hooks/useMembershipDetail"
+import { AlertCircle, Loader2, QrCode, Receipt, UserCheck } from "lucide-react"
+import { useMembershipDetail, type MembershipDetailTab } from "../hooks/useMembershipDetail"
 import { CheckInHistoryTab } from "./membership-detail/CheckInHistoryTab"
 import { InvoiceHistoryTab } from "./membership-detail/InvoiceHistoryTab"
 import { MembershipDetailHeader } from "./membership-detail/MembershipDetailHeader"
+import { DigitalMembershipCard } from "./DigitalMembershipCard"
 import { Modal } from "./ui/Modal"
 import { ThermalReceiptModal } from "./ThermalReceiptModal"
 
@@ -23,7 +24,7 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
     handlePrintReceipt,
   } = useMembershipDetail(membershipId)
 
-  const tabClass = (tab: "check_ins" | "invoices") =>
+  const tabClass = (tab: MembershipDetailTab) =>
     `flex items-center gap-2 border-b-2 py-3.5 px-4 text-sm font-semibold transition ${
       activeTab === tab
         ? "border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400"
@@ -48,7 +49,10 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
               <span className="font-semibold">{error}</span>
             </div>
           ) : detail ? (
-            <MembershipDetailHeader detail={detail} />
+            <MembershipDetailHeader
+              detail={detail}
+              onOpenCardTab={() => setActiveTab("card")}
+            />
           ) : null}
         </div>
 
@@ -56,6 +60,15 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
         {!loading && !error && detail && (
           <div className="flex flex-1 flex-col overflow-hidden">
             <div className="flex border-b border-slate-100 bg-slate-50/50 px-6 dark:border-slate-800 dark:bg-slate-950/40">
+              <button
+                type="button"
+                onClick={() => setActiveTab("card")}
+                className={tabClass("card")}
+              >
+                <QrCode className="h-4 w-4" />
+                <span>Thẻ hội viên (QR)</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setActiveTab("check_ins")}
@@ -82,7 +95,9 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
-              {activeTab === "check_ins" ? (
+              {activeTab === "card" ? (
+                <DigitalMembershipCard membership={detail} />
+              ) : activeTab === "check_ins" ? (
                 <CheckInHistoryTab
                   checkIns={detail.check_ins}
                   onPrintReceipt={handlePrintReceipt}

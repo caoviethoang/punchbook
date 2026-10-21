@@ -5,9 +5,11 @@ class Rack::Attack
   # Use MemoryStore for tracking rate limit hit counts across requests
   Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
 
-  # 1. Throttle login attempts: max 5 requests per minute per IP
-  throttle('req/ip/login', limit: 5, period: 1.minute) do |req|
-    req.ip if req.path == '/auth/login' && req.post?
+  # 1. Brute-force protection: max 10 failed login attempts per IP within 5 minutes
+  blocklist('logins/ip') do |req|
+    Rack::Attack::Allow2Ban.filter(req.ip, maxretry: 10, findtime: 5.minutes, bantime: 5.minutes) do
+      req.path == '/auth/login' && req.post?
+    end
   end
 
   # 2. Throttle password update: max 5 requests per minute per IP
@@ -21,7 +23,7 @@ class Rack::Attack
   end
 
   # Custom 429 Too Many Requests response format in JSON
-  self.throttled_responder = lambda do |_req|
+  error_429_responder = lambda do |_req|
     headers = {
       'Content-Type' => 'application/json'
     }
@@ -32,4 +34,15 @@ class Rack::Attack
 
     [429, headers, [body]]
   end
+
+  self.throttled_responder = error_429_responder
+  self.blocklisted_responder = error_429_responder
+end
+
+# Subscribe to Rack::Attack notifications to log blocked and throttled IPs
+ActiveSupport::Notifications.subscribe(/rack_attack/) do |_name, _start, _finish, _request_id, payload|
+  req = payload[:request]
+  match_type = req.env['rack.attack.match_type']
+  rule = req.env['rack.attack.matched']
+  Rails.logger.warn("[Rack::Attack][#{match_type}] Blocked IP: #{req.ip} | Rule: #{rule} | Path: #{req.path}")
 end

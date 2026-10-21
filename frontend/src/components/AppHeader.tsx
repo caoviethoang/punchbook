@@ -1,4 +1,5 @@
 import type { Shop, Staff } from "../lib/auth"
+import { ThemeToggle } from "./ui/ThemeToggle"
 
 export type AppView = "dashboard" | "checkin" | "packages" | "members" | "settings"
 
@@ -36,26 +37,26 @@ export function AppHeader({
 
   return (
     <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
-        <div className="flex items-center gap-2.5">
-          <h1 className="text-2xl font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <div className="flex items-center gap-2 shrink-0 sm:gap-2.5">
+          <h1 className="text-lg font-extrabold tracking-tight text-indigo-600 sm:text-xl md:text-2xl dark:text-indigo-400">
             {shop.name}
           </h1>
           {staff && (
-            <span className="rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+            <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
               {staff.role === "admin" ? "Admin" : "Lễ tân"}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-3 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
-          <nav className="flex flex-wrap rounded-xl border border-slate-200 p-1 dark:border-slate-700">
+        <div className="flex items-center gap-2 text-xs sm:gap-2.5 sm:text-sm md:gap-3 dark:text-slate-400">
+          <nav className="flex items-center rounded-xl border border-slate-200 p-0.5 sm:p-1 dark:border-slate-700">
             {visibleNavItems.map(({ view: v, label }) => (
               <button
                 key={v}
                 type="button"
                 onClick={() => onSelectView(v)}
-                className={`rounded-lg px-3 py-1.5 font-semibold transition ${
+                className={`whitespace-nowrap rounded-lg px-2 py-1 text-xs font-semibold transition sm:px-2.5 sm:py-1.5 md:px-3 md:text-sm ${
                   activeView === v
                     ? "bg-indigo-600 text-white"
                     : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
@@ -65,8 +66,8 @@ export function AppHeader({
               </button>
             ))}
           </nav>
-          <span>
-            Plan:{" "}
+          <span className="shrink-0 whitespace-nowrap">
+            <span className="hidden sm:inline">Plan: </span>
             <strong
               className={`font-bold ${
                 shop.plan === "paid"
@@ -77,10 +78,11 @@ export function AppHeader({
               {shop.plan_details || (shop.plan === "paid" ? "Premium" : "Free")}
             </strong>
           </span>
+          <ThemeToggle className="shrink-0" />
           <button
             type="button"
             onClick={onLogout}
-            className="rounded-lg border border-slate-200 px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="shrink-0 whitespace-nowrap rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 sm:px-3 sm:py-1.5 sm:text-sm dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             Sign out
           </button>

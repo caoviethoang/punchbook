@@ -32,8 +32,14 @@ describe("useCheckInScreen hook", () => {
     { id: "staff-2", name: "Lễ tân B", role: "staff", username: "letanb" },
   ]
 
+  const dummyMeta = { total: 1, page: 1, per_page: 20, total_pages: 1 }
+
   beforeEach(() => {
     vi.spyOn(staffsApi, "fetchStaffs").mockResolvedValue(dummyStaffs)
+    vi.spyOn(membershipsApi, "fetchMemberships").mockResolvedValue({
+      memberships: [dummyMember],
+      meta: dummyMeta,
+    })
     vi.spyOn(membershipsApi, "searchMemberships").mockResolvedValue([dummyMember])
   })
 
@@ -80,7 +86,10 @@ describe("useCheckInScreen hook", () => {
   })
 
   it("searches memberships when query changes (debounced)", async () => {
-    const searchSpy = vi.spyOn(membershipsApi, "searchMemberships").mockResolvedValue([dummyMember])
+    const fetchSpy = vi.spyOn(membershipsApi, "fetchMemberships").mockResolvedValue({
+      memberships: [dummyMember],
+      meta: dummyMeta,
+    })
 
     const { result } = renderHook(() => useCheckInScreen({}))
 
@@ -92,7 +101,11 @@ describe("useCheckInScreen hook", () => {
 
     await waitFor(
       () => {
-        expect(searchSpy).toHaveBeenCalledWith("Nguyen")
+        expect(fetchSpy).toHaveBeenCalledWith({
+          query: "Nguyen",
+          page: 1,
+          per_page: 20,
+        })
         expect(result.current.memberships).toEqual([dummyMember])
       },
       { timeout: 1000 },
@@ -256,7 +269,10 @@ describe("useCheckInScreen hook", () => {
       id: "m-exhausted",
       sessions_left: 0,
     }
-    vi.spyOn(membershipsApi, "searchMemberships").mockResolvedValue([exhaustedMember])
+    vi.spyOn(membershipsApi, "fetchMemberships").mockResolvedValue({
+      memberships: [exhaustedMember],
+      meta: dummyMeta,
+    })
     const checkInSpy = vi.spyOn(membershipsApi, "checkIn")
 
     const { result } = renderHook(() => useCheckInScreen({}))
@@ -317,6 +333,132 @@ describe("useCheckInScreen hook", () => {
       expiresAt: null,
       checkedInAt: "2026-10-16T10:00:00Z",
       staffName: "Lan Receptionist",
+    })
+  })
+
+  it("refreshMemberships: explicitly re-fetches memberships with current query", async () => {
+    const fetchSpy = vi.spyOn(membershipsApi, "fetchMemberships").mockResolvedValue({
+      memberships: [dummyMember],
+      meta: dummyMeta,
+    })
+    const { result } = renderHook(() => useCheckInScreen({}))
+
+    await waitFor(() => {
+      expect(result.current.memberships).toEqual([dummyMember])
+    })
+
+    const updatedMember = { ...dummyMember, sessions_left: 9 }
+    fetchSpy.mockResolvedValue({
+      memberships: [updatedMember],
+      meta: dummyMeta,
+    })
+
+    await act(async () => {
+      await result.current.refreshMemberships()
+    })
+
+    expect(result.current.memberships).toEqual([updatedMember])
+    expect(fetchSpy).toHaveBeenCalledWith({
+      query: "",
+      page: 1,
+      per_page: 20,
+    })
+  })
+
+  it("supports pagination: updates page and fetches page data", async () => {
+    const fetchSpy = vi.spyOn(membershipsApi, "fetchMemberships").mockResolvedValue({
+      memberships: [dummyMember],
+      meta: { total: 40, page: 2, per_page: 20, total_pages: 2 },
+    })
+
+    const { result } = renderHook(() => useCheckInScreen({}))
+
+    act(() => {
+      result.current.setPage(2)
+    })
+
+    await waitFor(() => {
+      expect(result.current.page).toBe(2)
+      expect(fetchSpy).toHaveBeenCalledWith({
+        query: "",
+        page: 2,
+        per_page: 20,
+      })
+    })
+  })
+
+  describe("handleQRScan", () => {
+    it("immediately checks in when member is already present in list", async () => {
+      const checkInSpy = vi.spyOn(membershipsApi, "checkIn").mockResolvedValue({
+        membership: { ...dummyMember, sessions_left: 9 },
+        check_in: { id: "ci-qr-1", checked_in_at: "2026-10-16T10:05:00Z" },
+      })
+
+      const { result } = renderHook(() => useCheckInScreen({}))
+
+      // Preload members via query
+      act(() => {
+        result.current.setQuery("Nguyen")
+      })
+      await waitFor(() => {
+        expect(result.current.memberships).toHaveLength(1)
+      })
+
+      await act(async () => {
+        await result.current.handleQRScan(`PUNCHBOOK:${dummyMember.id}`)
+      })
+
+      expect(checkInSpy).toHaveBeenCalledWith(dummyMember.id, undefined)
+      expect(result.current.isQRScannerOpen).toBe(false)
+      expect(result.current.toast).toEqual({
+        message: "Đã check-in thành công cho Nguyen Van A",
+        type: "success",
+      })
+    })
+
+    it("searches and checks in member when not preloaded in list", async () => {
+      const newMember: Membership = {
+        id: "m-new",
+        customer_name: "Tran Van B",
+        phone: "0987654321",
+        sessions_left: 5,
+        expires_at: null,
+        package: { id: "pkg-2", name: "Gói 5 buổi" },
+      }
+
+      vi.spyOn(membershipsApi, "searchMemberships").mockResolvedValue([newMember])
+      const checkInSpy = vi.spyOn(membershipsApi, "checkIn").mockResolvedValue({
+        membership: { ...newMember, sessions_left: 4 },
+        check_in: { id: "ci-qr-2", checked_in_at: "2026-10-16T10:10:00Z" },
+      })
+
+      const { result } = renderHook(() => useCheckInScreen({}))
+
+      await act(async () => {
+        await result.current.handleQRScan(`PUNCHBOOK:${newMember.id}`)
+      })
+
+      expect(checkInSpy).toHaveBeenCalledWith(newMember.id, undefined)
+      expect(result.current.toast).toEqual({
+        message: "Đã check-in thành công cho Tran Van B",
+        type: "success",
+      })
+    })
+
+    it("shows error toast when scanned QR does not match any member", async () => {
+      vi.spyOn(membershipsApi, "searchMemberships").mockResolvedValue([])
+      vi.spyOn(membershipsApi, "getMembershipDetail").mockRejectedValue(new Error("Not found"))
+
+      const { result } = renderHook(() => useCheckInScreen({}))
+
+      await act(async () => {
+        await result.current.handleQRScan("PUNCHBOOK:unknown-id")
+      })
+
+      expect(result.current.toast).toEqual({
+        message: "Không tìm thấy hội viên từ mã QR này",
+        type: "error",
+      })
     })
   })
 })

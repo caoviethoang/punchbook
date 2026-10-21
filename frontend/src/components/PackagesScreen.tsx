@@ -18,7 +18,7 @@ export function PackagesScreen({ currentStaff }: PackagesScreenProps) {
   const state = usePackagesScreen()
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
+    <div className="space-y-6">
       {state.toast && (
         <Toast
           message={state.toast.message}

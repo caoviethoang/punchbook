@@ -1,10 +1,15 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import {
   computeMembershipStatus,
   EXPIRING_DAYS_WINDOW,
   EXPIRING_SESSIONS_THRESHOLD,
+  extractMembershipIdFromQR,
   isMembershipExhausted,
+  getPaginationRange,
+  fetchMemberships,
+  DEFAULT_MEMBERSHIPS_PER_PAGE,
 } from "../memberships"
+import * as api from "../api"
 
 describe("computeMembershipStatus", () => {
   describe("session-based memberships", () => {
@@ -124,5 +129,107 @@ describe("isMembershipExhausted", () => {
   it("returns false when expires_at is in the future", () => {
     const future = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
     expect(isMembershipExhausted({ sessions_left: null, expires_at: future })).toBe(false)
+  })
+})
+
+describe("getPaginationRange", () => {
+  it("returns all page numbers when totalPages <= 7", () => {
+    expect(getPaginationRange(1, 1)).toEqual([1])
+    expect(getPaginationRange(2, 5)).toEqual([1, 2, 3, 4, 5])
+    expect(getPaginationRange(4, 7)).toEqual([1, 2, 3, 4, 5, 6, 7])
+  })
+
+  it("handles start of range with ellipsis at the end", () => {
+    expect(getPaginationRange(1, 10)).toEqual([1, 2, 3, 4, 5, "...", 10])
+    expect(getPaginationRange(3, 10)).toEqual([1, 2, 3, 4, 5, "...", 10])
+    expect(getPaginationRange(4, 10)).toEqual([1, 2, 3, 4, 5, "...", 10])
+  })
+
+  it("handles end of range with ellipsis at the start", () => {
+    expect(getPaginationRange(8, 10)).toEqual([1, "...", 6, 7, 8, 9, 10])
+    expect(getPaginationRange(10, 10)).toEqual([1, "...", 6, 7, 8, 9, 10])
+  })
+
+  it("handles middle of range with ellipsis on both sides", () => {
+    expect(getPaginationRange(6, 12)).toEqual([1, "...", 5, 6, 7, "...", 12])
+  })
+})
+
+describe("fetchMemberships", () => {
+  it("defaults to page 1 and per_page 20 in API query params", async () => {
+    const apiGetSpy = vi.spyOn(api, "apiGet").mockResolvedValue({
+      memberships: [],
+      meta: { total: 0, page: 1, per_page: 20, total_pages: 1 },
+    })
+
+    await fetchMemberships()
+
+    expect(apiGetSpy).toHaveBeenCalledWith("/memberships", {
+      query: {
+        page: "1",
+        per_page: String(DEFAULT_MEMBERSHIPS_PER_PAGE),
+      },
+    })
+
+    apiGetSpy.mockRestore()
+  })
+
+  it("preserves query, status, custom page and per_page", async () => {
+    const apiGetSpy = vi.spyOn(api, "apiGet").mockResolvedValue({
+      memberships: [],
+      meta: { total: 50, page: 3, per_page: 20, total_pages: 3 },
+    })
+
+    await fetchMemberships({
+      query: "Nguyen",
+      status: "active",
+      page: 3,
+      per_page: 20,
+    })
+
+    expect(apiGetSpy).toHaveBeenCalledWith("/memberships", {
+      query: {
+        page: "3",
+        per_page: "20",
+        query: "Nguyen",
+        status: "active",
+      },
+    })
+
+    apiGetSpy.mockRestore()
+  })
+})
+
+describe("extractMembershipIdFromQR", () => {
+  it("extracts UUID from PUNCHBOOK:id prefix", () => {
+    expect(extractMembershipIdFromQR("PUNCHBOOK:123e4567-e89b-12d3-a456-426614174000")).toBe(
+      "123e4567-e89b-12d3-a456-426614174000",
+    )
+  })
+
+  it("handles whitespace around PUNCHBOOK: prefix", () => {
+    expect(extractMembershipIdFromQR("  PUNCHBOOK:uuid-abc-123  ")).toBe("uuid-abc-123")
+  })
+
+  it("returns raw trimmed string when no prefix is present", () => {
+    expect(extractMembershipIdFromQR("  123e4567-e89b-12d3-a456-426614174000  ")).toBe(
+      "123e4567-e89b-12d3-a456-426614174000",
+    )
+  })
+
+  it("extracts membership_id from JSON payload", () => {
+    expect(extractMembershipIdFromQR('{"membership_id": "mem-123", "action": "check_in"}')).toBe(
+      "mem-123",
+    )
+  })
+
+  it("extracts id from JSON payload", () => {
+    expect(extractMembershipIdFromQR('{"id": "mem-456"}')).toBe("mem-456")
+  })
+
+  it("extracts ID from URL path", () => {
+    expect(
+      extractMembershipIdFromQR("https://punchbook.vn/memberships/uuid-999?source=qr"),
+    ).toBe("uuid-999")
   })
 })
