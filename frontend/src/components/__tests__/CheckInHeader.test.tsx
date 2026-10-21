@@ -2,6 +2,7 @@ import { render, screen, cleanup, fireEvent } from "@testing-library/react"
 import { describe, it, expect, vi, afterEach } from "vitest"
 import "@testing-library/jest-dom/vitest"
 import { CheckInHeader } from "../checkin/CheckInHeader"
+import { formatStaffOptionLabel } from "../../lib/staffs"
 import type { Staff } from "../../lib/auth"
 
 afterEach(() => {
@@ -84,5 +85,55 @@ describe("CheckInHeader", () => {
     const qrButton = screen.getByRole("button", { name: /quét mã qr/i })
     fireEvent.click(qrButton)
     expect(handleOpenQR).toHaveBeenCalledTimes(1)
+  })
+
+  it("does not duplicate currentStaff in the dropdown when currentStaff is present in staffs", () => {
+    const adminStaff: Staff = {
+      id: "admin-1",
+      name: "Alice Nguyen (Admin)",
+      username: "alice",
+      role: "admin",
+    }
+    const staffsWithAdmin: Staff[] = [
+      adminStaff,
+      { id: "staff-2", name: "Bob Tran (Lễ tân)", username: "bob", role: "staff" },
+    ]
+
+    render(
+      <CheckInHeader
+        onOpenQRScanner={vi.fn()}
+        currentStaff={adminStaff}
+        staffs={staffsWithAdmin}
+        selectedStaffId="admin-1"
+        onSelectStaff={vi.fn()}
+      />,
+    )
+
+    const options = screen.getAllByRole("option")
+    expect(options).toHaveLength(2)
+    expect(options[0]).toHaveTextContent("Alice Nguyen (Admin)")
+    expect(options[0]).not.toHaveTextContent("Alice Nguyen (Admin) (Admin)")
+    expect(options[1]).toHaveTextContent("Bob Tran (Lễ tân)")
+    expect(options[1]).not.toHaveTextContent("Bob Tran (Lễ tân) (Lễ tân)")
+  })
+
+  describe("formatStaffOptionLabel", () => {
+    it("preserves name without duplicating role suffix", () => {
+      expect(formatStaffOptionLabel({ name: "Alice Nguyen (Admin)", role: "admin" })).toBe(
+        "Alice Nguyen (Admin)",
+      )
+      expect(formatStaffOptionLabel({ name: "Bob Tran (Lễ tân)", role: "staff" })).toBe(
+        "Bob Tran (Lễ tân)",
+      )
+    })
+
+    it("appends role suffix when not already in name", () => {
+      expect(formatStaffOptionLabel({ name: "Alice Nguyen", role: "admin" })).toBe(
+        "Alice Nguyen (Admin)",
+      )
+      expect(formatStaffOptionLabel({ name: "Bob Tran", role: "staff" })).toBe(
+        "Bob Tran (Lễ tân)",
+      )
+    })
   })
 })
