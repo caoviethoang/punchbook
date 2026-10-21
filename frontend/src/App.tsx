@@ -1,7 +1,23 @@
-import { lazy, Suspense, useState } from "react"
+import { lazy, Suspense, useEffect, useState } from "react"
 import { AppHeader, type AppView } from "./components/AppHeader"
 import { LoginScreen } from "./components/LoginScreen"
 import { useAppAuth } from "./hooks/useAppAuth"
+
+const VALID_VIEWS: AppView[] = ["dashboard", "checkin", "packages", "members", "settings"]
+
+function getInitialView(): AppView {
+  if (typeof window !== "undefined") {
+    const hash = window.location.hash.replace(/^#\/?/, "").toLowerCase()
+    if (VALID_VIEWS.includes(hash as AppView)) {
+      return hash as AppView
+    }
+    const saved = localStorage.getItem("punchbook_active_view")
+    if (saved && VALID_VIEWS.includes(saved as AppView)) {
+      return saved as AppView
+    }
+  }
+  return "dashboard"
+}
 
 const DashboardScreen = lazy(() =>
   import("./components/DashboardScreen").then((m) => ({ default: m.DashboardScreen })),
@@ -30,7 +46,7 @@ function ScreenFallback() {
 function App() {
   const { shop, setShop, staff, authLoading, handleLogout, handleAuthSuccess } =
     useAppAuth()
-  const [view, setView] = useState<AppView>("dashboard")
+  const [view, setView] = useState<AppView>(getInitialView)
 
   const isAdmin = !staff || staff.role === "admin"
   const activeView =
@@ -39,9 +55,35 @@ function App() {
       ? "checkin"
       : view
 
+  useEffect(() => {
+    if (shop) {
+      window.location.hash = `#/${activeView}`
+      localStorage.setItem("punchbook_active_view", activeView)
+    }
+  }, [activeView, shop])
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace(/^#\/?/, "").toLowerCase()
+      if (VALID_VIEWS.includes(hash as AppView)) {
+        setView(hash as AppView)
+      }
+    }
+    window.addEventListener("hashchange", handleHashChange)
+    return () => window.removeEventListener("hashchange", handleHashChange)
+  }, [])
+
+  const handleSelectView = (nextView: AppView) => {
+    setView(nextView)
+    window.location.hash = `#/${nextView}`
+    localStorage.setItem("punchbook_active_view", nextView)
+  }
+
   const onLogout = () => {
     handleLogout()
     setView("dashboard")
+    window.location.hash = ""
+    localStorage.removeItem("punchbook_active_view")
   }
 
   if (authLoading) {
@@ -66,11 +108,11 @@ function App() {
         shop={shop}
         staff={staff}
         activeView={activeView}
-        onSelectView={setView}
+        onSelectView={handleSelectView}
         onLogout={onLogout}
       />
 
-      <main className="mx-auto max-w-5xl px-4 py-6">
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         <Suspense fallback={<ScreenFallback />}>
           {activeView === "dashboard" ? (
             <DashboardScreen currentStaff={staff} />

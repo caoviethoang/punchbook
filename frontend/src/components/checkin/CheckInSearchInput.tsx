@@ -23,7 +23,7 @@ export function CheckInSearchInput({
       <div className="relative flex items-center">
         <Search
           aria-hidden="true"
-          className="pointer-events-none absolute left-4 h-6 w-6 text-slate-400"
+          className="pointer-events-none absolute left-3.5 h-5 w-5 text-slate-400"
         />
 
         <input
@@ -35,21 +35,21 @@ export function CheckInSearchInput({
           onChange={(e) => onQueryChange(e.target.value)}
           onKeyDown={onKeyDown}
           placeholder="Nhập tên hoặc số điện thoại (ví dụ: 0901234567)..."
-          className="w-full rounded-2xl border border-slate-200 bg-white py-4 pl-12 pr-12 text-lg font-medium text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-600 sm:py-5"
+          className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm font-medium text-slate-900 shadow-2xs transition placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 sm:py-3 sm:text-base"
         />
 
         {isLoading ? (
-          <div role="status" aria-label="Đang tìm kiếm..." className="absolute right-4">
-            <Loader2 className="h-6 w-6 animate-spin text-indigo-600 dark:text-indigo-400" />
+          <div role="status" aria-label="Đang tìm kiếm..." className="absolute right-3.5">
+            <Loader2 className="h-5 w-5 animate-spin text-indigo-600 dark:text-indigo-400" />
           </div>
         ) : query ? (
           <button
             type="button"
             onClick={onClear}
             aria-label="Xóa nội dung tìm kiếm"
-            className="absolute right-4 rounded-xl p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="absolute right-3 rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
         ) : null}
       </div>

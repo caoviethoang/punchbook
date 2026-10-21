@@ -1,6 +1,6 @@
-import { Edit3, Eye, Loader2, QrCode, RefreshCw, Trash2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Edit3, Eye, Loader2, QrCode, RefreshCw, Trash2 } from "lucide-react"
 import type { Membership, PaginationMeta, StatusFilterType } from "../../lib/memberships"
-import { computeMembershipStatus } from "../../lib/memberships"
+import { computeMembershipStatus, getPaginationRange } from "../../lib/memberships"
 import { StatusBadge } from "../ui/StatusBadge"
 import { MemberRemainingBadge } from "./MemberRemainingBadge"
 
@@ -167,22 +167,56 @@ export function MembershipTable({
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
             Hiển thị trang {meta.page} / {meta.total_pages} (Tổng {meta.total} hội viên)
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               disabled={page <= 1 || loading}
               onClick={() => onPageChange(page - 1)}
-              className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              aria-label="Trang trước"
             >
-              Trang trước
+              <ChevronLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Trang trước</span>
             </button>
+
+            <div className="flex items-center gap-1">
+              {getPaginationRange(meta.page, meta.total_pages).map((item, idx) =>
+                item === "..." ? (
+                  <span
+                    key={`ellipsis-${idx}`}
+                    className="px-2 py-1 text-xs text-slate-400 select-none"
+                  >
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={item}
+                    type="button"
+                    disabled={loading}
+                    onClick={() => onPageChange(item)}
+                    aria-label={`Trang ${item}`}
+                    aria-current={item === page ? "page" : undefined}
+                    className={`min-w-[32px] rounded-xl px-2.5 py-1.5 text-xs font-semibold transition ${
+                      item === page
+                        ? "bg-indigo-600 text-white shadow-sm hover:bg-indigo-500"
+                        : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                )
+              )}
+            </div>
+
             <button
               type="button"
               disabled={page >= meta.total_pages || loading}
               onClick={() => onPageChange(page + 1)}
-              className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              aria-label="Trang sau"
             >
-              Trang sau
+              <span className="hidden sm:inline">Trang sau</span>
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>

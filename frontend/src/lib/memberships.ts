@@ -17,6 +17,13 @@ export interface MembershipPackage {
   duration_days?: number | null
 }
 
+export interface MembershipShop {
+  id: string
+  name: string
+  phone?: string | null
+  address?: string | null
+}
+
 export interface Membership {
   id: string
   customer_name: string
@@ -24,6 +31,7 @@ export interface Membership {
   sessions_left: number | null
   expires_at: string | null
   package: MembershipPackage
+  shop?: MembershipShop
   status?: "active" | "expiring" | "expired"
   checked_in_today?: boolean
   last_checked_in_at?: string | null
@@ -115,6 +123,9 @@ export function computeMembershipStatus(
 
 export function extractMembershipIdFromQR(scannedText: string): string {
   const trimmed = scannedText.trim()
+  if (trimmed.startsWith("PUNCHBOOK:")) {
+    return trimmed.slice("PUNCHBOOK:".length).trim()
+  }
   if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
     try {
       const parsed = JSON.parse(trimmed) as Record<string, unknown>
@@ -139,11 +150,16 @@ export interface PaginationMeta {
   total_pages: number
 }
 
-export type StatusFilterType = "all" | "active" | "expiring" | "expired"
+export type StatusFilterType = "all" | "active" | "expiring" | "expired" | "not_checked_in"
+
+export type CheckInFilterType = "not_checked_in" | "expiring" | "expired" | "all"
+
+export type SortType = "name" | "checkin_priority"
 
 export interface FetchMembershipsParams {
   query?: string
   status?: StatusFilterType
+  sort?: SortType
   page?: number
   per_page?: number
 }
@@ -153,18 +169,44 @@ export interface PaginatedMembershipsResult {
   meta?: PaginationMeta
 }
 
+export const DEFAULT_MEMBERSHIPS_PER_PAGE = 20
+
+/** Generates a list of page numbers and ellipsis separators for pagination controls. */
+export function getPaginationRange(
+  currentPage: number,
+  totalPages: number,
+): (number | "...")[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1)
+  }
+
+  if (currentPage <= 4) {
+    return [1, 2, 3, 4, 5, "...", totalPages]
+  }
+
+  if (currentPage >= totalPages - 3) {
+    return [1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages]
+  }
+
+  return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages]
+}
+
 /** GET /memberships — shop-scoped search, status filter, and pagination. */
 export async function fetchMemberships(
   params: FetchMembershipsParams = {},
 ): Promise<PaginatedMembershipsResult> {
-  const queryParams: Record<string, string> = {}
+  const page = params.page ?? 1
+  const perPage = params.per_page ?? DEFAULT_MEMBERSHIPS_PER_PAGE
+  const queryParams: Record<string, string> = {
+    page: page.toString(),
+    per_page: perPage.toString(),
+  }
   if (params.query?.trim()) queryParams.query = params.query.trim()
   if (params.status && params.status !== "all") queryParams.status = params.status
-  if (params.page && params.page > 1) queryParams.page = params.page.toString()
-  if (params.per_page && params.per_page !== 20) queryParams.per_page = params.per_page.toString()
+  if (params.sort && params.sort !== "name") queryParams.sort = params.sort
 
   return apiGet<PaginatedMembershipsResult>("/memberships", {
-    query: Object.keys(queryParams).length > 0 ? queryParams : undefined,
+    query: queryParams,
   })
 }
 

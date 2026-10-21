@@ -104,7 +104,9 @@ class MembershipsController < ApiController
   end
 
   def fetch_paginated_memberships(relation, page, per_page)
-    paginate_relation(relation.includes(:package, :check_ins).order(:customer_name), page, per_page)
+    ordered = relation.includes(:package, :check_ins)
+    ordered = params[:sort] == 'checkin_priority' ? ordered.checkin_priority_order : ordered.order(:customer_name)
+    paginate_relation(ordered, page, per_page)
   end
 
   def send_excel(data, filename)

@@ -145,7 +145,13 @@ export function MembershipsScreen({ shop, currentStaff }: MembershipsScreenProps
       />
 
       {/* 3. Member QR Modal */}
-      {qrMember && <MemberQRModal membership={qrMember} onClose={() => setQrMember(null)} />}
+      {qrMember && (
+        <MemberQRModal
+          membership={qrMember}
+          shopName={shop.name}
+          onClose={() => setQrMember(null)}
+        />
+      )}
 
       {/* 4. Member Edit Modal */}
       {editingMember && (

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import "@testing-library/jest-dom/vitest"
 import { CheckInScreen } from "../CheckInScreen"
 import * as checkInHook from "../../hooks/useCheckInScreen"
-import type { Membership } from "../../lib/memberships"
+import type { Membership, PaginationMeta } from "../../lib/memberships"
 import type { Staff } from "../../lib/auth"
 
 afterEach(() => {
@@ -52,7 +52,12 @@ describe("CheckInScreen component", () => {
   const defaultHookState = {
     query: "",
     setQuery: vi.fn(),
+    filter: "not_checked_in" as const,
+    setFilter: vi.fn(),
     memberships: [] as Membership[],
+    page: 1,
+    setPage: vi.fn(),
+    paginationMeta: null as PaginationMeta | null,
     checkingInId: null as string | null,
     checkInMessage: null as { id: string; type: "success" | "error"; text: string } | null,
     toast: null as { message: string; type?: "success" | "error" } | null,
@@ -77,6 +82,7 @@ describe("CheckInScreen component", () => {
     loadingStaffs: false,
     selectedStaffId: null as string | null,
     setSelectedStaffId: vi.fn(),
+    refreshMemberships: vi.fn(),
   }
 
   beforeEach(() => {
@@ -85,13 +91,49 @@ describe("CheckInScreen component", () => {
     })
   })
 
-  it("renders empty prompt when query is blank", () => {
+  it("renders empty state when query is blank and no memberships exist in system", () => {
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      filter: "all",
+      memberships: [],
+    })
+
     render(<CheckInScreen />)
 
-    expect(screen.getByText(/nhập tên hoặc sđt để bắt đầu/i)).toBeInTheDocument()
+    expect(screen.getByText(/chưa có hội viên nào trong hệ thống/i)).toBeInTheDocument()
     expect(
-      screen.getByText(/hệ thống sẽ hiển thị danh sách gói tập tương ứng để bạn thực hiện điểm danh/i),
+      screen.getByText(/các hội viên đăng ký gói tập sẽ xuất hiện tại đây để điểm danh nhanh/i),
     ).toBeInTheDocument()
+  })
+
+  it("renders loading state when initial loading is in progress", () => {
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      isLoading: true,
+      memberships: [],
+    })
+
+    render(<CheckInScreen />)
+
+    expect(
+      screen.getByRole("status", { name: /đang tải danh sách hội viên/i }),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/đang tải danh sách hội viên.../i)).toBeInTheDocument()
+  })
+
+  it("renders membership list with 'Danh sách hội viên' header when query is blank and memberships exist", () => {
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      query: "",
+      memberships: [dummyMember1, dummyMember2],
+    })
+
+    render(<CheckInScreen />)
+
+    expect(screen.getByText("Danh sách hội viên")).toBeInTheDocument()
+    expect(screen.getByText("2 hội viên")).toBeInTheDocument()
+    expect(screen.getByText("Nguyen Van A")).toBeInTheDocument()
+    expect(screen.getByText("Tran Thi B")).toBeInTheDocument()
   })
 
   it("renders 'không tìm thấy hội viên' when query has no matching results", () => {
@@ -108,7 +150,7 @@ describe("CheckInScreen component", () => {
     expect(screen.getByText("Không tồn tại")).toBeInTheDocument()
   })
 
-  it("renders memberships list when memberships exist", () => {
+  it("renders memberships list with 'Kết quả tìm kiếm' header when searching", () => {
     vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
       ...defaultHookState,
       query: "Nguyen",
@@ -116,6 +158,9 @@ describe("CheckInScreen component", () => {
     })
 
     render(<CheckInScreen />)
+
+    expect(screen.getByText("Kết quả tìm kiếm")).toBeInTheDocument()
+    expect(screen.getByText("2 kết quả")).toBeInTheDocument()
 
     // Verify member 1 details
     expect(screen.getByText("Nguyen Van A")).toBeInTheDocument()
@@ -253,5 +298,86 @@ describe("CheckInScreen component", () => {
     render(<CheckInScreen />)
 
     expect(screen.getByText("Đã check-in thành công cho Nguyen Van A")).toBeInTheDocument()
+  })
+
+  it("calls refreshMemberships when RenewalModal is closed", () => {
+    const refreshMembershipsMock = vi.fn()
+    const setRenewingMembershipMock = vi.fn()
+
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      renewingMembership: dummyMember1,
+      setRenewingMembership: setRenewingMembershipMock,
+      refreshMemberships: refreshMembershipsMock,
+    })
+
+    render(<CheckInScreen />)
+
+    const closeBtn = screen.getByRole("button", { name: /^đóng$/i })
+    fireEvent.click(closeBtn)
+
+    expect(setRenewingMembershipMock).toHaveBeenCalledWith(null)
+    expect(refreshMembershipsMock).toHaveBeenCalledTimes(1)
+  })
+
+  it("renders pagination controls when total_pages > 1 and handles page clicks", () => {
+    const setPageMock = vi.fn()
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      memberships: [dummyMember1, dummyMember2],
+      page: 1,
+      setPage: setPageMock,
+      paginationMeta: { page: 1, per_page: 20, total: 25, total_pages: 2 },
+    })
+
+    render(<CheckInScreen />)
+
+    expect(screen.getByText(/Hiển thị trang 1 \/ 2/i)).toBeInTheDocument()
+    expect(screen.getByText(/Tổng 25 hội viên/i)).toBeInTheDocument()
+    const nextBtn = screen.getByRole("button", { name: "Trang sau" })
+    expect(nextBtn).toBeInTheDocument()
+    fireEvent.click(nextBtn)
+    expect(setPageMock).toHaveBeenCalledWith(2)
+
+    const prevBtn = screen.getByRole("button", { name: "Trang trước" })
+    expect(prevBtn).toBeDisabled()
+  })
+
+  it("renders status filter tabs and triggers setFilter on click", () => {
+    const setFilterMock = vi.fn()
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      memberships: [dummyMember1],
+      filter: "not_checked_in",
+      setFilter: setFilterMock,
+    })
+
+    render(<CheckInScreen />)
+
+    expect(screen.getByRole("tab", { name: "Chưa CI" })).toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: "Sắp hết vé" })).toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: "Đã hết vé" })).toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: "Tất cả" })).toBeInTheDocument()
+
+    const expiringTab = screen.getByRole("tab", { name: "Sắp hết vé" })
+    fireEvent.click(expiringTab)
+    expect(setFilterMock).toHaveBeenCalledWith("expiring")
+
+    const exhaustedTab = screen.getByRole("tab", { name: "Đã hết vé" })
+    fireEvent.click(exhaustedTab)
+    expect(setFilterMock).toHaveBeenCalledWith("expired")
+  })
+
+  it("renders contextual empty message when no members match not_checked_in filter", () => {
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      memberships: [],
+      filter: "not_checked_in",
+      isLoading: false,
+    })
+
+    render(<CheckInScreen />)
+
+    expect(screen.getByText("Tất cả hội viên đã check-in hôm nay")).toBeInTheDocument()
   })
 })

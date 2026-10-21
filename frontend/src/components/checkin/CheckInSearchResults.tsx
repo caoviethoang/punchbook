@@ -25,11 +25,11 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
 
   if (hasNoSessions) {
     return (
-      <div className="flex min-w-20 flex-col items-center justify-center rounded-xl bg-red-50 px-4 py-3 text-center dark:bg-red-950/40">
-        <span className="text-2xl font-extrabold leading-none text-red-600 dark:text-red-400">
+      <div className="flex w-24 sm:w-28 shrink-0 h-12 sm:h-13 flex-col items-center justify-center rounded-xl bg-red-50 px-2 py-1 text-center dark:bg-red-950/40">
+        <span className="text-xl font-bold leading-none text-red-600 dark:text-red-400 sm:text-2xl">
           0
         </span>
-        <span className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-red-500 dark:text-red-500">
+        <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-red-500 dark:text-red-500 sm:text-[11px]">
           buổi còn lại
         </span>
       </div>
@@ -38,9 +38,9 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
 
   if (isExpired) {
     return (
-      <div className="flex min-w-20 flex-col items-center justify-center rounded-xl bg-amber-50 px-4 py-3 text-center dark:bg-amber-950/40">
-        <Calendar className="h-6 w-6 text-amber-500 dark:text-amber-400" />
-        <span className="mt-1 text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+      <div className="flex w-24 sm:w-28 shrink-0 h-12 sm:h-13 flex-col items-center justify-center rounded-xl bg-amber-50 px-2 py-1 text-center dark:bg-amber-950/40">
+        <Calendar className="h-5 w-5 text-amber-500 dark:text-amber-400" />
+        <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 sm:text-[11px]">
           Đã hết hạn
         </span>
       </div>
@@ -51,14 +51,14 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
     const isExpiring = sessionsLeft <= 3 && sessionsLeft > 0
     return (
       <div
-        className={`flex min-w-20 flex-col items-center justify-center rounded-xl px-4 py-3 text-center ${
+        className={`flex w-24 sm:w-28 shrink-0 h-12 sm:h-13 flex-col items-center justify-center rounded-xl px-2 py-1 text-center ${
           isExpiring
             ? "bg-amber-50 dark:bg-amber-950/40"
             : "bg-emerald-50 dark:bg-emerald-950/40"
         }`}
       >
         <span
-          className={`text-2xl font-extrabold leading-none ${
+          className={`text-xl font-bold leading-none sm:text-2xl ${
             isExpiring
               ? "text-amber-600 dark:text-amber-400"
               : "text-emerald-600 dark:text-emerald-400"
@@ -67,7 +67,7 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
           {sessionsLeft}
         </span>
         <span
-          className={`mt-0.5 text-xs font-semibold uppercase tracking-wide ${
+          className={`mt-0.5 text-[10px] font-semibold uppercase tracking-wider sm:text-[11px] ${
             isExpiring
               ? "text-amber-600 dark:text-amber-400"
               : "text-emerald-600 dark:text-emerald-500"
@@ -90,14 +90,14 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
 
     return (
       <div
-        className={`flex min-w-20 flex-col items-center justify-center rounded-xl px-4 py-3 text-center ${
+        className={`flex w-24 sm:w-28 shrink-0 h-12 sm:h-13 flex-col items-center justify-center rounded-xl px-2 py-1 text-center ${
           isExpiring
             ? "bg-amber-50 dark:bg-amber-950/40"
             : "bg-indigo-50 dark:bg-indigo-950/40"
         }`}
       >
         <span
-          className={`text-base font-bold leading-tight ${
+          className={`text-xs font-bold leading-tight sm:text-sm ${
             isExpiring
               ? "text-amber-700 dark:text-amber-300"
               : "text-indigo-700 dark:text-indigo-300"
@@ -106,7 +106,7 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
           {formatDate(expiresAt)}
         </span>
         <span
-          className={`mt-0.5 text-xs font-semibold uppercase tracking-wide ${
+          className={`mt-0.5 text-[10px] font-semibold uppercase tracking-wider sm:text-[11px] ${
             isExpiring
               ? "text-amber-600 dark:text-amber-400"
               : "text-indigo-500 dark:text-indigo-400"
@@ -119,9 +119,9 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
   }
 
   return (
-    <div className="flex min-w-20 flex-col items-center justify-center rounded-xl bg-slate-100 px-4 py-3 text-center dark:bg-slate-800">
-      <span className="text-xl font-bold text-slate-600 dark:text-slate-300">∞</span>
-      <span className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+    <div className="flex w-24 sm:w-28 shrink-0 h-12 sm:h-13 flex-col items-center justify-center rounded-xl bg-slate-100 px-2 py-1 text-center dark:bg-slate-800">
+      <span className="text-lg font-bold text-slate-600 dark:text-slate-300 sm:text-xl">∞</span>
+      <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 sm:text-[11px]">
         không giới hạn
       </span>
     </div>
@@ -161,7 +161,7 @@ export function MembershipResultList({
   onPrintReceipt,
 }: MembershipResultListProps) {
   return (
-    <div role="list" aria-label="Danh sách hội viên" className="grid gap-4">
+    <div role="list" aria-label="Danh sách hội viên" className="grid gap-2.5 sm:gap-3">
       {memberships.map((membership) => {
         const isCheckingIn = checkingInId === membership.id
         const isExhausted = isMembershipExhausted(membership)
@@ -174,53 +174,56 @@ export function MembershipResultList({
           <div
             key={membership.id}
             role="listitem"
-            className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-indigo-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-900/50 sm:gap-6 sm:p-6"
+            className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-2xs transition hover:border-indigo-200 hover:shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-900/50 sm:gap-4 sm:px-5 sm:py-3.5"
           >
-            {/* Col 1: Customer name + package badge + phone */}
+            {/* Col 1: Customer name + phone, package badge + status */}
             <div className="min-w-0 flex-1">
               <button
                 type="button"
                 onClick={() => onViewDetail(membership.id)}
                 className="w-full text-left group/btn focus:outline-none"
               >
-                <div className="flex flex-wrap items-center gap-2.5 min-w-0">
-                  <p className="truncate text-xl font-bold tracking-tight text-slate-900 group-hover/btn:text-indigo-600 dark:text-slate-50 dark:group-hover/btn:text-indigo-400 sm:text-2xl">
+                <div className="flex items-center gap-2 min-w-0">
+                  <p className="truncate text-base font-bold tracking-tight text-slate-900 group-hover/btn:text-indigo-600 dark:text-slate-50 dark:group-hover/btn:text-indigo-400 sm:text-lg">
                     {membership.customer_name}
                   </p>
-                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                    <PackageIcon className="h-3.5 w-3.5 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                  <span className="text-xs text-slate-300 dark:text-slate-600">•</span>
+                  <p className="shrink-0 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
+                    {membership.phone}
+                  </p>
+                </div>
+                <div className="mt-1 flex flex-wrap items-center gap-1.5 min-w-0">
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                    <PackageIcon className="h-3 w-3 shrink-0 text-indigo-600 dark:text-indigo-400" />
                     <span>{membership.package.name}</span>
                   </span>
                   {membership.checked_in_today && (
-                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                      <span>Đã check-in hôm nay{checkInTime ? ` (${checkInTime})` : ""}</span>
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                      <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                      <span>Đã check-in{checkInTime ? ` (${checkInTime})` : ""}</span>
                     </span>
                   )}
                   {computeMembershipStatus(membership) === "expiring" && !isExhausted && (
-                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 border border-amber-200 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
-                      <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700 border border-amber-200 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                      <AlertCircle className="h-3 w-3 shrink-0 text-amber-600 dark:text-amber-400" />
                       <span>Sắp hết hạn</span>
                     </span>
                   )}
                 </div>
-                <p className="mt-1 text-base text-slate-500 dark:text-slate-400">
-                  {membership.phone}
-                </p>
               </button>
               {currentMessage && (
-                <div className="mt-2 flex items-center justify-between gap-2">
+                <div className="mt-1.5 flex items-center justify-between gap-2">
                   <div
-                    className={`flex items-center gap-1.5 text-sm font-medium ${
+                    className={`flex items-center gap-1 text-xs font-medium sm:text-sm ${
                       currentMessage.type === "success"
                         ? "text-emerald-600 dark:text-emerald-400"
                         : "text-red-600 dark:text-red-400"
                     }`}
                   >
                     {currentMessage.type === "success" ? (
-                      <CheckCircle2 className="h-4 w-4 shrink-0" />
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
                     ) : (
-                      <AlertCircle className="h-4 w-4 shrink-0" />
+                      <AlertCircle className="h-3.5 w-3.5 shrink-0" />
                     )}
                     <span>{currentMessage.text}</span>
                   </div>
@@ -230,7 +233,7 @@ export function MembershipResultList({
                       onClick={() => onPrintReceipt(membership)}
                       className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
                     >
-                      <Printer className="h-3.5 w-3.5" />
+                      <Printer className="h-3 w-3" />
                       In phiếu ngay
                     </button>
                   )}
@@ -238,7 +241,7 @@ export function MembershipResultList({
               )}
             </div>
 
-            {/* Col 3: Remaining sessions / expiry */}
+            {/* Col 2: Remaining sessions / expiry */}
             <div className="shrink-0">
               <RemainingIndicator
                 sessionsLeft={membership.sessions_left}
@@ -246,17 +249,17 @@ export function MembershipResultList({
               />
             </div>
 
-            {/* Col 4: Action buttons (In phiếu + Chi tiết + Gia hạn + Check-in) */}
-            <div className="flex shrink-0 items-center gap-2">
+            {/* Col 3: Action buttons (In phiếu + Chi tiết + Gia hạn + Check-in) */}
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
               {onPrintReceipt && (
                 <button
                   type="button"
                   onClick={() => onPrintReceipt(membership)}
                   title="In phiếu check-in (POS)"
                   aria-label={`In phiếu check-in cho ${membership.customer_name}`}
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white p-3.5 text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                  className="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-2xs transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
-                  <Printer className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  <Printer className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 </button>
               )}
               <button
@@ -264,9 +267,9 @@ export function MembershipResultList({
                 onClick={() => onViewDetail(membership.id)}
                 title="Xem chi tiết & lịch sử"
                 aria-label={`Xem chi tiết cho ${membership.customer_name}`}
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-3.5 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                className="inline-flex h-8 sm:h-9 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:px-3 sm:text-sm"
               >
-                <Eye className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+                <Eye className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Chi tiết</span>
               </button>
 
@@ -275,9 +278,9 @@ export function MembershipResultList({
                 onClick={() => onRenew(membership)}
                 title="Gia hạn gói"
                 aria-label={`Gia hạn cho ${membership.customer_name}`}
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                className="inline-flex h-8 sm:h-9 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:px-3 sm:text-sm"
               >
-                <RefreshCw className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                <RefreshCw className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Gia hạn</span>
               </button>
 
@@ -298,7 +301,7 @@ export function MembershipResultList({
                         ? `${membership.customer_name} đã check-in hôm nay`
                         : `Check-in cho ${membership.customer_name}`
                 }
-                className={`inline-flex min-w-28 items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-base font-semibold shadow-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:min-w-36 ${
+                className={`inline-flex h-8 sm:h-9 w-28 sm:w-32 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-semibold shadow-2xs transition focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-sm ${
                   isCheckingIn
                     ? "bg-indigo-600 text-white opacity-70"
                     : isExhausted
@@ -310,19 +313,19 @@ export function MembershipResultList({
               >
                 {isCheckingIn ? (
                   <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="h-3.5 w-3.5 animate-spin sm:h-4 sm:w-4" />
                     <span>Check-in...</span>
                   </>
                 ) : isExhausted ? (
                   <span>Đã hết</span>
                 ) : isAlreadyCheckedIn ? (
                   <>
-                    <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                    <span>Đã Check-in</span>
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 sm:h-4 sm:w-4 shrink-0" />
+                    <span className="truncate">Đã Check-in</span>
                   </>
                 ) : (
                   <>
-                    <UserCheck className="h-5 w-5" />
+                    <UserCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                     <span>Check-in</span>
                   </>
                 )}
