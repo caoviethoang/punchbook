@@ -113,4 +113,35 @@ describe("MembershipDetailModal", () => {
       expect(screen.getByText("Không thể kết nối đến máy chủ")).toBeInTheDocument()
     })
   })
+
+  it("displays prominent internal notes when notes are present and allows updating", async () => {
+    const user = userEvent.setup()
+    const detailWithNotes: membershipsApi.MembershipDetail = {
+      ...mockDetail,
+      notes: "Dị ứng tinh dầu tràm, ưu tiên KTV Lan",
+    }
+    vi.spyOn(membershipsApi, "getMembershipDetail").mockResolvedValue(detailWithNotes)
+    vi.spyOn(membershipsApi, "updateMembership").mockResolvedValue({
+      ...detailWithNotes,
+      notes: "Đã cập nhật: Uống nhiều nước ấm",
+    })
+
+    render(<MembershipDetailModal membershipId="mem-test-1" onClose={() => {}} />)
+
+    await waitFor(() => {
+      expect(screen.getByText("Ghi chú nội bộ")).toBeInTheDocument()
+      expect(screen.getByText("Dị ứng tinh dầu tràm, ưu tiên KTV Lan")).toBeInTheDocument()
+    })
+
+    // Edit notes
+    await user.click(screen.getByRole("button", { name: /Chỉnh sửa ghi chú/i }))
+    const textarea = screen.getByPlaceholderText(/Nhập ghi chú/i)
+    await user.clear(textarea)
+    await user.type(textarea, "Đã cập nhật: Uống nhiều nước ấm")
+    await user.click(screen.getByRole("button", { name: /Lưu ghi chú/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Đã cập nhật: Uống nhiều nước ấm")).toBeInTheDocument()
+    })
+  })
 })

@@ -270,6 +270,16 @@ RSpec.describe 'Memberships', type: :request do
                                                 'payos_transaction_id' => 'P123')
     end
 
+    it 'returns membership with notes in detailed json' do
+      hoa.update!(notes: 'Khách VIP, thích uống trà hoa cúc')
+
+      get "/memberships/#{hoa.id}", headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body['membership']
+      expect(body['notes']).to eq('Khách VIP, thích uống trà hoa cúc')
+    end
+
     it 'returns 404 for a membership belonging to another shop' do
       other_shop = create_shop(name: 'Other Spa', email: 'other@example.com')
       other_package = Package.create!(shop: other_shop, name: 'Secret package', sessions_count: 5, price: 500_000)
@@ -342,6 +352,24 @@ RSpec.describe 'Memberships', type: :request do
         'sessions_left' => nil,
         'expires_at' => (Date.current + 30.days).iso8601
       )
+    end
+
+    it 'creates a membership with notes successfully' do
+      payload = {
+        membership: {
+          customer_name: 'Lan Tran',
+          phone: '0905000000',
+          package_id: package.id,
+          notes: 'Dị ứng tinh dầu tràm, ưu tiên KTV Lan'
+        }
+      }
+
+      post '/memberships', params: payload, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:created)
+      body = response.parsed_body['membership']
+      expect(body['notes']).to eq('Dị ứng tinh dầu tràm, ưu tiên KTV Lan')
+      expect(Membership.find(body['id']).notes).to eq('Dị ứng tinh dầu tràm, ưu tiên KTV Lan')
     end
 
     it 'returns 422 when customer_name is blank' do
@@ -463,6 +491,21 @@ RSpec.describe 'Memberships', type: :request do
       expect(hoa.customer_name).to eq('Hoa Nguyen Updated')
       expect(hoa.phone).to eq('0999888777')
       expect(hoa.sessions_left).to eq(5)
+    end
+
+    it 'updates notes successfully' do
+      patch "/memberships/#{hoa.id}",
+            params: {
+              membership: {
+                notes: 'Lưu ý: Thoát vị đĩa đệm, không tập tạ nặng'
+              }
+            },
+            headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body['membership']
+      expect(body['notes']).to eq('Lưu ý: Thoát vị đĩa đệm, không tập tạ nặng')
+      expect(hoa.reload.notes).to eq('Lưu ý: Thoát vị đĩa đệm, không tập tạ nặng')
     end
 
     it 'returns 404 when membership belongs to another shop' do

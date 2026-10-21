@@ -26,6 +26,7 @@ export function MemberEditModal({
   const [expiresAt, setExpiresAt] = useState<string>(
     membership?.expires_at ? membership.expires_at.substring(0, 10) : "",
   )
+  const [notes, setNotes] = useState(membership?.notes || "")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -48,6 +49,7 @@ export function MemberEditModal({
         package_id: packageId || undefined,
         sessions_left: sessionsLeft !== "" ? Number(sessionsLeft) : null,
         expires_at: expiresAt !== "" ? expiresAt : null,
+        notes: notes.trim() || null,
       })
       onSuccess(updated)
       onClose()
@@ -161,6 +163,19 @@ export function MemberEditModal({
                 className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Ghi chú nội bộ
+            </label>
+            <textarea
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Dị ứng, yêu cầu đặc biệt, lịch tập ưu tiên..."
+              className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
+            />
           </div>
 
           <div className="mt-6 flex items-center justify-end gap-3 pt-2">

@@ -37,6 +37,7 @@ export interface Membership {
   checked_in_today?: boolean
   last_checked_in_at?: string | null
   qr_code_value?: string
+  notes?: string | null
 }
 
 export interface MembershipDetailCheckIn {
@@ -223,6 +224,7 @@ export interface CreateMembershipPayload {
   customer_name: string
   phone: string
   package_id: string
+  notes?: string | null
 }
 
 export interface UpdateMembershipPayload {
@@ -231,6 +233,7 @@ export interface UpdateMembershipPayload {
   package_id?: string
   sessions_left?: number | null
   expires_at?: string | null
+  notes?: string | null
 }
 
 /** POST /memberships — create member; backend inits sessions_left / expires_at from package. */

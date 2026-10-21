@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { getMembershipDetail, type MembershipDetail } from "../lib/memberships"
+import { getMembershipDetail, updateMembership, type MembershipDetail } from "../lib/memberships"
 import type { ReceiptData } from "../components/ThermalReceiptModal"
 
 export type MembershipDetailTab = "card" | "check_ins" | "invoices"
@@ -58,6 +58,12 @@ export function useMembershipDetail(
     })
   }
 
+  async function updateNotes(notes: string | null) {
+    if (!detail) return
+    const updated = await updateMembership(detail.id, { notes })
+    setDetail((prev) => (prev ? { ...prev, notes: updated.notes } : null))
+  }
+
   return {
     detail,
     loading,
@@ -67,5 +73,6 @@ export function useMembershipDetail(
     selectedReceipt,
     setSelectedReceipt,
     handlePrintReceipt,
+    updateNotes,
   }
 }

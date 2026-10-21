@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_30_153000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_21_092116) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -69,6 +69,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_30_153000) do
     t.string "customer_name"
     t.datetime "discarded_at"
     t.date "expires_at"
+    t.text "notes"
     t.uuid "package_id", null: false
     t.string "phone"
     t.integer "sessions_left"

@@ -3,6 +3,7 @@ import { useMembershipDetail, type MembershipDetailTab } from "../hooks/useMembe
 import { CheckInHistoryTab } from "./membership-detail/CheckInHistoryTab"
 import { InvoiceHistoryTab } from "./membership-detail/InvoiceHistoryTab"
 import { MembershipDetailHeader } from "./membership-detail/MembershipDetailHeader"
+import { MembershipNotesSection } from "./membership-detail/MembershipNotesSection"
 import { DigitalMembershipCard } from "./DigitalMembershipCard"
 import { Modal } from "./ui/Modal"
 import { ThermalReceiptModal } from "./ThermalReceiptModal"
@@ -22,6 +23,7 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
     selectedReceipt,
     setSelectedReceipt,
     handlePrintReceipt,
+    updateNotes,
   } = useMembershipDetail(membershipId)
 
   const tabClass = (tab: MembershipDetailTab) =>
@@ -49,10 +51,16 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
               <span className="font-semibold">{error}</span>
             </div>
           ) : detail ? (
-            <MembershipDetailHeader
-              detail={detail}
-              onOpenCardTab={() => setActiveTab("card")}
-            />
+            <div className="space-y-4">
+              <MembershipDetailHeader
+                detail={detail}
+                onOpenCardTab={() => setActiveTab("card")}
+              />
+              <MembershipNotesSection
+                notes={detail.notes}
+                onSaveNotes={updateNotes}
+              />
+            </div>
           ) : null}
         </div>
 

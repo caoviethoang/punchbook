@@ -21,6 +21,7 @@ function packageLabel(pkg: PackageItem): string {
 export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCreateFormProps) {
   const [customerName, setCustomerName] = useState("")
   const [phone, setPhone] = useState("")
+  const [notes, setNotes] = useState("")
   const [packageId, setPackageId] = useState("")
   const [packages, setPackages] = useState<PackageItem[]>([])
   const [packagesLoading, setPackagesLoading] = useState(true)
@@ -80,11 +81,13 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
         customer_name: name,
         phone: phoneValue,
         package_id: packageId,
+        notes: notes.trim() || undefined,
       })
       setCreated(membership)
       setIsQrModalOpen(true)
       setCustomerName("")
       setPhone("")
+      setNotes("")
       onSuccess?.(membership)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Thêm hội viên thất bại")
@@ -189,6 +192,19 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
               </option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            Ghi chú nội bộ
+          </label>
+          <textarea
+            rows={2}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Dị ứng, yêu cầu đặc biệt, lịch tập ưu tiên..."
+            className={FORM_CONTROL_CLASS}
+          />
         </div>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 pt-2">
