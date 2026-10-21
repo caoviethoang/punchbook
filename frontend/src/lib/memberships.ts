@@ -150,11 +150,16 @@ export interface PaginationMeta {
   total_pages: number
 }
 
-export type StatusFilterType = "all" | "active" | "expiring" | "expired"
+export type StatusFilterType = "all" | "active" | "expiring" | "expired" | "not_checked_in"
+
+export type CheckInFilterType = "not_checked_in" | "expiring" | "expired" | "all"
+
+export type SortType = "name" | "checkin_priority"
 
 export interface FetchMembershipsParams {
   query?: string
   status?: StatusFilterType
+  sort?: SortType
   page?: number
   per_page?: number
 }
@@ -198,6 +203,7 @@ export async function fetchMemberships(
   }
   if (params.query?.trim()) queryParams.query = params.query.trim()
   if (params.status && params.status !== "all") queryParams.status = params.status
+  if (params.sort && params.sort !== "name") queryParams.sort = params.sort
 
   return apiGet<PaginatedMembershipsResult>("/memberships", {
     query: queryParams,

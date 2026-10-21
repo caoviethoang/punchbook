@@ -52,6 +52,8 @@ describe("CheckInScreen component", () => {
   const defaultHookState = {
     query: "",
     setQuery: vi.fn(),
+    filter: "not_checked_in" as const,
+    setFilter: vi.fn(),
     memberships: [] as Membership[],
     page: 1,
     setPage: vi.fn(),
@@ -90,6 +92,12 @@ describe("CheckInScreen component", () => {
   })
 
   it("renders empty state when query is blank and no memberships exist in system", () => {
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      filter: "all",
+      memberships: [],
+    })
+
     render(<CheckInScreen />)
 
     expect(screen.getByText(/chưa có hội viên nào trong hệ thống/i)).toBeInTheDocument()
@@ -333,5 +341,43 @@ describe("CheckInScreen component", () => {
 
     const prevBtn = screen.getByRole("button", { name: "Trang trước" })
     expect(prevBtn).toBeDisabled()
+  })
+
+  it("renders status filter tabs and triggers setFilter on click", () => {
+    const setFilterMock = vi.fn()
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      memberships: [dummyMember1],
+      filter: "not_checked_in",
+      setFilter: setFilterMock,
+    })
+
+    render(<CheckInScreen />)
+
+    expect(screen.getByRole("tab", { name: "Chưa CI" })).toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: "Sắp hết vé" })).toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: "Đã hết vé" })).toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: "Tất cả" })).toBeInTheDocument()
+
+    const expiringTab = screen.getByRole("tab", { name: "Sắp hết vé" })
+    fireEvent.click(expiringTab)
+    expect(setFilterMock).toHaveBeenCalledWith("expiring")
+
+    const exhaustedTab = screen.getByRole("tab", { name: "Đã hết vé" })
+    fireEvent.click(exhaustedTab)
+    expect(setFilterMock).toHaveBeenCalledWith("expired")
+  })
+
+  it("renders contextual empty message when no members match not_checked_in filter", () => {
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      memberships: [],
+      filter: "not_checked_in",
+      isLoading: false,
+    })
+
+    render(<CheckInScreen />)
+
+    expect(screen.getByText("Tất cả hội viên đã check-in hôm nay")).toBeInTheDocument()
   })
 })
