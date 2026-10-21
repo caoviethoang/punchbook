@@ -86,7 +86,7 @@ class MembershipsController < ApiController
   def find_staff
     return current_shop.staffs.find(params.expect(:staff_id)) if params[:staff_id].present?
 
-    current_shop.staffs.first || current_shop.staffs.create!(name: 'Lễ tân', role: 'staff')
+    current_staff || current_shop.staffs.first
   end
 
   def require_admin_if_deleted!
