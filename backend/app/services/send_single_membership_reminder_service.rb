@@ -20,7 +20,7 @@ class SendSingleMembershipReminderService
     membership.membership_reminders.create!(sent_at: Time.current, reminder_type: 'expiring')
   rescue StandardError => e
     Rails.logger.error("Failed to send membership reminder for membership #{membership.id}: #{e.message}")
-    nil
+    raise
   end
 
   private

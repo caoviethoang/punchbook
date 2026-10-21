@@ -92,5 +92,16 @@ RSpec.describe SendSingleMembershipReminderJob, type: :job do
           body['template_data']['payment_url'] == 'https://pay.payos.vn/web/existing_checkout'
         end)
     end
+
+    it 'raises error on network/API failure so Sidekiq can retry the job' do
+      zalo_double = instance_double(ZaloService)
+      allow(ZaloService).to receive(:new).and_return(zalo_double)
+      allow(zalo_double).to receive(:send_template_message).and_raise(StandardError, 'Network timeout')
+
+      expect { described_class.new.perform(membership.id) }
+        .to raise_error(StandardError, 'Network timeout')
+
+      expect(membership.reload).not_to be_reminder_sent_today
+    end
   end
 end

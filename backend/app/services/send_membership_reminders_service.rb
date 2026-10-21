@@ -9,12 +9,18 @@ class SendMembershipRemindersService
 
   def call
     expiring_memberships.each_with_object([]) do |membership, sent_reminders|
-      reminder = SendSingleMembershipReminderService.call(membership)
+      reminder = process_single(membership)
       sent_reminders << reminder if reminder
     end
   end
 
   private
+
+  def process_single(membership)
+    SendSingleMembershipReminderService.call(membership)
+  rescue StandardError
+    nil
+  end
 
   def expiring_memberships
     Membership.needing_reminder.includes(:package, :shop, :membership_reminders, :invoices)
