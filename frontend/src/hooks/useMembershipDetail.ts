@@ -2,11 +2,16 @@ import { useEffect, useState } from "react"
 import { getMembershipDetail, type MembershipDetail } from "../lib/memberships"
 import type { ReceiptData } from "../components/ThermalReceiptModal"
 
-export function useMembershipDetail(membershipId: string) {
+export type MembershipDetailTab = "card" | "check_ins" | "invoices"
+
+export function useMembershipDetail(
+  membershipId: string,
+  initialTab: MembershipDetailTab = "card",
+) {
   const [detail, setDetail] = useState<MembershipDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<"check_ins" | "invoices">("check_ins")
+  const [activeTab, setActiveTab] = useState<MembershipDetailTab>(initialTab)
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null)
 
   useEffect(() => {
@@ -40,7 +45,9 @@ export function useMembershipDetail(membershipId: string) {
   function handlePrintReceipt(checkedInAt: string, staffName?: string | null) {
     if (!detail) return
     setSelectedReceipt({
-      shopName: "PunchBook Spa",
+      shopName: detail.shop?.name || "PunchBook Spa",
+      shopAddress: detail.shop?.address,
+      shopPhone: detail.shop?.phone,
       customerName: detail.customer_name,
       customerPhone: detail.phone,
       packageName: detail.package.name,

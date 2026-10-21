@@ -24,16 +24,20 @@ class Membership < ApplicationRecord
     return all if query.blank?
 
     raw_query = query.to_s.strip
+    clean_query = raw_query.sub(/\APUNCHBOOK:/i, '')
     name_pattern = "%#{sanitize_sql_like(raw_query)}%"
+    clean_pattern = "%#{sanitize_sql_like(clean_query)}%"
     digits_only = raw_query.gsub(/\D/, '')
 
     if digits_only.present?
       phone_pattern = "%#{sanitize_sql_like(digits_only)}%"
       sql = 'memberships.customer_name ILIKE :q OR memberships.phone ILIKE :q OR ' \
-            "regexp_replace(memberships.phone, '\\D', '', 'g') ILIKE :pq"
-      where(sql, q: name_pattern, pq: phone_pattern)
+            "regexp_replace(memberships.phone, '\\D', '', 'g') ILIKE :pq OR " \
+            'memberships.id::text ILIKE :cq'
+      where(sql, q: name_pattern, pq: phone_pattern, cq: clean_pattern)
     else
-      where('memberships.customer_name ILIKE :q OR memberships.phone ILIKE :q', q: name_pattern)
+      where('memberships.customer_name ILIKE :q OR memberships.phone ILIKE :q OR memberships.id::text ILIKE :cq',
+            q: name_pattern, cq: clean_pattern)
     end
   }
   scope :needing_reminder, -> { PaidShopMembershipsNeedingReminderQuery.call(self) }
@@ -42,6 +46,29 @@ class Membership < ApplicationRecord
     return all if status.blank? || status.to_s == 'all'
 
     by_status_query(status.to_s)
+  }
+
+  # Sorts members for the check-in screen: not-checked-in & active first,
+  # checked-in today second, exhausted (0 sessions / expired) last.
+  scope :checkin_priority_order, lambda {
+    checked_in_sql = klass.checked_in_today_subquery
+
+    exhausted_sql = <<~SQL.squish
+      CASE
+        WHEN memberships.sessions_left IS NOT NULL
+             AND memberships.sessions_left <= 0 THEN 1
+        WHEN memberships.sessions_left IS NULL
+             AND memberships.expires_at IS NOT NULL
+             AND memberships.expires_at < CURRENT_DATE THEN 1
+        ELSE 0
+      END
+    SQL
+
+    order(
+      Arel.sql("(#{exhausted_sql}) ASC"),
+      Arel.sql("(#{checked_in_sql})::int ASC"),
+      :customer_name
+    )
   }
 
   def checked_in_today?

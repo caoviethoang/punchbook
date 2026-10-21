@@ -1,12 +1,16 @@
-import { type KeyboardEvent, useEffect, useRef, useState } from "react"
+import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from "react"
 import { useDebounce } from "./useDebounce"
 import { useMembershipsApi } from "./useMembershipsApi"
 import type { Staff } from "../lib/auth"
-import { toCheckInError } from "../lib/errors"
+import { toApiError, toCheckInError } from "../lib/errors"
 import {
   extractMembershipIdFromQR,
+  fetchMemberships,
+  getMembershipDetail,
   isMembershipExhausted,
+  type CheckInFilterType,
   type Membership,
+  type PaginationMeta,
 } from "../lib/memberships"
 import { fetchStaffs } from "../lib/staffs"
 import type { ReceiptData } from "../components/ThermalReceiptModal"
@@ -26,7 +30,7 @@ export function useCheckInScreen({
   shopAddress,
   shopPhone,
 }: UseCheckInScreenProps) {
-  const [query, setQuery] = useState("")
+  const [query, setQueryState] = useState("")
   const debouncedQuery = useDebounce(query, 300)
 
   const [memberships, setMemberships] = useState<Membership[]>([])
@@ -53,12 +57,27 @@ export function useCheckInScreen({
   const inputRef = useRef<HTMLInputElement>(null)
   const { search, checkIn, searchLoading, error: apiError } = useMembershipsApi()
 
+  const [filter, setFilterState] = useState<CheckInFilterType>("not_checked_in")
+  const [page, setPage] = useState(1)
+  const setQuery = useCallback((nextQuery: string | ((prev: string) => string)) => {
+    setQueryState(nextQuery)
+    setPage(1)
+  }, [])
+  const setFilter = useCallback((nextFilter: CheckInFilterType) => {
+    setFilterState(nextFilter)
+    setPage(1)
+  }, [])
+  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null)
+  const [fetchLoading, setFetchLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+
   // Modal state for detail & renewal
   const [detailMembershipId, setDetailMembershipId] = useState<string | null>(null)
   const [renewingMembership, setRenewingMembership] = useState<Membership | null>(null)
 
   const isDebouncing = query !== debouncedQuery
-  const isLoading = searchLoading || isDebouncing
+  const isLoading = fetchLoading || searchLoading || isDebouncing
+  const combinedError = fetchError || apiError
 
   // Fetch staff list if user is admin
   useEffect(() => {
@@ -104,24 +123,59 @@ export function useCheckInScreen({
     })
   }
 
-  // Fetch memberships using debounced query
+  // Fetch memberships using debounced query, filter status, sort and pagination
+  const refreshMemberships = useCallback(async () => {
+    try {
+      const res = await fetchMemberships({
+        query: debouncedQuery,
+        status: filter,
+        sort: "checkin_priority",
+        page,
+        per_page: 20,
+      })
+      setMemberships(res.memberships)
+      if (res.meta) setPaginationMeta(res.meta)
+    } catch {
+      // Error handling managed by hook
+    }
+  }, [debouncedQuery, filter, page])
+
   useEffect(() => {
     let isCancelled = false
 
-    search(debouncedQuery)
-      .then((results) => {
+    const loadMemberships = async () => {
+      setFetchLoading(true)
+      setFetchError(null)
+
+      try {
+        const res = await fetchMemberships({
+          query: debouncedQuery,
+          status: filter,
+          sort: "checkin_priority",
+          page,
+          per_page: 20,
+        })
         if (!isCancelled) {
-          setMemberships(results)
+          setMemberships(res.memberships)
+          if (res.meta) setPaginationMeta(res.meta)
         }
-      })
-      .catch(() => {
-        // Error handling managed by useMembershipsApi hook
-      })
+      } catch (err) {
+        if (!isCancelled) {
+          setFetchError(toApiError(err, "Không thể tải danh sách hội viên."))
+        }
+      } finally {
+        if (!isCancelled) {
+          setFetchLoading(false)
+        }
+      }
+    }
+
+    void loadMemberships()
 
     return () => {
       isCancelled = true
     }
-  }, [debouncedQuery, search])
+  }, [debouncedQuery, filter, page])
 
   function handleClear() {
     setQuery("")
@@ -130,9 +184,17 @@ export function useCheckInScreen({
     }
   }
 
-  async function handleCheckIn(membershipId: string) {
-    const membership = memberships.find((m) => m.id === membershipId)
-    if (!membership || isMembershipExhausted(membership)) return
+  async function handleCheckIn(membershipId: string, targetMembership?: Membership) {
+    const membership = targetMembership || memberships.find((m) => m.id === membershipId)
+    if (!membership) return
+
+    if (isMembershipExhausted(membership)) {
+      setToast({
+        message: "Hội viên đã hết buổi hoặc hết hạn thẻ",
+        type: "error",
+      })
+      return
+    }
 
     const previousSessionsLeft = membership.sessions_left
 
@@ -140,13 +202,24 @@ export function useCheckInScreen({
     setCheckInMessage(null)
 
     // Optimistic update
-    setMemberships((prev) =>
-      prev.map((m) =>
-        m.id === membershipId && m.sessions_left !== null
-          ? { ...m, sessions_left: m.sessions_left - 1 }
-          : m,
-      ),
-    )
+    setMemberships((prev) => {
+      const exists = prev.some((m) => m.id === membershipId)
+      if (exists) {
+        return prev.map((m) =>
+          m.id === membershipId && m.sessions_left !== null
+            ? { ...m, sessions_left: m.sessions_left - 1 }
+            : m,
+        )
+      }
+      return [
+        {
+          ...membership,
+          sessions_left:
+            membership.sessions_left !== null ? membership.sessions_left - 1 : null,
+        },
+        ...prev,
+      ]
+    })
 
     try {
       const effectiveStaffId = selectedStaffId || currentStaff?.id || currentStaffId || undefined
@@ -210,24 +283,35 @@ export function useCheckInScreen({
 
     const existing = memberships.find((m) => m.id === targetId || m.phone === targetId)
     if (existing) {
-      void handleCheckIn(existing.id)
+      void handleCheckIn(existing.id, existing)
       return
     }
 
     try {
       const results = await search(targetId)
       if (results.length > 0) {
-        setMemberships(results)
         const matched = results.find((m) => m.id === targetId || m.phone === targetId) ?? results[0]
-        if (matched && !isMembershipExhausted(matched)) {
-          void handleCheckIn(matched.id)
-        }
-      } else {
-        setToast({
-          message: "Không tìm thấy hội viên từ mã QR này",
-          type: "error",
-        })
+        setMemberships(results)
+        void handleCheckIn(matched.id, matched)
+        return
       }
+
+      // Fallback: direct getMembershipDetail lookup if targetId is an ID
+      try {
+        const detail = await getMembershipDetail(targetId)
+        if (detail) {
+          setMemberships((prev) => [detail, ...prev.filter((m) => m.id !== detail.id)])
+          void handleCheckIn(detail.id, detail)
+          return
+        }
+      } catch {
+        // Fallback failed
+      }
+
+      setToast({
+        message: "Không tìm thấy hội viên từ mã QR này",
+        type: "error",
+      })
     } catch {
       setToast({
         message: "Không thể kiểm tra mã QR",
@@ -239,6 +323,8 @@ export function useCheckInScreen({
   return {
     query,
     setQuery,
+    filter,
+    setFilter,
     memberships,
     checkingInId,
     checkInMessage,
@@ -253,8 +339,11 @@ export function useCheckInScreen({
     setDetailMembershipId,
     renewingMembership,
     setRenewingMembership,
+    page,
+    setPage,
+    paginationMeta,
     isLoading,
-    apiError,
+    apiError: combinedError,
     handleClear,
     handleKeyDown,
     handleCheckIn,
@@ -264,5 +353,6 @@ export function useCheckInScreen({
     loadingStaffs,
     selectedStaffId,
     setSelectedStaffId,
+    refreshMemberships,
   }
 }

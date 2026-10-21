@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { AlertCircle, CalendarClock, Loader2, Users, Wallet } from "lucide-react"
 import type { Staff } from "../lib/auth"
 import { AuditLogsPanel } from "./AuditLogsPanel"
 import { useDashboard } from "../hooks/useDashboard"
-import type { DashboardMembership } from "../lib/dashboard"
+import { usePaginatedMemberships } from "../hooks/usePaginatedMemberships"
+import type { DashboardMembership, MembershipStatus } from "../lib/dashboard"
 import { toApiError } from "../lib/errors"
 import { formatVnd } from "../lib/formatters"
-import { fetchMemberships, type PaginationMeta, type StatusFilterType } from "../lib/memberships"
+import { computeMembershipStatus } from "../lib/memberships"
 import { downloadExcelReport } from "../lib/reports"
 import { AnalyticsCharts } from "./AnalyticsCharts"
 import { DashboardHeader } from "./dashboard/DashboardHeader"
@@ -33,63 +34,34 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [isAuditLogsOpen, setIsAuditLogsOpen] = useState(false)
 
-  // Pagination & Filtering state
-  const [memberships, setMemberships] = useState<DashboardMembership[]>([])
-  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<StatusFilterType>("all")
-  const [page, setPage] = useState(1)
-  const [listLoading, setListLoading] = useState(false)
+  // Shared Pagination & Filtering hook with debouncing and safe typing
+  const {
+    memberships: rawMemberships,
+    meta: paginationMeta,
+    query: searchQuery,
+    setQuery: setSearchQuery,
+    status: statusFilter,
+    setStatus: setStatusFilter,
+    page,
+    setPage,
+    loading: listLoading,
+    reloadData: refreshList,
+  } = usePaginatedMemberships()
+
+  const memberships: DashboardMembership[] = useMemo(
+    () =>
+      rawMemberships.map((m) => ({
+        ...m,
+        status: (m.status as MembershipStatus) ?? computeMembershipStatus(m),
+      })),
+    [rawMemberships],
+  )
 
   useEffect(() => {
     load().catch(() => {
       // Ignored
     })
   }, [load])
-
-  useEffect(() => {
-    let active = true
-    fetchMemberships({
-      query: searchQuery,
-      status: statusFilter,
-      page,
-      per_page: 20,
-    })
-      .then((res) => {
-        if (!active) return
-        setMemberships(res.memberships as DashboardMembership[])
-        if (res.meta) {
-          setPaginationMeta(res.meta)
-        }
-      })
-      .catch(() => {
-        // Ignored
-      })
-      .finally(() => {
-        if (active) {
-          setListLoading(false)
-        }
-      })
-
-    return () => {
-      active = false
-    }
-  }, [searchQuery, statusFilter, page])
-
-  const refreshList = useCallback(() => {
-    setListLoading(true)
-    fetchMemberships({
-      query: searchQuery,
-      status: statusFilter,
-      page,
-      per_page: 20,
-    })
-      .then((res) => {
-        setMemberships(res.memberships as DashboardMembership[])
-        if (res.meta) setPaginationMeta(res.meta)
-      })
-      .finally(() => setListLoading(false))
-  }, [searchQuery, statusFilter, page])
 
   const handleExport = async () => {
     try {
@@ -113,7 +85,7 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
 
   if (error && !data) {
     return (
-      <div className="mx-4 rounded-xl bg-red-50 p-4 text-base font-medium text-red-700 dark:bg-red-950/40 dark:text-red-300 sm:mx-6">
+      <div className="rounded-xl bg-red-50 p-4 text-base font-medium text-red-700 dark:bg-red-950/40 dark:text-red-300">
         <div className="flex items-center gap-3">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <span>{error}</span>
@@ -132,7 +104,7 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
   if (!data) return null
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
+    <div className="space-y-6">
       {exportError && (
         <div className="rounded-xl bg-amber-50 p-4 text-sm font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
           <div className="flex items-center gap-2">
@@ -182,12 +154,13 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
         />
       </div>
 
-      {/* Analytics Charts (30-day Revenue & 24h Check-in Frequency) */}
+      {/* Analytics Charts (30-day Revenue, Package Revenue & 24h Check-in Frequency) */}
       {!currentStaff || currentStaff.role === "admin" ? (
         <AnalyticsCharts
           dailyRevenue={data.daily_revenue_30_days}
           checkInFrequency={data.check_in_frequency_by_hour}
           peakHour={data.peak_check_in_hour}
+          packageRevenue={data.revenue_by_package}
         />
       ) : null}
 

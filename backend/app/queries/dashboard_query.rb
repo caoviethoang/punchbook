@@ -18,6 +18,7 @@ class DashboardQuery
       revenue_this_month: revenue_this_month, active_memberships_count: active_count(memberships),
       expiring_within_7_days_count: expiring_count(memberships), daily_revenue_30_days: daily_revenue_30_days,
       check_in_frequency_by_hour: hourly, peak_check_in_hour: calculate_peak_hour(hourly),
+      revenue_by_package: revenue_by_package,
       memberships: memberships.map(&:as_dashboard_json)
     }
   end
@@ -35,7 +36,34 @@ class DashboardQuery
   end
 
   def revenue_this_month
-    paid_invoices.where(created_at: Time.zone.now.all_month).sum(:amount)
+    @revenue_this_month ||= paid_invoices.where(invoices: { created_at: Time.zone.now.all_month }).sum(:amount)
+  end
+
+  def revenue_by_package
+    total_rev = revenue_this_month
+    fetch_package_revenue_rows.map do |package_id, package_name, count, total|
+      build_package_revenue_item(package_id, package_name, count, total, total_rev)
+    end
+  end
+
+  def build_package_revenue_item(package_id, package_name, count, total, total_rev)
+    total_int = total.to_i
+    pct = total_rev.positive? ? ((total_int.to_f / total_rev) * 100).round(1) : 0.0
+
+    {
+      package_id: package_id, package_name: package_name,
+      sales_count: count.to_i, invoices_count: count.to_i,
+      total_revenue: total_int, percentage: pct
+    }
+  end
+
+  def fetch_package_revenue_rows
+    paid_invoices
+      .where(invoices: { created_at: Time.zone.now.all_month })
+      .joins('INNER JOIN packages ON packages.id = memberships.package_id')
+      .group('packages.id', 'packages.name')
+      .order(Arel.sql('SUM(invoices.amount) DESC'))
+      .pluck('packages.id', 'packages.name', Arel.sql('COUNT(invoices.id)'), Arel.sql('SUM(invoices.amount)'))
   end
 
   def daily_revenue_30_days

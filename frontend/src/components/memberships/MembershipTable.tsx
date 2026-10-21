@@ -1,6 +1,6 @@
-import { Edit3, Eye, Loader2, QrCode, RefreshCw, Trash2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Edit3, Eye, Loader2, QrCode, RefreshCw, RotateCcw, Trash2 } from "lucide-react"
 import type { Membership, PaginationMeta, StatusFilterType } from "../../lib/memberships"
-import { computeMembershipStatus } from "../../lib/memberships"
+import { computeMembershipStatus, getPaginationRange } from "../../lib/memberships"
 import { StatusBadge } from "../ui/StatusBadge"
 import { MemberRemainingBadge } from "./MemberRemainingBadge"
 
@@ -18,6 +18,8 @@ interface MembershipTableProps {
   onOpenDetail: (id: string) => void
   onOpenEdit: (m: Membership) => void
   onOpenDelete: (m: Membership) => void
+  onRestore?: (m: Membership) => void
+  restoringId?: string | null
 }
 
 export function MembershipTable({
@@ -34,6 +36,8 @@ export function MembershipTable({
   onOpenDetail,
   onOpenEdit,
   onOpenDelete,
+  onRestore,
+  restoringId,
 }: MembershipTableProps) {
   if (loading) {
     return (
@@ -61,9 +65,11 @@ export function MembershipTable({
   if (memberships.length === 0) {
     return (
       <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-white p-12 text-center text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-        {debouncedQuery || status !== "all"
-          ? "Không tìm thấy hội viên khớp với bộ lọc."
-          : "Chưa có hội viên nào trong cửa hàng."}
+        {status === "deleted"
+          ? "Không có hội viên nào đã bị xóa."
+          : debouncedQuery || status !== "all"
+            ? "Không tìm thấy hội viên khớp với bộ lọc."
+            : "Chưa có hội viên nào trong cửa hàng."}
       </div>
     )
   }
@@ -117,43 +123,62 @@ export function MembershipTable({
                 </td>
                 <td className="px-4 py-3.5 text-right">
                   <div className="flex items-center justify-end gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => onOpenDetail(m.id)}
-                      title="Chi tiết & Lịch sử"
-                      className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                    >
-                      <Eye className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
-                      <span className="hidden sm:inline">Chi tiết</span>
-                    </button>
+                    {status === "deleted" || m.status === "deleted" ? (
+                      <button
+                        type="button"
+                        onClick={() => onRestore?.(m)}
+                        disabled={restoringId === m.id}
+                        title="Khôi phục hội viên"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/60"
+                      >
+                        {restoringId === m.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <RotateCcw className="h-3.5 w-3.5" />
+                        )}
+                        <span>Khôi phục</span>
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => onOpenDetail(m.id)}
+                          title="Chi tiết & Lịch sử"
+                          className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                        >
+                          <Eye className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
+                          <span className="hidden sm:inline">Chi tiết</span>
+                        </button>
 
-                    <button
-                      type="button"
-                      onClick={() => onOpenEdit(m)}
-                      title="Gia hạn / Chỉnh sửa"
-                      className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                    >
-                      <RefreshCw className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                      <span className="hidden sm:inline">Gia hạn</span>
-                    </button>
+                        <button
+                          type="button"
+                          onClick={() => onOpenEdit(m)}
+                          title="Gia hạn / Chỉnh sửa"
+                          className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                          <span className="hidden sm:inline">Gia hạn</span>
+                        </button>
 
-                    <button
-                      type="button"
-                      onClick={() => onOpenEdit(m)}
-                      title="Sửa thông tin"
-                      className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                    >
-                      <Edit3 className="h-4 w-4" />
-                    </button>
+                        <button
+                          type="button"
+                          onClick={() => onOpenEdit(m)}
+                          title="Sửa thông tin"
+                          className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                        >
+                          <Edit3 className="h-4 w-4" />
+                        </button>
 
-                    <button
-                      type="button"
-                      onClick={() => onOpenDelete(m)}
-                      title="Xóa hội viên"
-                      className="rounded-xl p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                        <button
+                          type="button"
+                          onClick={() => onOpenDelete(m)}
+                          title="Xóa hội viên"
+                          className="rounded-xl p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -167,22 +192,56 @@ export function MembershipTable({
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
             Hiển thị trang {meta.page} / {meta.total_pages} (Tổng {meta.total} hội viên)
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               disabled={page <= 1 || loading}
               onClick={() => onPageChange(page - 1)}
-              className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              aria-label="Trang trước"
             >
-              Trang trước
+              <ChevronLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Trang trước</span>
             </button>
+
+            <div className="flex items-center gap-1">
+              {getPaginationRange(meta.page, meta.total_pages).map((item, idx) =>
+                item === "..." ? (
+                  <span
+                    key={`ellipsis-${idx}`}
+                    className="px-2 py-1 text-xs text-slate-400 select-none"
+                  >
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={item}
+                    type="button"
+                    disabled={loading}
+                    onClick={() => onPageChange(item)}
+                    aria-label={`Trang ${item}`}
+                    aria-current={item === page ? "page" : undefined}
+                    className={`min-w-[32px] rounded-xl px-2.5 py-1.5 text-xs font-semibold transition ${
+                      item === page
+                        ? "bg-indigo-600 text-white shadow-sm hover:bg-indigo-500"
+                        : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                )
+              )}
+            </div>
+
             <button
               type="button"
               disabled={page >= meta.total_pages || loading}
               onClick={() => onPageChange(page + 1)}
-              className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              aria-label="Trang sau"
             >
-              Trang sau
+              <span className="hidden sm:inline">Trang sau</span>
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
