@@ -1,6 +1,6 @@
 import { AlertCircle, ChevronLeft, ChevronRight, Loader2, User, Users } from "lucide-react"
 import { useCheckInScreen } from "../hooks/useCheckInScreen"
-import { getPaginationRange } from "../lib/memberships"
+import { getPaginationRange, type CheckInFilterType } from "../lib/memberships"
 import { CheckInHeader } from "./checkin/CheckInHeader"
 import { CheckInSearchInput } from "./checkin/CheckInSearchInput"
 import { MembershipResultList } from "./checkin/CheckInSearchResults"
@@ -11,6 +11,13 @@ import { ThermalReceiptModal } from "./ThermalReceiptModal"
 import type { Staff } from "../lib/auth"
 import { Toast } from "./ui/Toast"
 import { cn } from "../lib/utils"
+
+const CHECKIN_FILTER_TABS: { key: CheckInFilterType; label: string }[] = [
+  { key: "not_checked_in", label: "Chưa CI" },
+  { key: "expiring", label: "Sắp hết vé" },
+  { key: "expired", label: "Đã hết vé" },
+  { key: "all", label: "Tất cả" },
+]
 
 interface CheckInScreenProps {
   /** Optional active staff object. */
@@ -32,6 +39,8 @@ export function CheckInScreen({
   const {
     query,
     setQuery,
+    filter,
+    setFilter,
     memberships,
     page,
     setPage,
@@ -104,7 +113,63 @@ export function CheckInScreen({
         </div>
       )}
 
-      {/* Results Section */}
+      {/* Header bar with Title, Filter Tabs, and Count */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 sm:text-lg">
+              {query.trim() ? "Kết quả tìm kiếm" : "Danh sách hội viên"}
+            </h2>
+            {isLoading && (
+              <span className="inline-flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span>Đang tải...</span>
+              </span>
+            )}
+          </div>
+
+          {/* Filter Tabs: Chưa CI, Sắp hết vé, Đã hết vé, Tất cả */}
+          <div
+            role="tablist"
+            aria-label="Lọc trạng thái hội viên"
+            className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-800 dark:bg-slate-900/60"
+          >
+            {CHECKIN_FILTER_TABS.map((tab) => {
+              const isActive = filter === tab.key
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setFilter(tab.key)}
+                  className={cn(
+                    "rounded-lg px-2.5 py-1 text-xs font-semibold whitespace-nowrap transition-colors",
+                    isActive
+                      ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-800 dark:text-indigo-400"
+                      : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
+                  )}
+                >
+                  {tab.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <span
+          className={cn(
+            "rounded-full px-2.5 py-0.5 text-xs font-semibold",
+            query.trim()
+              ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
+              : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+          )}
+        >
+          {paginationMeta?.total ?? memberships.length} {query.trim() ? "kết quả" : "hội viên"}
+        </span>
+      </div>
+
+      {/* Results Content */}
       {isLoading && memberships.length === 0 ? (
         <div
           role="status"
@@ -128,10 +193,22 @@ export function CheckInScreen({
               <Users className="h-6 w-6" />
             </div>
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 sm:text-lg">
-              Chưa có hội viên nào trong hệ thống
+              {filter === "not_checked_in"
+                ? "Tất cả hội viên đã check-in hôm nay"
+                : filter === "expiring"
+                  ? "Không có hội viên nào sắp hết vé"
+                  : filter === "expired"
+                    ? "Không có hội viên nào đã hết vé"
+                    : "Chưa có hội viên nào trong hệ thống"}
             </h3>
             <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-              Các hội viên đăng ký gói tập sẽ xuất hiện tại đây để điểm danh nhanh.
+              {filter === "not_checked_in"
+                ? "Không còn hội viên nào đang chờ check-in trong ca trực."
+                : filter === "expiring"
+                  ? "Hiện tại không có hội viên nào sắp hết hạn hoặc còn ít buổi."
+                  : filter === "expired"
+                    ? "Hiện tại không có hội viên nào hết hạn thẻ hoặc hết số buổi."
+                    : "Các hội viên đăng ký gói tập sẽ xuất hiện tại đây để điểm danh nhanh."}
             </p>
           </div>
         ) : (
@@ -151,30 +228,6 @@ export function CheckInScreen({
         )
       ) : (
         <div className="space-y-3">
-          <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 sm:text-lg">
-                {query.trim() ? "Kết quả tìm kiếm" : "Danh sách hội viên"}
-              </h2>
-              {isLoading && (
-                <span className="inline-flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span>Đang tải...</span>
-                </span>
-              )}
-            </div>
-            <span
-              className={cn(
-                "rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                query.trim()
-                  ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
-                  : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-              )}
-            >
-              {paginationMeta?.total ?? memberships.length} {query.trim() ? "kết quả" : "hội viên"}
-            </span>
-          </div>
-
           <MembershipResultList
             memberships={memberships}
             checkingInId={checkingInId}

@@ -19,3 +19,13 @@ export async function createStaff(input: {
 export async function deleteStaff(id: string): Promise<void> {
   await apiDelete<{ message: string }>(`/staffs/${id}`)
 }
+
+export function formatStaffOptionLabel(staff: { name: string; role?: string }): string {
+  const roleLabel = staff.role === "admin" ? "Admin" : "Lễ tân"
+  const cleanName = staff.name.trim()
+
+  if (/\((?:admin|lễ tân|staff)\)$/i.test(cleanName)) {
+    return cleanName
+  }
+  return `${cleanName} (${roleLabel})`
+}

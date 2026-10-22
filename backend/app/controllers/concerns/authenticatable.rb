@@ -24,9 +24,7 @@ module Authenticatable
 
   def resolve_current_staff(staff_id)
     staff = @current_shop.staffs.find_by(id: staff_id) if staff_id
-    staff || @current_shop.staffs.find_by(role: 'admin') ||
-      @current_shop.staffs.first ||
-      @current_shop.staffs.create!(name: @current_shop.name || 'Admin', role: 'admin')
+    staff || @current_shop.staffs.find_by(role: 'admin') || @current_shop.staffs.first
   end
 
   def render_unauthorized

@@ -1,5 +1,6 @@
 import { QrCode, UserCheck } from "lucide-react"
 import type { Staff } from "../../lib/auth"
+import { formatStaffOptionLabel } from "../../lib/staffs"
 
 interface CheckInHeaderProps {
   onOpenQRScanner: () => void
@@ -96,20 +97,30 @@ function OnDutyStaffSelector({
   }
 
   if (staffs.length > 0 && onSelectStaff) {
+    const hasCurrentStaffInList = Boolean(
+      currentStaff && staffs.some((s) => s.id === currentStaff.id),
+    )
+    const effectiveValue =
+      selectedStaffId ||
+      (currentStaff?.id && hasCurrentStaffInList ? currentStaff.id : "") ||
+      (hasCurrentStaffInList && staffs[0] ? staffs[0].id : "")
+
     return (
       <select
         id="checkin-staff-select"
         aria-label="Chọn nhân viên trực ca"
-        value={selectedStaffId || ""}
+        value={effectiveValue}
         onChange={(e) => onSelectStaff(e.target.value)}
         className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 transition hover:border-indigo-300 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:bg-slate-900"
       >
-        <option value="">
-          {currentStaff?.name ? `${currentStaff.name} (Admin)` : "Mặc định (Admin)"}
-        </option>
+        {!hasCurrentStaffInList && (
+          <option value="">
+            {currentStaff ? formatStaffOptionLabel(currentStaff) : "Mặc định (Admin)"}
+          </option>
+        )}
         {staffs.map((s) => (
           <option key={s.id} value={s.id}>
-            {s.name} ({s.role === "admin" ? "Admin" : "Lễ tân"})
+            {formatStaffOptionLabel(s)}
           </option>
         ))}
       </select>

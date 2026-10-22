@@ -28,6 +28,7 @@ describe("MembershipTable Pagination", () => {
     loading: false,
     error: null,
     memberships: [dummyMember],
+    meta: null,
     page: 2,
     debouncedQuery: "",
     status: "all" as const,
@@ -100,5 +101,36 @@ describe("MembershipTable Pagination", () => {
 
     expect(screen.queryByText(/Hiển thị trang/i)).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: "Trang trước" })).not.toBeInTheDocument()
+  })
+
+  it("renders 'Khôi phục' button and triggers onRestore when status is deleted", () => {
+    const onRestore = vi.fn()
+    const deletedMember: Membership = {
+      ...dummyMember,
+      status: "deleted",
+      discarded_at: "2026-10-21T00:00:00Z",
+    }
+
+    render(
+      <MembershipTable
+        {...baseProps}
+        memberships={[deletedMember]}
+        status="deleted"
+        onRestore={onRestore}
+      />,
+    )
+
+    const restoreButton = screen.getByRole("button", { name: /Khôi phục/i })
+    expect(restoreButton).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /Xóa/i })).not.toBeInTheDocument()
+
+    fireEvent.click(restoreButton)
+    expect(onRestore).toHaveBeenCalledWith(deletedMember)
+  })
+
+  it("renders specific empty state message when status is deleted and list is empty", () => {
+    render(<MembershipTable {...baseProps} memberships={[]} status="deleted" />)
+
+    expect(screen.getByText("Không có hội viên nào đã bị xóa.")).toBeInTheDocument()
   })
 })

@@ -32,7 +32,8 @@ export interface Membership {
   expires_at: string | null
   package: MembershipPackage
   shop?: MembershipShop
-  status?: "active" | "expiring" | "expired"
+  status?: "active" | "expiring" | "expired" | "deleted"
+  discarded_at?: string | null
   checked_in_today?: boolean
   last_checked_in_at?: string | null
   qr_code_value?: string
@@ -97,8 +98,10 @@ export function isMembershipExhausted(
  * - Active: otherwise
  */
 export function computeMembershipStatus(
-  membership: Pick<Membership, "sessions_left" | "expires_at">,
-): "active" | "expiring" | "expired" {
+  membership: Pick<Membership, "sessions_left" | "expires_at"> & { status?: string; discarded_at?: string | null },
+): "active" | "expiring" | "expired" | "deleted" {
+  if (membership.status === "deleted" || membership.discarded_at) return "deleted"
+
   // Session-based
   if (membership.sessions_left !== null && membership.sessions_left !== undefined) {
     if (membership.sessions_left <= 0) return "expired"
@@ -151,11 +154,16 @@ export interface PaginationMeta {
   total_pages: number
 }
 
-export type StatusFilterType = "all" | "active" | "expiring" | "expired"
+export type StatusFilterType = "all" | "active" | "expiring" | "expired" | "not_checked_in" | "deleted"
+
+export type CheckInFilterType = "not_checked_in" | "expiring" | "expired" | "all"
+
+export type SortType = "name" | "checkin_priority"
 
 export interface FetchMembershipsParams {
   query?: string
   status?: StatusFilterType
+  sort?: SortType
   page?: number
   per_page?: number
 }
@@ -199,6 +207,7 @@ export async function fetchMemberships(
   }
   if (params.query?.trim()) queryParams.query = params.query.trim()
   if (params.status && params.status !== "all") queryParams.status = params.status
+  if (params.sort && params.sort !== "name") queryParams.sort = params.sort
 
   return apiGet<PaginatedMembershipsResult>("/memberships", {
     query: queryParams,
@@ -314,4 +323,11 @@ export async function checkIn(id: string, staffId?: string): Promise<CheckInResu
 export async function getMembershipDetail(id: string): Promise<MembershipDetail> {
   const body = await apiGet<{ membership: MembershipDetail }>(`/memberships/${id}`)
   return body.membership
+}
+
+/** POST /memberships/:id/restore — restore a soft-deleted membership */
+export async function restoreMembership(
+  id: string,
+): Promise<{ membership: Membership; message: string }> {
+  return apiPost<{ membership: Membership; message: string }>(`/memberships/${id}/restore`)
 }

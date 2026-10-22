@@ -155,6 +155,88 @@ RSpec.describe 'Memberships', type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['memberships']).to eq([])
     end
+
+    context 'with sort=checkin_priority' do
+      it 'returns unchecked-in active members first, checked-in second, exhausted last' do
+        staff = Staff.create!(shop: shop, name: 'Receptionist', role: 'staff')
+        day_package = Package.create!(shop: shop, name: 'Monthly gym', duration_days: 30, price: 500_000)
+        Membership.create!(
+          shop: shop, package: package, customer_name: 'Alpha Exhausted',
+          phone: '0900000001', sessions_left: 0
+        )
+        Membership.create!(
+          shop: shop, package: day_package, customer_name: 'Beta Expired Day',
+          phone: '0900000002', sessions_left: nil, expires_at: Date.current - 5.days
+        )
+        CheckIn.create!(membership: hoa, staff: staff, checked_in_at: Time.current)
+
+        get '/memberships', params: { sort: 'checkin_priority' }, headers: auth_headers(shop)
+
+        expect(response).to have_http_status(:ok)
+        names = response.parsed_body['memberships'].pluck('customer_name')
+
+        expect(names.index('Lan Tran')).to be < names.index('Hoa Nguyen')
+        expect(names.index('Hoa Nguyen')).to be < names.index('Alpha Exhausted')
+        expect(names.index('Hoa Nguyen')).to be < names.index('Beta Expired Day')
+      end
+
+      it 'falls back to alphabetical order when sort is not checkin_priority' do
+        get '/memberships', headers: auth_headers(shop)
+
+        expect(response).to have_http_status(:ok)
+        names = response.parsed_body['memberships'].pluck('customer_name')
+        expect(names).to eq(names.sort)
+      end
+    end
+
+    context 'with status=not_checked_in' do
+      it 'returns only eligible members who have not checked in today' do
+        staff = Staff.create!(shop: shop, name: 'Receptionist', role: 'staff')
+        day_package = Package.create!(shop: shop, name: 'Monthly gym', duration_days: 30, price: 500_000)
+        Membership.create!(
+          shop: shop, package: package, customer_name: 'Exhausted Zero',
+          phone: '0900000003', sessions_left: 0
+        )
+        Membership.create!(
+          shop: shop, package: day_package, customer_name: 'Expired Past',
+          phone: '0900000004', sessions_left: nil, expires_at: Date.current - 1.day
+        )
+        CheckIn.create!(membership: hoa, staff: staff, checked_in_at: Time.current)
+
+        get '/memberships', params: { status: 'not_checked_in' }, headers: auth_headers(shop)
+
+        expect(response).to have_http_status(:ok)
+        names = response.parsed_body['memberships'].pluck('customer_name')
+
+        expect(names).to include('Lan Tran')
+        expect(names).not_to include('Hoa Nguyen')
+        expect(names).not_to include('Exhausted Zero')
+        expect(names).not_to include('Expired Past')
+      end
+    end
+
+    context 'with status=deleted' do
+      it 'returns 403 when requested by non-admin staff' do
+        staff = Staff.create!(shop: shop, name: 'Staff User', username: 'staff_del', password: 'password123',
+                              role: 'staff')
+        token = JsonWebToken.encode({ shop_id: shop.id, staff_id: staff.id, role: 'staff' })
+
+        get '/memberships', params: { status: 'deleted' }, headers: { 'Authorization' => "Bearer #{token}" }
+
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it 'returns only discarded memberships for admin' do
+        hoa.discard
+
+        get '/memberships', params: { status: 'deleted' }, headers: auth_headers(shop)
+
+        expect(response).to have_http_status(:ok)
+        ids = response.parsed_body['memberships'].pluck('id')
+        expect(ids).to eq([hoa.id])
+        expect(response.parsed_body['memberships'].first['status']).to eq('deleted')
+      end
+    end
   end
 
   describe 'GET /memberships/:id' do
@@ -492,13 +574,17 @@ RSpec.describe 'Memberships', type: :request do
       expect(response.parsed_body['error']).to eq('Membership has expired')
     end
 
-    it 'checks in with default shop staff when staff_id is missing' do
+    it 'checks in with default shop staff when staff_id is missing without creating new staff' do
+      headers = auth_headers(shop)
+      initial_staff_count = shop.staffs.count
+
       expect do
-        post "/memberships/#{hoa.id}/check_in", headers: auth_headers(shop)
+        post "/memberships/#{hoa.id}/check_in", headers: headers
       end.to change(CheckIn, :count).by(1)
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.dig('membership', 'id')).to eq(hoa.id)
+      expect(shop.staffs.count).to eq(initial_staff_count)
     end
 
     it 'returns 404 for another shop membership and does not check in' do
@@ -628,6 +714,47 @@ RSpec.describe 'Memberships', type: :request do
       expect(body['success_count']).to eq(1)
       expect(body['failed_count']).to eq(0)
       expect(body['errors']).to be_empty
+    end
+  end
+
+  describe 'DELETE /memberships/:id' do
+    it 'soft deletes the membership' do
+      delete "/memberships/#{hoa.id}", headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      expect(hoa.reload).to be_discarded
+    end
+  end
+
+  describe 'POST /memberships/:id/restore' do
+    it 'returns 403 when requested by non-admin staff' do
+      hoa.discard
+      staff = Staff.create!(shop: shop, name: 'Staff User', username: 'staff_rst', password: 'password123',
+                            role: 'staff')
+      token = JsonWebToken.encode({ shop_id: shop.id, staff_id: staff.id, role: 'staff' })
+
+      post "/memberships/#{hoa.id}/restore", headers: { 'Authorization' => "Bearer #{token}" }
+
+      expect(response).to have_http_status(:forbidden)
+      expect(hoa.reload).to be_discarded
+    end
+
+    it 'restores discarded membership when requested by admin' do
+      hoa.discard
+      expect(hoa.reload).to be_discarded
+
+      post "/memberships/#{hoa.id}/restore", headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['message']).to eq('Đã khôi phục hội viên thành công')
+      expect(hoa.reload).not_to be_discarded
+      expect(hoa.status).to eq('expiring')
+    end
+
+    it 'returns 404 when membership is not discarded or does not exist' do
+      post "/memberships/#{hoa.id}/restore", headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 end

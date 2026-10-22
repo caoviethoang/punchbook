@@ -27,6 +27,7 @@ Rails.application.routes.draw do
     end
     member do
       post :check_in
+      post :restore
     end
     resources :invoices, only: %i[create]
   end
