@@ -90,5 +90,21 @@ RSpec.describe AuditLog, type: :model do
         expect(log.details['sessions_after']).to eq(10)
       end
     end
+
+    describe '.log_membership_renewal_needed!' do
+      it 'creates an audit log entry for membership renewal alert' do
+        expect do
+          described_class.log_membership_renewal_needed!(shop: shop, membership: membership)
+        end.to change(described_class, :count).by(1)
+
+        log = described_class.last
+        expect(log.action).to eq('membership_renewal_needed')
+        expect(log.staff).to be_nil
+        expect(log.target_type).to eq('Membership')
+        expect(log.target_id).to eq(membership.id)
+        expect(log.details['customer_name']).to eq('Alice')
+        expect(log.details['reason']).to be_present
+      end
+    end
   end
 end
