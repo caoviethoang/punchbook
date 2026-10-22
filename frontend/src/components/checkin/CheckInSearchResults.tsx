@@ -166,7 +166,7 @@ export function MembershipResultList({
         const isCheckingIn = checkingInId === membership.id
         const isExhausted = isMembershipExhausted(membership)
         const isAlreadyCheckedIn = Boolean(membership.checked_in_today)
-        const isDisabled = isCheckingIn || isExhausted || isAlreadyCheckedIn
+        const isDisabled = isCheckingIn || isAlreadyCheckedIn
         const currentMessage = checkInMessage?.id === membership.id ? checkInMessage : null
         const checkInTime = formatCheckInTime(membership.last_checked_in_at)
 
@@ -288,26 +288,26 @@ export function MembershipResultList({
                 type="button"
                 disabled={isDisabled}
                 onClick={() => {
-                  if (isExhausted || isAlreadyCheckedIn) return
+                  if (isAlreadyCheckedIn) return
                   onCheckIn(membership.id)
                 }}
-                aria-disabled={isExhausted || isAlreadyCheckedIn}
+                aria-disabled={isAlreadyCheckedIn}
                 aria-label={
                   isCheckingIn
                     ? `Đang check-in cho ${membership.customer_name}`
-                    : isExhausted
-                      ? `${membership.customer_name} đã hết — không thể check-in`
-                      : isAlreadyCheckedIn
-                        ? `${membership.customer_name} đã check-in hôm nay`
+                    : isAlreadyCheckedIn
+                      ? `${membership.customer_name} đã check-in hôm nay`
+                      : isExhausted
+                        ? `Gia hạn và check-in cho ${membership.customer_name}`
                         : `Check-in cho ${membership.customer_name}`
                 }
                 className={`inline-flex h-8 sm:h-9 w-28 sm:w-32 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-semibold shadow-2xs transition focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-sm ${
                   isCheckingIn
                     ? "bg-indigo-600 text-white opacity-70"
-                    : isExhausted
-                      ? "cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600"
-                      : isAlreadyCheckedIn
-                        ? "cursor-not-allowed bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50"
+                    : isAlreadyCheckedIn
+                      ? "cursor-not-allowed bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50"
+                      : isExhausted
+                        ? "bg-amber-600 text-white hover:bg-amber-500 active:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-500"
                         : "bg-indigo-600 text-white hover:bg-indigo-500 active:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
                 }`}
               >
@@ -316,12 +316,15 @@ export function MembershipResultList({
                     <Loader2 className="h-3.5 w-3.5 animate-spin sm:h-4 sm:w-4" />
                     <span>Check-in...</span>
                   </>
-                ) : isExhausted ? (
-                  <span>Đã hết</span>
                 ) : isAlreadyCheckedIn ? (
                   <>
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 sm:h-4 sm:w-4 shrink-0" />
                     <span className="truncate">Đã Check-in</span>
+                  </>
+                ) : isExhausted ? (
+                  <>
+                    <RefreshCw className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                    <span className="truncate">Gia hạn & CI</span>
                   </>
                 ) : (
                   <>

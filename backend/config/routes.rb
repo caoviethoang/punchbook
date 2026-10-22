@@ -32,6 +32,8 @@ Rails.application.routes.draw do
     resources :invoices, only: %i[create]
   end
 
+  post '/memberships/:id/renew', to: 'membership_renewals#create'
+
   resources :audit_logs, only: [:index]
 
   namespace :webhooks do

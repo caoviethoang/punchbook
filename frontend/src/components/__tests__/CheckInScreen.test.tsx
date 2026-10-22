@@ -71,6 +71,10 @@ describe("CheckInScreen component", () => {
     setDetailMembershipId: vi.fn(),
     renewingMembership: null as Membership | null,
     setRenewingMembership: vi.fn(),
+    autoCheckInOnRenew: true,
+    setAutoCheckInOnRenew: vi.fn(),
+    openRenewModal: vi.fn(),
+    handleRenewSuccess: vi.fn(),
     isLoading: false,
     apiError: null as string | null,
     handleClear: vi.fn(),
@@ -232,25 +236,30 @@ describe("CheckInScreen component", () => {
     expect(screen.getByText("Đã Check-in")).toBeInTheDocument()
   })
 
-  it("disables check-in button when membership is exhausted (0 sessions left)", () => {
+  it("enables check-in button to trigger auto-renew when membership is exhausted (0 sessions left)", () => {
     const exhaustedMember: Membership = {
       ...dummyMember1,
       sessions_left: 0,
     }
+    const handleCheckInMock = vi.fn()
 
     vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
       ...defaultHookState,
       query: "Nguyen",
       memberships: [exhaustedMember],
+      handleCheckIn: handleCheckInMock,
     })
 
     render(<CheckInScreen />)
 
     const checkInBtn = screen.getByRole("button", {
-      name: /nguyen van a đã hết — không thể check-in/i,
+      name: /gia hạn và check-in cho nguyen van a/i,
     })
-    expect(checkInBtn).toBeDisabled()
-    expect(screen.getByText("Đã hết")).toBeInTheDocument()
+    expect(checkInBtn).not.toBeDisabled()
+    expect(screen.getByText("Gia hạn & CI")).toBeInTheDocument()
+
+    fireEvent.click(checkInBtn)
+    expect(handleCheckInMock).toHaveBeenCalledWith(exhaustedMember.id)
   })
 
   it("clicking Check-in button calls handleCheckIn", () => {
