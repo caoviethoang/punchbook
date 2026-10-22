@@ -7,7 +7,7 @@ import * as settingsApi from "../../lib/settings"
 import * as membershipsApi from "../../lib/memberships"
 import type { Membership } from "../../lib/memberships"
 import type { PackageItem } from "../../lib/packages"
-import type { SettingsData } from "../../lib/settings"
+import type { SettingsResponse } from "../../lib/settings"
 
 afterEach(() => {
   cleanup()
@@ -46,17 +46,17 @@ describe("RenewalModal component", () => {
     },
   ]
 
-  const dummySettings: SettingsData = {
+  const dummySettings: SettingsResponse = {
     shop: {
       id: "shop-1",
       name: "Spa Lan",
+      phone: "0901234567",
       email: "lan@example.com",
       plan: "paid",
       bank_name: "MB Bank",
       bank_account_no: "0901234567",
       bank_account_name: "NGUYEN VAN A",
     },
-    staffs: [],
   }
 
   beforeEach(() => {

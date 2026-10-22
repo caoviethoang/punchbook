@@ -68,3 +68,4 @@ RSpec.describe RenewMembership do
     end.to raise_error(RenewMembership::InvalidPackageError)
   end
 end
+
