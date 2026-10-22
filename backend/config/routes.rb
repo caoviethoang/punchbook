@@ -32,6 +32,8 @@ Rails.application.routes.draw do
     resources :invoices, only: %i[create]
   end
 
+  post '/memberships/batch_check_in', to: 'batch_check_ins#create'
+
   resources :audit_logs, only: [:index]
 
   namespace :webhooks do

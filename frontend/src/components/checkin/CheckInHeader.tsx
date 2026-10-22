@@ -1,4 +1,4 @@
-import { QrCode, UserCheck } from "lucide-react"
+import { QrCode, UserCheck, Users } from "lucide-react"
 import type { Staff } from "../../lib/auth"
 import { formatStaffOptionLabel } from "../../lib/staffs"
 
@@ -9,6 +9,8 @@ interface CheckInHeaderProps {
   selectedStaffId?: string | null
   onSelectStaff?: (staffId: string) => void
   loadingStaffs?: boolean
+  isGroupMode?: boolean
+  onToggleGroupMode?: () => void
 }
 
 export function CheckInHeader({
@@ -18,6 +20,8 @@ export function CheckInHeader({
   selectedStaffId,
   onSelectStaff,
   loadingStaffs = false,
+  isGroupMode = false,
+  onToggleGroupMode,
 }: CheckInHeaderProps) {
   const isNonAdminStaff = Boolean(currentStaff && currentStaff.role !== "admin")
 
@@ -34,14 +38,32 @@ export function CheckInHeader({
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={onOpenQRScanner}
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-500 dark:shadow-none sm:text-sm"
-        >
-          <QrCode className="h-4 w-4" />
-          <span>Quét mã QR</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {onToggleGroupMode && (
+            <button
+              type="button"
+              onClick={onToggleGroupMode}
+              aria-pressed={isGroupMode}
+              className={`inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold shadow-xs transition sm:text-sm ${
+                isGroupMode
+                  ? "bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-100 dark:shadow-none"
+                  : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              }`}
+            >
+              <Users className="h-4 w-4" />
+              <span>{isGroupMode ? "Đang chọn nhóm" : "Check-in nhóm"}</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={onOpenQRScanner}
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-500 dark:shadow-none sm:text-sm"
+          >
+            <QrCode className="h-4 w-4" />
+            <span>Quét mã QR</span>
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-2xs dark:border-slate-800 dark:bg-slate-900 sm:px-3.5">

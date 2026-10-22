@@ -83,6 +83,17 @@ describe("CheckInScreen component", () => {
     selectedStaffId: null as string | null,
     setSelectedStaffId: vi.fn(),
     refreshMemberships: vi.fn(),
+    isGroupMode: false,
+    toggleGroupMode: vi.fn(),
+    selectedIds: new Set<string>(),
+    toggleSelectMember: vi.fn(),
+    selectAllEligible: vi.fn(),
+    clearSelection: vi.fn(),
+    isBatchCheckingIn: false,
+    handleBatchCheckIn: vi.fn(),
+    batchResult: null,
+    isBatchResultModalOpen: false,
+    setIsBatchResultModalOpen: vi.fn(),
   }
 
   beforeEach(() => {
