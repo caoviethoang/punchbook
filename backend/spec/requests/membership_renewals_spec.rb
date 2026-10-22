@@ -62,4 +62,3 @@ RSpec.describe 'MembershipRenewals', type: :request do
     end
   end
 end
-

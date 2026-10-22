@@ -99,4 +99,3 @@ class RenewMembership
     CheckInMembership.call(membership: membership, staff: staff)
   end
 end
-
