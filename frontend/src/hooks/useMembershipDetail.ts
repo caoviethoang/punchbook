@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { getMembershipDetail, type MembershipDetail } from "../lib/memberships"
+import { getMembershipDetail, updateMembership, type MembershipDetail } from "../lib/memberships"
 import type { ReceiptData } from "../components/ThermalReceiptModal"
 
 export type MembershipDetailTab = "card" | "check_ins" | "invoices"
@@ -13,6 +13,7 @@ export function useMembershipDetail(
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<MembershipDetailTab>(initialTab)
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null)
+  const [updatingNotes, setUpdatingNotes] = useState(false)
 
   useEffect(() => {
     let isCancelled = false
@@ -58,6 +59,17 @@ export function useMembershipDetail(
     })
   }
 
+  async function handleUpdateNotes(newNotes: string) {
+    setUpdatingNotes(true)
+    try {
+      const updated = await updateMembership(membershipId, { notes: newNotes })
+      setDetail((prev) => (prev ? { ...prev, notes: updated.notes ?? newNotes } : null))
+      return updated
+    } finally {
+      setUpdatingNotes(false)
+    }
+  }
+
   return {
     detail,
     loading,
@@ -67,5 +79,7 @@ export function useMembershipDetail(
     selectedReceipt,
     setSelectedReceipt,
     handlePrintReceipt,
+    handleUpdateNotes,
+    updatingNotes,
   }
 }

@@ -15,7 +15,7 @@ class MembershipSerializer
   # Used by MembershipsController (index, create, check_in) and InvoicesController.
   def as_api_json
     membership.as_json(
-      only: %i[id customer_name phone sessions_left expires_at discarded_at],
+      only: %i[id customer_name phone sessions_left expires_at discarded_at notes],
       include: ASSOCIATION_INCLUDES
     ).merge(status_and_qr_hash)
   end
@@ -28,7 +28,7 @@ class MembershipSerializer
   # Used by MembershipsController#show — detailed view with check_ins and invoices.
   def as_detail_json
     base = membership.as_json(
-      only: %i[id customer_name phone sessions_left expires_at created_at],
+      only: %i[id customer_name phone sessions_left expires_at created_at notes],
       include: ASSOCIATION_INCLUDES
     )
     base.merge(extra_detail_hash)

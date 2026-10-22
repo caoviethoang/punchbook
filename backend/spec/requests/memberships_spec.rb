@@ -249,6 +249,7 @@ RSpec.describe 'Memberships', type: :request do
     it 'returns membership details with check-ins and invoices sorted desc' do
       staff = Staff.create!(shop: shop, name: 'Staff Member 1', role: 'staff')
       CheckIn.create!(membership: hoa, staff: staff, checked_in_at: 2.days.ago)
+      hoa.update!(notes: 'Khách dị ứng tinh dầu sả')
       latest_check_in = CheckIn.create!(membership: hoa, staff: staff, checked_in_at: 1.hour.ago)
       invoice = Invoice.create!(membership: hoa, amount: 1_000_000, status: 'paid', payos_transaction_id: 'P123')
 
@@ -258,6 +259,7 @@ RSpec.describe 'Memberships', type: :request do
       body = response.parsed_body['membership']
 
       expect(body).to include('id' => hoa.id, 'customer_name' => 'Hoa Nguyen', 'phone' => '0902000000',
+                              'notes' => 'Khách dị ứng tinh dầu sả',
                               'status' => 'expiring', 'qr_code_value' => "PUNCHBOOK:#{hoa.id}")
       expect(body['shop']).to include('id' => shop.id, 'name' => 'Lan Spa')
       expect(body['package']).to include('id' => package.id, 'name' => '10-session massage', 'price' => 1_000_000)
@@ -342,6 +344,24 @@ RSpec.describe 'Memberships', type: :request do
         'sessions_left' => nil,
         'expires_at' => (Date.current + 30.days).iso8601
       )
+    end
+
+    it 'creates a membership with optional notes' do
+      payload = {
+        membership: {
+          customer_name: 'Lan Anh',
+          phone: '0909999999',
+          package_id: package.id,
+          notes: 'Lịch tập ưu tiên ca sáng'
+        }
+      }
+
+      post '/memberships', params: payload, headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:created)
+      created_id = response.parsed_body['membership']['id']
+      expect(response.parsed_body['membership']['notes']).to eq('Lịch tập ưu tiên ca sáng')
+      expect(Membership.find(created_id).notes).to eq('Lịch tập ưu tiên ca sáng')
     end
 
     it 'returns 422 when customer_name is blank' do
@@ -463,6 +483,20 @@ RSpec.describe 'Memberships', type: :request do
       expect(hoa.customer_name).to eq('Hoa Nguyen Updated')
       expect(hoa.phone).to eq('0999888777')
       expect(hoa.sessions_left).to eq(5)
+    end
+
+    it 'updates notes successfully' do
+      patch "/memberships/#{hoa.id}",
+            params: {
+              membership: {
+                notes: 'Yêu cầu đặc biệt: không dùng dầu dừa'
+              }
+            },
+            headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['membership']['notes']).to eq('Yêu cầu đặc biệt: không dùng dầu dừa')
+      expect(hoa.reload.notes).to eq('Yêu cầu đặc biệt: không dùng dầu dừa')
     end
 
     it 'returns 404 when membership belongs to another shop' do
