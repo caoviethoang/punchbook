@@ -7,16 +7,17 @@ module MembershipStatusable
   EXPIRING_SESSIONS_THRESHOLD = 3
   EXPIRING_DAYS_WINDOW = 7
 
+  included do
+    before_validation :sync_status
+
+    validates :status, presence: true, inclusion: { in: STATUSES }
+  end
+
   module ClassMethods
     def by_status_query(status)
-      today = Date.current
-      expiring_date = today + EXPIRING_DAYS_WINDOW.days
-
       case status
-      when 'not_checked_in' then not_checked_in_status_query(today)
-      when 'expired' then expired_status_query(today)
-      when 'expiring' then expiring_status_query(today, expiring_date)
-      when 'active' then active_status_query(expiring_date)
+      when 'not_checked_in' then not_checked_in_status_query(Date.current)
+      when 'expired', 'expiring', 'active' then where(status: status)
       else all
       end
     end
@@ -75,10 +76,22 @@ module MembershipStatusable
   end
 
   def status
+    if new_record? || sessions_left_changed? || expires_at_changed?
+      calculate_status
+    else
+      read_attribute(:status).presence || calculate_status
+    end
+  end
+
+  def calculate_status
     return 'expired' if status_expired?
     return 'expiring' if status_expiring?
 
     'active'
+  end
+
+  def sync_status
+    self.status = calculate_status if package.present?
   end
 
   def expired?
@@ -123,6 +136,8 @@ module MembershipStatusable
   end
 
   def status_expired?
+    return false unless package
+
     if package.session_based?
       sessions_left.to_i <= 0
     else
@@ -131,6 +146,8 @@ module MembershipStatusable
   end
 
   def status_expiring?
+    return false unless package
+
     if package.session_based?
       sessions_left.to_i <= EXPIRING_SESSIONS_THRESHOLD
     else
