@@ -33,6 +33,9 @@ Rails.application.routes.draw do
   end
 
   resources :audit_logs, only: [:index]
+  resources :webhook_events, only: [:index] do
+    post :retry, on: :member
+  end
 
   namespace :webhooks do
     post :payos, to: 'payos#create'
