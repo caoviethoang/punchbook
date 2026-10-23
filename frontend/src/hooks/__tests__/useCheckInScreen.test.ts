@@ -495,4 +495,109 @@ describe("useCheckInScreen hook", () => {
       })
     })
   })
+
+  describe("Group batch check-in", () => {
+    it("toggles group mode and clears selection on disable", () => {
+      const { result } = renderHook(() => useCheckInScreen({}))
+      expect(result.current.isGroupMode).toBe(false)
+
+      act(() => {
+        result.current.toggleGroupMode()
+      })
+      expect(result.current.isGroupMode).toBe(true)
+
+      act(() => {
+        result.current.toggleSelectMember("m-1")
+      })
+      expect(result.current.selectedIds.has("m-1")).toBe(true)
+
+      act(() => {
+        result.current.toggleGroupMode()
+      })
+      expect(result.current.isGroupMode).toBe(false)
+      expect(result.current.selectedIds.size).toBe(0)
+    })
+
+    it("toggles member selection and selects all eligible members", async () => {
+      const exhaustedMember: Membership = {
+        ...dummyMember,
+        id: "m-2",
+        sessions_left: 0,
+      }
+      const checkedInMember: Membership = {
+        ...dummyMember,
+        id: "m-3",
+        checked_in_today: true,
+      }
+      vi.spyOn(membershipsApi, "fetchMemberships").mockResolvedValue({
+        memberships: [dummyMember, exhaustedMember, checkedInMember],
+        meta: dummyMeta,
+      })
+
+      const { result } = renderHook(() => useCheckInScreen({}))
+      await waitFor(() => expect(result.current.memberships.length).toBe(3))
+
+      act(() => {
+        result.current.toggleSelectMember("m-1")
+      })
+      expect(result.current.selectedIds.has("m-1")).toBe(true)
+
+      act(() => {
+        result.current.toggleSelectMember("m-1")
+      })
+      expect(result.current.selectedIds.has("m-1")).toBe(false)
+
+      act(() => {
+        result.current.selectAllEligible()
+      })
+      expect(result.current.selectedIds.has("m-1")).toBe(true)
+      expect(result.current.selectedIds.has("m-2")).toBe(false)
+      expect(result.current.selectedIds.has("m-3")).toBe(false)
+
+      act(() => {
+        result.current.clearSelection()
+      })
+      expect(result.current.selectedIds.size).toBe(0)
+    })
+
+    it("handles batchCheckIn: calls API, updates local state, sets modal result and toast", async () => {
+      const batchResult: membershipsApi.BatchCheckInResult = {
+        total: 1,
+        success_count: 1,
+        failed_count: 0,
+        results: [
+          {
+            membership_id: "m-1",
+            customer_name: "Nguyen Van A",
+            status: "success",
+            membership: { ...dummyMember, sessions_left: 9 },
+            check_in: { id: "ci-batch-1", checked_in_at: "2026-10-22T08:00:00Z" },
+          },
+        ],
+      }
+      const batchSpy = vi.spyOn(membershipsApi, "batchCheckIn").mockResolvedValue(batchResult)
+
+      const { result } = renderHook(() => useCheckInScreen({}))
+      await waitFor(() => expect(result.current.memberships.length).toBe(1))
+
+      act(() => {
+        result.current.toggleSelectMember("m-1")
+      })
+
+      await act(async () => {
+        await result.current.handleBatchCheckIn()
+      })
+
+      expect(batchSpy).toHaveBeenCalledWith(["m-1"], undefined)
+      expect(result.current.batchResult).toEqual(batchResult)
+      expect(result.current.isBatchResultModalOpen).toBe(true)
+      expect(result.current.selectedIds.size).toBe(0)
+      expect(result.current.memberships[0].sessions_left).toBe(9)
+      expect(result.current.memberships[0].checked_in_today).toBe(true)
+      expect(result.current.toast).toEqual({
+        message: "Điểm danh nhóm: 1/1 thành công",
+        type: "success",
+      })
+    })
+  })
 })
