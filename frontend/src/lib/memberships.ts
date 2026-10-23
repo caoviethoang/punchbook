@@ -75,6 +75,22 @@ export interface CheckInResult {
   check_in: CheckInRecord
 }
 
+export interface BatchCheckInItemResult {
+  membership_id: string
+  customer_name: string
+  status: "success" | "failed"
+  membership?: Membership
+  check_in?: CheckInRecord
+  error?: string
+}
+
+export interface BatchCheckInResult {
+  total: number
+  success_count: number
+  failed_count: number
+  results: BatchCheckInItemResult[]
+}
+
 export const EXPIRING_SESSIONS_THRESHOLD = 3
 export const EXPIRING_DAYS_WINDOW = 7
 
@@ -315,6 +331,20 @@ export async function importMemberships(file: File): Promise<ImportMembershipsRe
  */
 export async function checkIn(id: string, staffId?: string): Promise<CheckInResult> {
   return apiPost<CheckInResult>(`/memberships/${id}/check_in`, {
+    staff_id: staffId || undefined,
+  })
+}
+
+/**
+ * POST /memberships/batch_check_in
+ * Perform batch check-in for multiple members at once (e.g. group classes).
+ */
+export async function batchCheckIn(
+  membershipIds: string[],
+  staffId?: string,
+): Promise<BatchCheckInResult> {
+  return apiPost<BatchCheckInResult>("/memberships/batch_check_in", {
+    membership_ids: membershipIds,
     staff_id: staffId || undefined,
   })
 }

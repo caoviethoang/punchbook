@@ -4,10 +4,12 @@ import { useMembershipsApi } from "./useMembershipsApi"
 import type { Staff } from "../lib/auth"
 import { toApiError, toCheckInError } from "../lib/errors"
 import {
+  batchCheckIn,
   extractMembershipIdFromQR,
   fetchMemberships,
   getMembershipDetail,
   isMembershipExhausted,
+  type BatchCheckInResult,
   type CheckInFilterType,
   type Membership,
   type PaginationMeta,
@@ -76,6 +78,13 @@ export function useCheckInScreen({
   const [detailMembershipId, setDetailMembershipId] = useState<string | null>(null)
   const [renewingMembership, setRenewingMembership] = useState<Membership | null>(null)
   const [autoCheckInOnRenew, setAutoCheckInOnRenew] = useState<boolean>(true)
+
+  // Group check-in state
+  const [isGroupMode, setIsGroupMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isBatchCheckingIn, setIsBatchCheckingIn] = useState(false)
+  const [batchResult, setBatchResult] = useState<BatchCheckInResult | null>(null)
+  const [isBatchResultModalOpen, setIsBatchResultModalOpen] = useState(false)
 
   const isDebouncing = query !== debouncedQuery
   const isLoading = fetchLoading || searchLoading || isDebouncing
@@ -354,6 +363,87 @@ export function useCheckInScreen({
     }
   }
 
+  const toggleGroupMode = useCallback(() => {
+    setIsGroupMode((prev) => {
+      if (prev) {
+        setSelectedIds(new Set())
+      }
+      return !prev
+    })
+  }, [])
+
+  const toggleSelectMember = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }, [])
+
+  const selectAllEligible = useCallback(() => {
+    setSelectedIds((prev) => {
+      const eligible = memberships.filter((m) => !isMembershipExhausted(m) && !m.checked_in_today)
+      const next = new Set(prev)
+      eligible.forEach((m) => next.add(m.id))
+      return next
+    })
+  }, [memberships])
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set())
+  }, [])
+
+  const handleBatchCheckIn = useCallback(async () => {
+    if (selectedIds.size === 0) return
+    setIsBatchCheckingIn(true)
+    try {
+      const effectiveStaffId = selectedStaffId || currentStaff?.id || currentStaffId || undefined
+      const result = await batchCheckIn(Array.from(selectedIds), effectiveStaffId)
+
+      // Update local memberships state for successful check-ins
+      const successfulMap = new Map(
+        result.results
+          .filter((r) => r.status === "success" && r.membership)
+          .map((r) => [r.membership_id, r]),
+      )
+
+      if (successfulMap.size > 0) {
+        setMemberships((prev) =>
+          prev.map((m) => {
+            const updated = successfulMap.get(m.id)
+            if (!updated) return m
+            return {
+              ...m,
+              sessions_left: updated.membership?.sessions_left ?? m.sessions_left,
+              checked_in_today: true,
+              last_checked_in_at: updated.check_in?.checked_in_at ?? m.last_checked_in_at,
+            }
+          }),
+        )
+      }
+
+      setBatchResult(result)
+      setIsBatchResultModalOpen(true)
+      setSelectedIds(new Set())
+
+      setToast({
+        message: `Điểm danh nhóm: ${result.success_count}/${result.total} thành công`,
+        type: result.failed_count > 0 ? "error" : "success",
+      })
+    } catch (err) {
+      setToast({
+        message: toApiError(err, "Không thể thực hiện điểm danh nhóm."),
+        type: "error",
+      })
+    } finally {
+      setIsBatchCheckingIn(false)
+    }
+  }, [selectedIds, selectedStaffId, currentStaff, currentStaffId])
+
   return {
     query,
     setQuery,
@@ -392,5 +482,16 @@ export function useCheckInScreen({
     selectedStaffId,
     setSelectedStaffId,
     refreshMemberships,
+    isGroupMode,
+    toggleGroupMode,
+    selectedIds,
+    toggleSelectMember,
+    selectAllEligible,
+    clearSelection,
+    isBatchCheckingIn,
+    handleBatchCheckIn,
+    batchResult,
+    isBatchResultModalOpen,
+    setIsBatchResultModalOpen,
   }
 }

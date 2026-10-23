@@ -138,6 +138,9 @@ export interface MembershipResultListProps {
   onRenew: (membership: Membership) => void
   onViewDetail: (id: string) => void
   onPrintReceipt?: (membership: Membership) => void
+  isGroupMode?: boolean
+  selectedIds?: Set<string>
+  onToggleSelect?: (id: string) => void
 }
 
 function formatCheckInTime(dateStr?: string | null): string {
@@ -159,6 +162,9 @@ export function MembershipResultList({
   onRenew,
   onViewDetail,
   onPrintReceipt,
+  isGroupMode = false,
+  selectedIds,
+  onToggleSelect,
 }: MembershipResultListProps) {
   return (
     <div role="list" aria-label="Danh sách hội viên" className="grid gap-2.5 sm:gap-3">
@@ -169,18 +175,43 @@ export function MembershipResultList({
         const isDisabled = isCheckingIn || isAlreadyCheckedIn
         const currentMessage = checkInMessage?.id === membership.id ? checkInMessage : null
         const checkInTime = formatCheckInTime(membership.last_checked_in_at)
+        const isSelected = selectedIds?.has(membership.id) ?? false
 
         return (
           <div
             key={membership.id}
             role="listitem"
-            className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-2xs transition hover:border-indigo-200 hover:shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-900/50 sm:gap-4 sm:px-5 sm:py-3.5"
+            className={`group flex items-center gap-3 rounded-xl border px-4 py-3 shadow-2xs transition sm:gap-4 sm:px-5 sm:py-3.5 ${
+              isSelected
+                ? "border-indigo-400 bg-indigo-50/30 dark:border-indigo-500/60 dark:bg-indigo-950/20"
+                : "border-slate-200 bg-white hover:border-indigo-200 hover:shadow-xs dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-900/50"
+            }`}
           >
+            {/* Group Selection Checkbox */}
+            {isGroupMode && (
+              <div className="flex shrink-0 items-center pr-1 sm:pr-2">
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  disabled={isExhausted || isAlreadyCheckedIn}
+                  onChange={() => onToggleSelect?.(membership.id)}
+                  aria-label={`Chọn hội viên ${membership.customer_name}`}
+                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800"
+                />
+              </div>
+            )}
+
             {/* Col 1: Customer name + phone, package badge + status */}
             <div className="min-w-0 flex-1">
               <button
                 type="button"
-                onClick={() => onViewDetail(membership.id)}
+                onClick={() => {
+                  if (isGroupMode && !isExhausted && !isAlreadyCheckedIn && onToggleSelect) {
+                    onToggleSelect(membership.id)
+                  } else {
+                    onViewDetail(membership.id)
+                  }
+                }}
                 className="w-full text-left group/btn focus:outline-none"
               >
                 <div className="flex items-center gap-2 min-w-0">
