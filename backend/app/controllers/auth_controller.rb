@@ -8,14 +8,11 @@ class AuthController < ApplicationController
 
   def register
     result = RegisterShopService.call(register_params)
-    return render json: { errors: result.errors }, status: :unprocessable_content unless result.success?
-
-    admin_staff = result.shop.staffs.find_by(role: 'admin')
-    render json: {
-      token: result.token,
-      shop: ShopSerializer.new(result.shop).as_json,
-      staff: StaffSerializer.new(admin_staff).as_json
-    }, status: :created
+    if result.success?
+      render_register_success(result)
+    else
+      render_register_failure(result)
+    end
   end
 
   def login
@@ -37,6 +34,24 @@ class AuthController < ApplicationController
 
   private
 
+  def render_register_success(result)
+    admin_staff = result.shop.staffs.find_by(role: 'admin')
+    render json: {
+      token: result.token,
+      shop: ShopSerializer.new(result.shop).as_json,
+      staff: StaffSerializer.new(admin_staff).as_json
+    }, status: :created
+  end
+
+  def render_register_failure(result)
+    render json: {
+      error: result.errors.join(', '),
+      code: 'VALIDATION_ERROR',
+      details: { errors: result.errors },
+      errors: result.errors
+    }, status: :unprocessable_content
+  end
+
   def register_params
     params.permit(:name, :phone, :email, :password, :password_confirmation)
   end
@@ -46,7 +61,7 @@ class AuthController < ApplicationController
       reset_login_rate_limit if defined?(Rack::Attack) && Rack::Attack.enabled
       render json: result.payload
     else
-      render json: { error: result.error }, status: :unauthorized
+      render json: { error: result.error, code: 'INVALID_CREDENTIALS' }, status: :unauthorized
     end
   end
 

@@ -16,8 +16,7 @@ class BatchCheckInsController < ApiController
   private
 
   def render_empty_error
-    render json: { error: 'Vui lòng chọn ít nhất một hội viên để điểm danh' },
-           status: :unprocessable_content
+    render_unprocessable_message('Vui lòng chọn ít nhất một hội viên để điểm danh', code: 'MEMBERSHIPS_REQUIRED')
   end
 
   def find_staff

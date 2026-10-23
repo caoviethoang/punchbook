@@ -17,6 +17,7 @@ export function MemberEditModal({
 }: MemberEditModalProps) {
   const [customerName, setCustomerName] = useState(membership?.customer_name || "")
   const [phone, setPhone] = useState(membership?.phone || "")
+  const [cardNumber, setCardNumber] = useState(membership?.card_number || "")
   const [packageId, setPackageId] = useState(membership?.package?.id || "")
   const [sessionsLeft, setSessionsLeft] = useState<string>(
     membership?.sessions_left !== null && membership?.sessions_left !== undefined
@@ -46,6 +47,7 @@ export function MemberEditModal({
       const updated = await updateMembership(membership!.id, {
         customer_name: customerName.trim(),
         phone: phone.trim(),
+        card_number: cardNumber.trim() || null,
         package_id: packageId || undefined,
         sessions_left: sessionsLeft !== "" ? Number(sessionsLeft) : null,
         expires_at: expiresAt !== "" ? expiresAt : null,
@@ -115,6 +117,19 @@ export function MemberEditModal({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
+              className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Mã thẻ từ / RFID / Mã định danh thiết bị
+            </label>
+            <input
+              type="text"
+              value={cardNumber}
+              onChange={(e) => setCardNumber(e.target.value)}
+              placeholder="Ví dụ: RFID_123456"
               className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
             />
           </div>

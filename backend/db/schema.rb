@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_160500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_23_043219) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -65,6 +65,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_160500) do
   end
 
   create_table "memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "card_number"
     t.datetime "created_at", null: false
     t.string "customer_name"
     t.datetime "discarded_at"
@@ -74,13 +75,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_160500) do
     t.string "phone"
     t.integer "sessions_left"
     t.uuid "shop_id", null: false
+    t.string "status", default: "active", null: false
     t.datetime "updated_at", null: false
     t.index ["discarded_at"], name: "index_memberships_on_discarded_at"
     t.index ["package_id"], name: "index_memberships_on_package_id"
+    t.index ["shop_id", "card_number"], name: "index_memberships_on_shop_id_and_card_number", unique: true, where: "(card_number IS NOT NULL)"
     t.index ["shop_id", "customer_name"], name: "index_memberships_on_shop_id_and_customer_name"
     t.index ["shop_id", "expires_at"], name: "index_memberships_on_shop_id_and_expires_at"
     t.index ["shop_id", "phone"], name: "index_memberships_on_shop_id_and_phone"
     t.index ["shop_id", "sessions_left"], name: "index_memberships_on_shop_id_and_sessions_left"
+    t.index ["shop_id", "status"], name: "index_memberships_on_shop_id_and_status"
     t.index ["shop_id"], name: "index_memberships_on_shop_id"
   end
 
@@ -129,6 +133,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_160500) do
     t.string "bank_account_no"
     t.string "bank_name"
     t.datetime "created_at", null: false
+    t.string "device_api_key"
     t.string "email", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "name"
@@ -136,6 +141,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_160500) do
     t.string "plan", default: "free", null: false
     t.datetime "plan_expires_at"
     t.datetime "updated_at", null: false
+    t.index ["device_api_key"], name: "index_shops_on_device_api_key", unique: true
     t.index ["email"], name: "index_shops_on_email", unique: true
   end
 
@@ -162,6 +168,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_160500) do
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end
 
+  create_table "webhook_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.integer "attempts", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.string "event_type", default: "payment", null: false
+    t.datetime "failed_at"
+    t.text "last_error"
+    t.integer "max_attempts", default: 5, null: false
+    t.bigint "order_code"
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "processed_at"
+    t.uuid "shop_id"
+    t.string "source", default: "payos", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_code"], name: "index_webhook_events_on_order_code"
+    t.index ["shop_id", "status"], name: "index_webhook_events_on_shop_id_and_status"
+    t.index ["shop_id"], name: "index_webhook_events_on_shop_id"
+    t.index ["source", "order_code"], name: "index_webhook_events_on_source_and_order_code"
+    t.index ["status"], name: "index_webhook_events_on_status"
+  end
+
   add_foreign_key "audit_logs", "shops", on_delete: :cascade
   add_foreign_key "audit_logs", "staffs", on_delete: :nullify
   add_foreign_key "check_ins", "memberships"
@@ -175,4 +202,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_160500) do
   add_foreign_key "packages", "shops"
   add_foreign_key "shop_plan_payments", "shops"
   add_foreign_key "staffs", "shops"
+  add_foreign_key "webhook_events", "shops"
 end

@@ -36,3 +36,7 @@ export async function changeShopPassword(input: ChangePasswordInput): Promise<Se
 export async function upgradeShopPlan(months: number = 1): Promise<SettingsResponse> {
   return apiPost<SettingsResponse>("/settings/upgrade_plan", { months })
 }
+
+export async function regenerateDeviceApiKey(): Promise<SettingsResponse> {
+  return apiPost<SettingsResponse>("/settings/regenerate_device_api_key")
+}

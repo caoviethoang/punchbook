@@ -22,9 +22,9 @@ RSpec.describe 'Staffs', type: :request do
     { 'Authorization' => "Bearer #{token}" }
   end
 
-  describe 'GET /staffs' do
+  describe 'GET /api/v1/staffs' do
     it 'allows admin to view list of shop staffs' do
-      get '/staffs', headers: admin_headers
+      get '/api/v1/staffs', headers: admin_headers
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body['staffs']
@@ -34,16 +34,17 @@ RSpec.describe 'Staffs', type: :request do
     end
 
     it 'forbids non-admin staff from viewing staff list' do
-      get '/staffs', headers: staff_headers
+      get '/api/v1/staffs', headers: staff_headers
 
       expect(response).to have_http_status(:forbidden)
       expect(response.parsed_body['error']).to include('Access denied')
+      expect(response.parsed_body['code']).to eq('FORBIDDEN')
     end
   end
 
-  describe 'POST /staffs' do
+  describe 'POST /api/v1/staffs' do
     it 'allows admin to create a new staff account' do
-      post '/staffs', params: {
+      post '/api/v1/staffs', params: {
         staff: {
           name: 'Linh Receptionist',
           username: 'linh_reception',
@@ -60,7 +61,7 @@ RSpec.describe 'Staffs', type: :request do
     end
 
     it 'forbids non-admin staff from creating staff accounts' do
-      post '/staffs', params: {
+      post '/api/v1/staffs', params: {
         staff: {
           name: 'Unauthorized Staff',
           username: 'unauth_user',
@@ -71,22 +72,24 @@ RSpec.describe 'Staffs', type: :request do
 
       expect(response).to have_http_status(:forbidden)
       expect(response.parsed_body['error']).to include('Access denied')
+      expect(response.parsed_body['code']).to eq('FORBIDDEN')
     end
   end
 
-  describe 'DELETE /staffs/:id' do
+  describe 'DELETE /api/v1/staffs/:id' do
     it 'allows admin to delete a receptionist account' do
-      delete "/staffs/#{receptionist.id}", headers: admin_headers
+      delete "/api/v1/staffs/#{receptionist.id}", headers: admin_headers
 
       expect(response).to have_http_status(:ok)
       expect(Staff.exists?(receptionist.id)).to be false
     end
 
     it 'prevents admin from deleting their own account' do
-      delete "/staffs/#{admin_staff.id}", headers: admin_headers
+      delete "/api/v1/staffs/#{admin_staff.id}", headers: admin_headers
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.parsed_body['error']).to eq('Cannot delete your own account')
+      expect(response.parsed_body['code']).to eq('CANNOT_DELETE_SELF')
     end
   end
 end

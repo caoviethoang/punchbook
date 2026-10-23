@@ -8,9 +8,9 @@ module Webhooks
       if success
         render json: { status: 'success' }, status: :ok
       elsif status_code == :invalid_signature
-        render json: { error: 'Invalid signature' }, status: :bad_request
+        render_error('Invalid signature', code: 'INVALID_SIGNATURE', status: :bad_request)
       else
-        render json: { error: 'Webhook processing failed' }, status: :unprocessable_content
+        render_error('Webhook processing failed', code: 'WEBHOOK_FAILED', status: :unprocessable_content)
       end
     end
   end
