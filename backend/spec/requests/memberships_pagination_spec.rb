@@ -23,9 +23,9 @@ RSpec.describe 'Memberships API Pagination & Filtering', type: :request do
                        phone: '0906666666', expires_at: Date.current - 1.day)
   end
 
-  describe 'GET /memberships' do
+  describe 'GET /api/v1/memberships' do
     it 'returns paginated memberships with meta info' do
-      get '/memberships?page=1&per_page=2', headers: auth_headers(shop)
+      get '/api/v1/memberships?page=1&per_page=2', headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
@@ -40,7 +40,7 @@ RSpec.describe 'Memberships API Pagination & Filtering', type: :request do
     end
 
     it 'filters by active status' do
-      get '/memberships?status=active', headers: auth_headers(shop)
+      get '/api/v1/memberships?status=active', headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
@@ -51,7 +51,7 @@ RSpec.describe 'Memberships API Pagination & Filtering', type: :request do
     end
 
     it 'filters by expiring status' do
-      get '/memberships?status=expiring', headers: auth_headers(shop)
+      get '/api/v1/memberships?status=expiring', headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
@@ -62,7 +62,7 @@ RSpec.describe 'Memberships API Pagination & Filtering', type: :request do
     end
 
     it 'filters by expired status' do
-      get '/memberships?status=expired', headers: auth_headers(shop)
+      get '/api/v1/memberships?status=expired', headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
@@ -73,7 +73,7 @@ RSpec.describe 'Memberships API Pagination & Filtering', type: :request do
     end
 
     it 'combines search query, status filter, and pagination' do
-      get '/memberships?query=Day&status=active&page=1&per_page=10', headers: auth_headers(shop)
+      get '/api/v1/memberships?query=Day&status=active&page=1&per_page=10', headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body

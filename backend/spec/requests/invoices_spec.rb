@@ -15,12 +15,13 @@ RSpec.describe 'Invoices API', type: :request do
     )
   end
 
-  describe 'POST /memberships/:membership_id/invoices' do
+  describe 'POST /api/v1/memberships/:membership_id/invoices' do
     context 'when unauthenticated' do
       it 'returns 401 unauthorized' do
-        post "/memberships/#{membership.id}/invoices"
+        post "/api/v1/memberships/#{membership.id}/invoices"
 
         expect(response).to have_http_status(:unauthorized)
+        expect(response.parsed_body['code']).to eq('UNAUTHORIZED')
       end
     end
 
@@ -29,11 +30,12 @@ RSpec.describe 'Invoices API', type: :request do
 
       it 'returns 404 not found and creates no invoice' do
         expect do
-          post "/memberships/#{membership.id}/invoices", headers: auth_headers(other_shop)
+          post "/api/v1/memberships/#{membership.id}/invoices", headers: auth_headers(other_shop)
         end.not_to change(Invoice, :count)
 
         expect(response).to have_http_status(:not_found)
         expect(response.parsed_body['error']).to eq('Not found')
+        expect(response.parsed_body['code']).to eq('NOT_FOUND')
       end
     end
 
@@ -57,7 +59,7 @@ RSpec.describe 'Invoices API', type: :request do
 
       it 'creates a pending invoice, calls payOS, and returns checkout URL + QR code' do
         expect do
-          post "/memberships/#{membership.id}/invoices", headers: auth_headers(shop)
+          post "/api/v1/memberships/#{membership.id}/invoices", headers: auth_headers(shop)
         end.to change(Invoice, :count).by(1)
 
         expect(response).to have_http_status(:created)
@@ -81,7 +83,7 @@ RSpec.describe 'Invoices API', type: :request do
       end
 
       it 'allows overriding invoice amount via params' do
-        post "/memberships/#{membership.id}/invoices",
+        post "/api/v1/memberships/#{membership.id}/invoices",
              params: { invoice: { amount: 500_000 } },
              headers: auth_headers(shop)
 
@@ -105,11 +107,12 @@ RSpec.describe 'Invoices API', type: :request do
 
       it 'returns 422 unprocessable_content and rolls back invoice creation' do
         expect do
-          post "/memberships/#{membership.id}/invoices", headers: auth_headers(shop)
+          post "/api/v1/memberships/#{membership.id}/invoices", headers: auth_headers(shop)
         end.not_to change(Invoice, :count)
 
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.parsed_body['error']).to include('payOS Error [20]: Invalid checksum')
+        expect(response.parsed_body['code']).to eq('BUSINESS_ERROR')
       end
     end
   end

@@ -1,7 +1,44 @@
 import { getStoredToken } from "./auth"
 
-export const apiBaseUrl =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"
+function resolveBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_API_BASE_URL
+  if (envUrl) {
+    return envUrl.endsWith("/api/v1") ? envUrl : `${envUrl.replace(/\/+$/, "")}/api/v1`
+  }
+  return "http://localhost:3000/api/v1"
+}
+
+export const apiBaseUrl = resolveBaseUrl()
+
+export function resolveApiUrl(path: string): string {
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path
+  }
+  const cleanPath = path.startsWith("/") ? path : `/${path}`
+  if (cleanPath.startsWith("/api/v1/")) {
+    const rootBase = apiBaseUrl.replace(/\/api\/v1\/?$/, "")
+    return `${rootBase}${cleanPath}`
+  }
+  return `${apiBaseUrl}${cleanPath}`
+}
+
+export interface ApiErrorResponse {
+  error: string
+  code: string
+  details?: Record<string, unknown>
+}
+
+export class ApiError extends Error {
+  code: string
+  details?: Record<string, unknown>
+
+  constructor(message: string, code = "UNKNOWN_ERROR", details?: Record<string, unknown>) {
+    super(message)
+    this.name = "ApiError"
+    this.code = code
+    this.details = details
+  }
+}
 
 /**
  * Returns the raw stored token string.
@@ -28,19 +65,30 @@ export function authHeaders(): HeadersInit {
 
 /**
  * Parses the JSON body of a fetch Response.
- * On non-2xx status, extracts a human-readable error message and throws.
+ * On non-2xx status, extracts a human-readable error message and throws an ApiError.
  */
 export async function parseApiResponse<T>(response: Response): Promise<T> {
   const body: unknown = await response.json()
   if (!response.ok) {
-    const record = body as { error?: unknown; errors?: unknown }
+    const record = body as {
+      error?: unknown
+      errors?: unknown
+      code?: unknown
+      details?: unknown
+    }
     const message =
       typeof record.error === "string"
         ? record.error
         : Array.isArray(record.errors)
           ? record.errors.join(", ")
           : "Request failed"
-    throw new Error(message)
+    const code = typeof record.code === "string" ? record.code : `HTTP_${response.status}`
+    const details =
+      typeof record.details === "object" && record.details !== null
+        ? (record.details as Record<string, unknown>)
+        : undefined
+
+    throw new ApiError(message, code, details)
   }
   return body as T
 }
@@ -50,7 +98,7 @@ export async function parseApiResponse<T>(response: Response): Promise<T> {
  * Reads `Content-Disposition` header for filename if available.
  */
 export async function downloadBlob(path: string, fallbackFilename: string): Promise<void> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+  const response = await fetch(resolveApiUrl(path), {
     headers: authHeaders(),
   })
 
@@ -95,7 +143,7 @@ function withQuery(path: string, query?: Record<string, string>): string {
     if (value) params.set(key, value)
   })
   const qs = params.toString()
-  return `${apiBaseUrl}${path}${qs ? `?${qs}` : ""}`
+  return `${resolveApiUrl(path)}${qs ? `?${qs}` : ""}`
 }
 
 export async function apiGet<T>(
@@ -116,7 +164,7 @@ export async function apiPost<T>(
   body?: unknown,
   options?: { auth?: boolean },
 ): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+  const response = await fetch(resolveApiUrl(path), {
     method: "POST",
     headers: jsonHeaders(options?.auth !== false),
     body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -129,7 +177,7 @@ export async function apiPatch<T>(
   body?: unknown,
   options?: { auth?: boolean },
 ): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+  const response = await fetch(resolveApiUrl(path), {
     method: "PATCH",
     headers: jsonHeaders(options?.auth !== false),
     body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -138,7 +186,7 @@ export async function apiPatch<T>(
 }
 
 export async function apiDelete<T>(path: string, options?: { auth?: boolean }): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+  const response = await fetch(resolveApiUrl(path), {
     method: "DELETE",
     headers: jsonHeaders(options?.auth !== false),
   })
