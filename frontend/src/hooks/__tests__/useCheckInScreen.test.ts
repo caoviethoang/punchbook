@@ -284,17 +284,49 @@ describe("useCheckInScreen hook", () => {
       expect(result.current.memberships).toEqual([exhaustedMember])
     })
 
-    // Exhausted membership
+    // Exhausted membership opens renewal modal with autoCheckIn true
     await act(async () => {
       await result.current.handleCheckIn("m-exhausted")
     })
     expect(checkInSpy).not.toHaveBeenCalled()
+    expect(result.current.renewingMembership).toEqual(exhaustedMember)
+    expect(result.current.autoCheckInOnRenew).toBe(true)
 
     // Non-existent ID
     await act(async () => {
       await result.current.handleCheckIn("non-existent-id")
     })
     expect(checkInSpy).not.toHaveBeenCalled()
+  })
+
+  it("handleRenewSuccess: updates membership, closes modal, and handles auto check-in", async () => {
+    const { result } = renderHook(() => useCheckInScreen({}))
+    await waitFor(() => {
+      expect(result.current.memberships.length).toBeGreaterThan(0)
+    })
+
+    act(() => {
+      result.current.openRenewModal(dummyMember, true)
+    })
+    expect(result.current.renewingMembership).toEqual(dummyMember)
+    expect(result.current.autoCheckInOnRenew).toBe(true)
+
+    act(() => {
+      result.current.handleRenewSuccess({
+        membership: { ...dummyMember, sessions_left: 9 },
+        invoice: { id: "inv-1", amount: 1000000, status: "paid" },
+        check_in: { id: "ci-renew-1", checked_in_at: "2026-10-22T10:00:00Z" },
+      })
+    })
+
+    expect(result.current.renewingMembership).toBeNull()
+    expect(result.current.memberships[0].sessions_left).toBe(9)
+    expect(result.current.memberships[0].checked_in_today).toBe(true)
+    expect(result.current.selectedReceipt).not.toBeNull()
+    expect(result.current.toast).toEqual({
+      message: "Đã gia hạn và check-in thành công cho Nguyen Van A",
+      type: "success",
+    })
   })
 
   it("handleClear resets query", () => {

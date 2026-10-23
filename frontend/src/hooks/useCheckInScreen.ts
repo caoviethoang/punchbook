@@ -13,6 +13,7 @@ import {
   type CheckInFilterType,
   type Membership,
   type PaginationMeta,
+  type RenewMembershipResult,
 } from "../lib/memberships"
 import { fetchStaffs } from "../lib/staffs"
 import type { ReceiptData } from "../components/ThermalReceiptModal"
@@ -76,6 +77,7 @@ export function useCheckInScreen({
   // Modal state for detail & renewal
   const [detailMembershipId, setDetailMembershipId] = useState<string | null>(null)
   const [renewingMembership, setRenewingMembership] = useState<Membership | null>(null)
+  const [autoCheckInOnRenew, setAutoCheckInOnRenew] = useState<boolean>(true)
 
   // Group check-in state
   const [isGroupMode, setIsGroupMode] = useState(false)
@@ -112,25 +114,62 @@ export function useCheckInScreen({
     }
   }, [currentStaff])
 
-  function handlePrintReceipt(membership: Membership, checkedInAt?: string) {
-    const effectiveStaffId = selectedStaffId || currentStaff?.id || currentStaffId || undefined
-    const activeStaff = staffs.find((s) => s.id === effectiveStaffId) || currentStaff
-    const staffName =
-      activeStaff?.name || (currentStaff?.name ?? (effectiveStaffId ? undefined : "Admin"))
+  const handlePrintReceipt = useCallback(
+    (membership: Membership, checkedInAt?: string) => {
+      const effectiveStaffId = selectedStaffId || currentStaff?.id || currentStaffId || undefined
+      const activeStaff = staffs.find((s) => s.id === effectiveStaffId) || currentStaff
+      const staffName =
+        activeStaff?.name || (currentStaff?.name ?? (effectiveStaffId ? undefined : "Admin"))
 
-    setSelectedReceipt({
-      shopName,
-      shopAddress,
-      shopPhone,
-      customerName: membership.customer_name,
-      customerPhone: membership.phone,
-      packageName: membership.package.name,
-      sessionsLeft: membership.sessions_left,
-      expiresAt: membership.expires_at,
-      checkedInAt: checkedInAt || new Date().toISOString(),
-      staffName,
-    })
-  }
+      setSelectedReceipt({
+        shopName,
+        shopAddress,
+        shopPhone,
+        customerName: membership.customer_name,
+        customerPhone: membership.phone,
+        packageName: membership.package.name,
+        sessionsLeft: membership.sessions_left,
+        expiresAt: membership.expires_at,
+        checkedInAt: checkedInAt || new Date().toISOString(),
+        staffName,
+      })
+    },
+    [selectedStaffId, currentStaff, currentStaffId, staffs, shopName, shopAddress, shopPhone],
+  )
+
+  const openRenewModal = useCallback((membership: Membership, autoCheckIn = true) => {
+    setRenewingMembership(membership)
+    setAutoCheckInOnRenew(autoCheckIn)
+  }, [])
+
+  const handleRenewSuccess = useCallback((result: RenewMembershipResult) => {
+    setMemberships((prev) =>
+      prev.map((m) => {
+        if (m.id !== result.membership.id) return m
+        return {
+          ...result.membership,
+          checked_in_today: result.check_in ? true : m.checked_in_today,
+          last_checked_in_at: result.check_in?.checked_in_at ?? m.last_checked_in_at,
+        }
+      }),
+    )
+
+    if (result.check_in) {
+      setToast({
+        message: `Đã gia hạn và check-in thành công cho ${result.membership.customer_name}`,
+        type: "success",
+      })
+      handlePrintReceipt(result.membership, result.check_in.checked_in_at)
+    } else {
+      setToast({
+        message: `Đã gia hạn thành công cho ${result.membership.customer_name}`,
+        type: "success",
+      })
+    }
+
+    setRenewingMembership(null)
+    setAutoCheckInOnRenew(false)
+  }, [handlePrintReceipt])
 
   // Fetch memberships using debounced query, filter status, sort and pagination
   const refreshMemberships = useCallback(async () => {
@@ -198,10 +237,7 @@ export function useCheckInScreen({
     if (!membership) return
 
     if (isMembershipExhausted(membership)) {
-      setToast({
-        message: "Hội viên đã hết buổi hoặc hết hạn thẻ",
-        type: "error",
-      })
+      openRenewModal(membership, true)
       return
     }
 
@@ -274,9 +310,7 @@ export function useCheckInScreen({
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault()
-      const firstAvailable = memberships.find(
-        (m) => !isMembershipExhausted(m) && !m.checked_in_today,
-      )
+      const firstAvailable = memberships.find((m) => !m.checked_in_today)
       if (firstAvailable && checkingInId !== firstAvailable.id) {
         void handleCheckIn(firstAvailable.id)
       }
@@ -429,6 +463,10 @@ export function useCheckInScreen({
     setDetailMembershipId,
     renewingMembership,
     setRenewingMembership,
+    autoCheckInOnRenew,
+    setAutoCheckInOnRenew,
+    openRenewModal,
+    handleRenewSuccess,
     page,
     setPage,
     paginationMeta,

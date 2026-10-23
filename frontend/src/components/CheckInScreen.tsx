@@ -59,6 +59,9 @@ export function CheckInScreen({
     setDetailMembershipId,
     renewingMembership,
     setRenewingMembership,
+    autoCheckInOnRenew,
+    openRenewModal,
+    handleRenewSuccess,
     isLoading,
     apiError,
     handleClear,
@@ -247,7 +250,7 @@ export function CheckInScreen({
             checkingInId={checkingInId}
             checkInMessage={checkInMessage}
             onCheckIn={(id) => void handleCheckIn(id)}
-            onRenew={(m) => setRenewingMembership(m)}
+            onRenew={(m) => openRenewModal(m, false)}
             onViewDetail={(id) => setDetailMembershipId(id)}
             onPrintReceipt={handlePrintReceipt}
             isGroupMode={isGroupMode}
@@ -333,6 +336,9 @@ export function CheckInScreen({
             setRenewingMembership(null)
             void refreshMemberships()
           }}
+          onSuccess={handleRenewSuccess}
+          initialAutoCheckIn={autoCheckInOnRenew}
+          staffId={selectedStaffId || currentStaff?.id || currentStaffId}
         />
       )}
 
