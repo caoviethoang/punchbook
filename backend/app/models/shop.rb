@@ -15,6 +15,19 @@ class Shop < ApplicationRecord
 
   validates :plan, presence: true, inclusion: { in: PLANS }
   validates :name, presence: true
+  validates :device_api_key, uniqueness: true, allow_nil: true
+
+  before_validation :generate_device_api_key, on: :create
 
   scope :paid, -> { where(plan: 'paid') }
+
+  def regenerate_device_api_key!
+    update!(device_api_key: "pb_dev_#{SecureRandom.hex(24)}")
+  end
+
+  private
+
+  def generate_device_api_key
+    self.device_api_key ||= "pb_dev_#{SecureRandom.hex(24)}"
+  end
 end

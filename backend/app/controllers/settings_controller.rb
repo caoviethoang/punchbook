@@ -1,9 +1,17 @@
 # frozen_string_literal: true
 
 class SettingsController < ApiController
-  before_action :authorize_shop_update!, only: %i[update_profile update_password upgrade_plan]
+  before_action :authorize_shop_update!, only: %i[update_profile update_password upgrade_plan regenerate_device_api_key]
   def show
     render json: { shop: ShopSerializer.new(current_shop).as_json }
+  end
+
+  def regenerate_device_api_key
+    current_shop.regenerate_device_api_key!
+    render json: {
+      shop: ShopSerializer.new(current_shop).as_json,
+      message: 'Tạo mới Device API Key thành công'
+    }
   end
 
   def update_profile

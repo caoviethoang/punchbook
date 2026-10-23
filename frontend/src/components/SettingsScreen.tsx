@@ -3,6 +3,7 @@ import type { Shop, Staff } from "../lib/auth"
 import { useShopSettings } from "../hooks/useShopSettings"
 import { AppearanceSection } from "./settings/AppearanceSection"
 import { SecuritySection } from "./settings/SecuritySection"
+import { DeviceIntegrationSection } from "./settings/DeviceIntegrationSection"
 import { ShopProfileSection } from "./settings/ShopProfileSection"
 import { SubscriptionSection } from "./settings/SubscriptionSection"
 import { StaffManagementSection } from "./StaffManagementSection"
@@ -116,6 +117,14 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
 
       {/* Section 2.5: Staff Management for Shop Admin */}
       <StaffManagementSection currentStaff={currentStaff} onToast={handleToast} />
+
+      {/* Section 2.8: Hardware Device Integration */}
+      <DeviceIntegrationSection
+        shop={shop}
+        isAdmin={isAdmin}
+        onShopUpdated={onShopUpdated}
+        onToast={handleToast}
+      />
 
       {/* Section 3: Subscription Plan Info & Upgrade CTA */}
       <SubscriptionSection

@@ -15,6 +15,9 @@ Rails.application.routes.draw do
     patch '/settings/profile', to: 'settings#update_profile'
     patch '/settings/password', to: 'settings#update_password'
     post '/settings/upgrade_plan', to: 'settings#upgrade_plan'
+    post '/settings/regenerate_device_api_key', to: 'settings#regenerate_device_api_key'
+
+    post '/hardware/check_in', to: 'hardware_check_ins#create'
 
     resources :package_categories, only: %i[index create update destroy]
     resources :packages, only: %i[index create update destroy]
