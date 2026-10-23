@@ -41,7 +41,7 @@ class MembershipsController < ApiController
     if membership.update(update_membership_params)
       render json: { membership: membership.as_api_json }
     else
-      render json: { errors: membership.errors.full_messages }, status: :unprocessable_content
+      render_validation_errors(membership.errors.full_messages, details: membership.errors.to_hash)
     end
   end
 
@@ -61,9 +61,7 @@ class MembershipsController < ApiController
   end
 
   def import
-    if params[:file].blank?
-      return render json: { error: 'Vui lòng chọn file để import' }, status: :unprocessable_content
-    end
+    return render_unprocessable_message('Vui lòng chọn file để import', code: 'FILE_MISSING') if params[:file].blank?
 
     result = ImportMembershipsService.call(shop: current_shop, file: params[:file])
     render json: { total_rows: result.total_rows, success_count: result.success_count,

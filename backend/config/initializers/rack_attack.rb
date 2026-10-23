@@ -8,18 +8,18 @@ class Rack::Attack
   # 1. Brute-force protection: max 10 failed login attempts per IP within 5 minutes
   blocklist('logins/ip') do |req|
     Rack::Attack::Allow2Ban.filter(req.ip, maxretry: 10, findtime: 5.minutes, bantime: 5.minutes) do
-      req.path == '/auth/login' && req.post?
+      ['/auth/login', '/api/v1/auth/login'].include?(req.path) && req.post?
     end
   end
 
   # 2. Throttle password update: max 5 requests per minute per IP
   throttle('req/ip/password_update', limit: 5, period: 1.minute) do |req|
-    req.ip if req.path == '/settings/password' && req.patch?
+    req.ip if ['/settings/password', '/api/v1/settings/password'].include?(req.path) && req.patch?
   end
 
   # 3. Throttle check-in endpoint: max 10 requests per minute per IP
   throttle('req/ip/check_in', limit: 10, period: 1.minute) do |req|
-    req.ip if req.post? && req.path.match?(%r{\A/memberships/\d+/check_in\z})
+    req.ip if req.post? && req.path.match?(%r{\A(/api/v1)?/memberships/[^/]+/check_in\z})
   end
 
   # Custom 429 Too Many Requests response format in JSON
@@ -29,6 +29,8 @@ class Rack::Attack
     }
     body = {
       error: 'Too Many Requests',
+      code: 'TOO_MANY_REQUESTS',
+      details: { message: 'Quá nhiều yêu cầu. Vui lòng thử lại sau.' },
       message: 'Quá nhiều yêu cầu. Vui lòng thử lại sau.'
     }.to_json
 

@@ -27,25 +27,27 @@ RSpec.describe 'BatchCheckIns', type: :request do
     )
   end
 
-  describe 'POST /memberships/batch_check_in' do
+  describe 'POST /api/v1/memberships/batch_check_in' do
     it 'returns 401 when unauthenticated' do
-      post '/memberships/batch_check_in', params: { membership_ids: [alpha_member.id] }
+      post '/api/v1/memberships/batch_check_in', params: { membership_ids: [alpha_member.id] }
 
       expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body['code']).to eq('UNAUTHORIZED')
     end
 
     it 'returns 422 when membership_ids is missing or empty' do
-      post '/memberships/batch_check_in',
+      post '/api/v1/memberships/batch_check_in',
            params: { membership_ids: [] },
            headers: auth_headers(shop),
            as: :json
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.parsed_body['error']).to include('Vui lòng chọn ít nhất một hội viên')
+      expect(response.parsed_body['code']).to eq('MEMBERSHIPS_REQUIRED')
     end
 
     it 'performs batch check-in and returns summary' do
-      post '/memberships/batch_check_in',
+      post '/api/v1/memberships/batch_check_in',
            params: { membership_ids: [alpha_member.id, beta_member.id], staff_id: staff.id },
            headers: auth_headers(shop),
            as: :json
@@ -74,7 +76,7 @@ RSpec.describe 'BatchCheckIns', type: :request do
         sessions_left: 5
       )
 
-      post '/memberships/batch_check_in',
+      post '/api/v1/memberships/batch_check_in',
            params: { membership_ids: [alpha_member.id, other_member.id] },
            headers: auth_headers(shop),
            as: :json
