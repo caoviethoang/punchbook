@@ -1,6 +1,7 @@
 :concurrency: 5
 :queues:
   - default
+  - webhooks
 
 :schedule:
   update_membership_statuses_daily:

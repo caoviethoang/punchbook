@@ -75,6 +75,22 @@ export interface CheckInResult {
   check_in: CheckInRecord
 }
 
+export interface BatchCheckInItemResult {
+  membership_id: string
+  customer_name: string
+  status: "success" | "failed"
+  membership?: Membership
+  check_in?: CheckInRecord
+  error?: string
+}
+
+export interface BatchCheckInResult {
+  total: number
+  success_count: number
+  failed_count: number
+  results: BatchCheckInItemResult[]
+}
+
 export const EXPIRING_SESSIONS_THRESHOLD = 3
 export const EXPIRING_DAYS_WINDOW = 7
 
@@ -319,6 +335,20 @@ export async function checkIn(id: string, staffId?: string): Promise<CheckInResu
   })
 }
 
+/**
+ * POST /memberships/batch_check_in
+ * Perform batch check-in for multiple members at once (e.g. group classes).
+ */
+export async function batchCheckIn(
+  membershipIds: string[],
+  staffId?: string,
+): Promise<BatchCheckInResult> {
+  return apiPost<BatchCheckInResult>("/memberships/batch_check_in", {
+    membership_ids: membershipIds,
+    staff_id: staffId || undefined,
+  })
+}
+
 /** GET /memberships/:id — fetch membership detail with check-in & invoice history. */
 export async function getMembershipDetail(id: string): Promise<MembershipDetail> {
   const body = await apiGet<{ membership: MembershipDetail }>(`/memberships/${id}`)
@@ -330,4 +360,28 @@ export async function restoreMembership(
   id: string,
 ): Promise<{ membership: Membership; message: string }> {
   return apiPost<{ membership: Membership; message: string }>(`/memberships/${id}/restore`)
+}
+
+export interface RenewMembershipPayload {
+  package_id?: string
+  staff_id?: string
+  auto_check_in?: boolean
+}
+
+export interface RenewMembershipResult {
+  membership: Membership
+  invoice: {
+    id: string
+    amount: number
+    status: string
+  }
+  check_in?: CheckInRecord | null
+}
+
+/** POST /memberships/:id/renew — renew a membership with optional package selection and auto check-in */
+export async function renewMembership(
+  id: string,
+  payload?: RenewMembershipPayload,
+): Promise<RenewMembershipResult> {
+  return apiPost<RenewMembershipResult>(`/memberships/${id}/renew`, payload || {})
 }

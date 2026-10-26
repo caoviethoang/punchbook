@@ -1,9 +1,10 @@
-import { AlertCircle, ChevronLeft, ChevronRight, Loader2, User, Users } from "lucide-react"
+import { AlertCircle, ChevronLeft, ChevronRight, Loader2, User, UserCheck, Users } from "lucide-react"
 import { useCheckInScreen } from "../hooks/useCheckInScreen"
 import { getPaginationRange, type CheckInFilterType } from "../lib/memberships"
 import { CheckInHeader } from "./checkin/CheckInHeader"
 import { CheckInSearchInput } from "./checkin/CheckInSearchInput"
 import { MembershipResultList } from "./checkin/CheckInSearchResults"
+import { GroupCheckInResultModal } from "./checkin/GroupCheckInResultModal"
 import { MembershipDetailModal } from "./MembershipDetailModal"
 import { QRScannerModal } from "./QRScannerModal"
 import { RenewalModal } from "./RenewalModal"
@@ -58,6 +59,9 @@ export function CheckInScreen({
     setDetailMembershipId,
     renewingMembership,
     setRenewingMembership,
+    autoCheckInOnRenew,
+    openRenewModal,
+    handleRenewSuccess,
     isLoading,
     apiError,
     handleClear,
@@ -70,6 +74,17 @@ export function CheckInScreen({
     selectedStaffId,
     setSelectedStaffId,
     refreshMemberships,
+    isGroupMode,
+    toggleGroupMode,
+    selectedIds,
+    toggleSelectMember,
+    selectAllEligible,
+    clearSelection,
+    isBatchCheckingIn,
+    handleBatchCheckIn,
+    batchResult,
+    isBatchResultModalOpen,
+    setIsBatchResultModalOpen,
   } = useCheckInScreen({
     currentStaff,
     currentStaffId,
@@ -90,6 +105,8 @@ export function CheckInScreen({
         selectedStaffId={selectedStaffId}
         onSelectStaff={setSelectedStaffId}
         loadingStaffs={loadingStaffs}
+        isGroupMode={isGroupMode}
+        onToggleGroupMode={toggleGroupMode}
       />
 
       {/* Search Input Box */}
@@ -233,9 +250,12 @@ export function CheckInScreen({
             checkingInId={checkingInId}
             checkInMessage={checkInMessage}
             onCheckIn={(id) => void handleCheckIn(id)}
-            onRenew={(m) => setRenewingMembership(m)}
+            onRenew={(m) => openRenewModal(m, false)}
             onViewDetail={(id) => setDetailMembershipId(id)}
             onPrintReceipt={handlePrintReceipt}
+            isGroupMode={isGroupMode}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelectMember}
           />
 
           {paginationMeta && paginationMeta.total_pages > 1 && (
@@ -316,6 +336,9 @@ export function CheckInScreen({
             setRenewingMembership(null)
             void refreshMemberships()
           }}
+          onSuccess={handleRenewSuccess}
+          initialAutoCheckIn={autoCheckInOnRenew}
+          staffId={selectedStaffId || currentStaff?.id || currentStaffId}
         />
       )}
 
@@ -323,6 +346,67 @@ export function CheckInScreen({
       {selectedReceipt && (
         <ThermalReceiptModal receipt={selectedReceipt} onClose={() => setSelectedReceipt(null)} />
       )}
+
+      {/* Sticky Group Check-in Action Bar */}
+      {isGroupMode && (
+        <div className="sticky bottom-4 z-20 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-indigo-200 bg-white/95 p-3.5 shadow-lg backdrop-blur-md dark:border-indigo-900/60 dark:bg-slate-900/95 sm:px-5">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-xs font-bold text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+              {selectedIds.size}
+            </span>
+            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 sm:text-sm">
+              Đã chọn {selectedIds.size} hội viên
+            </span>
+            <div className="flex items-center gap-1.5 pl-2">
+              <button
+                type="button"
+                onClick={selectAllEligible}
+                className="rounded-lg px-2.5 py-1 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/40"
+              >
+                Chọn tất cả
+              </button>
+              {selectedIds.size > 0 && (
+                <button
+                  type="button"
+                  onClick={clearSelection}
+                  className="rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                >
+                  Bỏ chọn
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={selectedIds.size === 0 || isBatchCheckingIn}
+              onClick={() => void handleBatchCheckIn()}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-none sm:text-sm"
+            >
+              {isBatchCheckingIn ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Đang check-in...</span>
+                </>
+              ) : (
+                <>
+                  <UserCheck className="h-4 w-4" />
+                  <span>Điểm danh nhóm ({selectedIds.size})</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Group Check-In Result Summary Modal */}
+      <GroupCheckInResultModal
+        isOpen={isBatchResultModalOpen}
+        result={batchResult}
+        onClose={() => setIsBatchResultModalOpen(false)}
+        onPrintReceipt={handlePrintReceipt}
+      />
 
       {/* QR Scanner Modal */}
       <QRScannerModal
