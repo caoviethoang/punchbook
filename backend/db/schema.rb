@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_160500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_22_141500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -162,6 +162,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_160500) do
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end
 
+  create_table "webhook_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.integer "attempts", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.string "event_type", default: "payment", null: false
+    t.datetime "failed_at"
+    t.text "last_error"
+    t.integer "max_attempts", default: 5, null: false
+    t.bigint "order_code"
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "processed_at"
+    t.uuid "shop_id"
+    t.string "source", default: "payos", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_code"], name: "index_webhook_events_on_order_code"
+    t.index ["shop_id", "status"], name: "index_webhook_events_on_shop_id_and_status"
+    t.index ["shop_id"], name: "index_webhook_events_on_shop_id"
+    t.index ["source", "order_code"], name: "index_webhook_events_on_source_and_order_code"
+    t.index ["status"], name: "index_webhook_events_on_status"
+  end
+
   add_foreign_key "audit_logs", "shops", on_delete: :cascade
   add_foreign_key "audit_logs", "staffs", on_delete: :nullify
   add_foreign_key "check_ins", "memberships"
@@ -175,4 +196,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_160500) do
   add_foreign_key "packages", "shops"
   add_foreign_key "shop_plan_payments", "shops"
   add_foreign_key "staffs", "shops"
+  add_foreign_key "webhook_events", "shops"
 end

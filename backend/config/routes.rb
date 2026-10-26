@@ -36,6 +36,9 @@ Rails.application.routes.draw do
   post '/memberships/:id/renew', to: 'membership_renewals#create'
 
   resources :audit_logs, only: [:index]
+  resources :webhook_events, only: [:index] do
+    post :retry, on: :member
+  end
 
   namespace :webhooks do
     post :payos, to: 'payos#create'

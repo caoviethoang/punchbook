@@ -213,5 +213,81 @@ RSpec.describe 'PayOS Webhook API', type: :request do
         expect(membership.sessions_left).to eq(2)
       end
     end
+
+    context 'with webhook persistence and retry behavior' do
+      it 'creates a WebhookEvent before verifying signature' do
+        _membership, invoice = create_session_fixture
+        data = { orderCode: invoice.payos_order_code, amount: 500_000, code: '00' }
+        signature = compute_signature(data)
+        payload = { code: '00', desc: 'success', data: data, signature: signature }
+
+        expect do
+          post '/webhooks/payos', params: payload, as: :json
+        end.to change(WebhookEvent, :count).by(1)
+
+        event = WebhookEvent.last
+        expect(event.source).to eq('payos')
+        expect(event.order_code).to eq(invoice.payos_order_code)
+        expect(event.status).to eq('success')
+        expect(event.shop).to eq(shop)
+        expect(event.attempts).to eq(1)
+        expect(event.processed_at).to be_present
+      end
+
+      it 'persists WebhookEvent with status invalid_signature when signature check fails' do
+        _membership, invoice = create_session_fixture
+        payload = {
+          code: '00',
+          desc: 'success',
+          data: { orderCode: invoice.payos_order_code, amount: 500_000, code: '00' },
+          signature: 'invalid_sig'
+        }
+
+        expect do
+          post '/webhooks/payos', params: payload, as: :json
+        end.to change(WebhookEvent, :count).by(1)
+
+        event = WebhookEvent.last
+        expect(event.status).to eq('invalid_signature')
+        expect(event.last_error).to eq('Invalid signature')
+        expect(event.attempts).to eq(1)
+      end
+
+      it 'persists WebhookEvent with status failed and enqueues ProcessPayosWebhookJob when invoice not found' do
+        data = { orderCode: 999_888, amount: 500_000, code: '00' }
+        signature = compute_signature(data)
+        payload = { code: '00', desc: 'success', data: data, signature: signature }
+
+        allow(ProcessPayosWebhookJob).to receive(:perform_async)
+
+        expect do
+          post '/webhooks/payos', params: payload, as: :json
+        end.to change(WebhookEvent, :count).by(1)
+
+        expect(ProcessPayosWebhookJob).to have_received(:perform_async)
+        event = WebhookEvent.last
+        expect(event.status).to eq('failed')
+        expect(event.last_error).to include('invoice_not_found')
+        expect(event.attempts).to eq(1)
+      end
+
+      it 'catches unexpected exceptions, marks event failed, and enqueues retry job' do
+        _membership, invoice = create_session_fixture
+        data = { orderCode: invoice.payos_order_code, amount: 500_000, code: '00' }
+        signature = compute_signature(data)
+        payload = { code: '00', desc: 'success', data: data, signature: signature }
+
+        allow(ProcessPayosWebhook).to receive(:call).and_raise(StandardError, 'Database deadlock')
+        allow(ProcessPayosWebhookJob).to receive(:perform_async)
+
+        post '/webhooks/payos', params: payload, as: :json
+
+        expect(ProcessPayosWebhookJob).to have_received(:perform_async)
+        expect(response).to have_http_status(:unprocessable_content)
+        event = WebhookEvent.last
+        expect(event.status).to eq('failed')
+        expect(event.last_error).to eq('Database deadlock')
+      end
+    end
   end
 end

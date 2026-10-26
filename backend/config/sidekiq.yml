@@ -1,6 +1,7 @@
 :concurrency: 5
 :queues:
   - default
+  - webhooks
 
 :schedule:
   send_membership_reminders_daily:
