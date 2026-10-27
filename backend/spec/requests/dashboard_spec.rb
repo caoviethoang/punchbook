@@ -11,11 +11,12 @@ RSpec.describe 'Dashboard', type: :request do
     Package.create!(shop: shop, name: 'Monthly gym', duration_days: 30, price: 500_000)
   end
 
-  describe 'GET /dashboard' do
+  describe 'GET /api/v1/dashboard' do
     it 'returns 401 when unauthenticated' do
-      get '/dashboard'
+      get '/api/v1/dashboard'
 
       expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body['code']).to eq('UNAUTHORIZED')
     end
 
     it 'returns revenue, active count, and expiring count for current_shop only' do
@@ -31,7 +32,7 @@ RSpec.describe 'Dashboard', type: :request do
       Invoice.create!(membership: active, amount: 200_000, status: 'pending')
       seed_other_shop_paid_invoice!
 
-      get '/dashboard', headers: auth_headers(shop)
+      get '/api/v1/dashboard', headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
@@ -49,7 +50,7 @@ RSpec.describe 'Dashboard', type: :request do
       create_member(package: session_package, name: 'Expired User', phone: '0922222222', sessions_left: 0)
       seed_other_shop_paid_invoice!
 
-      get '/dashboard', headers: auth_headers(shop)
+      get '/api/v1/dashboard', headers: auth_headers(shop)
 
       names = response.parsed_body['memberships'].pluck('customer_name')
       expect(names).to eq(['Expired User', 'Hoa Nguyen', 'Lan Tran'])
@@ -72,7 +73,7 @@ RSpec.describe 'Dashboard', type: :request do
         updated_at: 2.months.ago
       )
 
-      get '/dashboard', headers: auth_headers(shop)
+      get '/api/v1/dashboard', headers: auth_headers(shop)
 
       expect(response.parsed_body['revenue_this_month']).to eq(0)
     end
@@ -83,7 +84,7 @@ RSpec.describe 'Dashboard', type: :request do
       Invoice.create!(membership: member, amount: 500_000, status: 'paid', created_at: Time.zone.now)
       CheckIn.create!(staff: staff, membership: member, checked_in_at: Time.zone.now.change(hour: 14, min: 30))
 
-      get '/dashboard', headers: auth_headers(shop)
+      get '/api/v1/dashboard', headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
@@ -112,7 +113,7 @@ RSpec.describe 'Dashboard', type: :request do
       Invoice.create!(membership: member2, amount: 500_000, status: 'pending')
       seed_other_shop_paid_invoice!
 
-      get '/dashboard', headers: auth_headers(shop)
+      get '/api/v1/dashboard', headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       breakdown = response.parsed_body['revenue_by_package']
@@ -131,14 +132,14 @@ RSpec.describe 'Dashboard', type: :request do
     it 'does not N+1 query when memberships grow', :aggregate_failures do
       create_member(package: session_package, name: 'Member 1', phone: '0901000001', sessions_left: 5)
 
-      queries_baseline = count_queries { get '/dashboard', headers: auth_headers(shop) }
+      queries_baseline = count_queries { get '/api/v1/dashboard', headers: auth_headers(shop) }
 
       8.times do |i|
         create_member(package: session_package, name: "Member #{i + 2}", phone: "09010000#{format('%02d', i + 2)}",
                       sessions_left: i + 1)
       end
 
-      queries_with_many = count_queries { get '/dashboard', headers: auth_headers(shop) }
+      queries_with_many = count_queries { get '/api/v1/dashboard', headers: auth_headers(shop) }
 
       # Constant query count proves eager-loading is working — not one query per membership.
       # Allow a ±2 slack for incidental differences (e.g. SAVEPOINT in test transactions).

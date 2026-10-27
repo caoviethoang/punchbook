@@ -39,7 +39,7 @@ RSpec.describe 'PayOS Webhook API', type: :request do
     OpenSSL::HMAC.hexdigest('sha256', key, data_string)
   end
 
-  describe 'POST /webhooks/payos' do
+  describe 'POST /api/v1/webhooks/payos' do
     context 'when signature is missing' do
       it 'rejects request with 400 bad_request and makes no DB changes' do
         membership, invoice = create_session_fixture
@@ -49,10 +49,11 @@ RSpec.describe 'PayOS Webhook API', type: :request do
           data: { orderCode: invoice.id, amount: 500_000, code: '00' }
         }
 
-        post '/webhooks/payos', params: payload
+        post '/api/v1/webhooks/payos', params: payload
 
         expect(response).to have_http_status(:bad_request)
         expect(response.parsed_body['error']).to eq('Invalid signature')
+        expect(response.parsed_body['code']).to eq('INVALID_SIGNATURE')
 
         invoice.reload
         membership.reload
@@ -71,10 +72,11 @@ RSpec.describe 'PayOS Webhook API', type: :request do
           signature: 'wrong_signature_123'
         }
 
-        post '/webhooks/payos', params: payload
+        post '/api/v1/webhooks/payos', params: payload
 
         expect(response).to have_http_status(:bad_request)
         expect(response.parsed_body['error']).to eq('Invalid signature')
+        expect(response.parsed_body['code']).to eq('INVALID_SIGNATURE')
 
         invoice.reload
         membership.reload
@@ -91,7 +93,7 @@ RSpec.describe 'PayOS Webhook API', type: :request do
 
         payload = { code: '00', desc: 'success', data: data, signature: signature }
 
-        post '/webhooks/payos', params: payload, as: :json
+        post '/api/v1/webhooks/payos', params: payload, as: :json
 
         expect(response).to have_http_status(:ok)
         expect(response.parsed_body['status']).to eq('success')
@@ -100,6 +102,19 @@ RSpec.describe 'PayOS Webhook API', type: :request do
         membership.reload
         expect(invoice.status).to eq('paid')
         expect(membership.sessions_left).to eq(12)
+      end
+
+      it 'supports root path /webhooks/payos for third-party backward compatibility' do
+        _membership, invoice = create_session_fixture
+        data = { orderCode: invoice.id, amount: 500_000, code: '00' }
+        signature = compute_signature(data)
+
+        payload = { code: '00', desc: 'success', data: data, signature: signature }
+
+        post '/webhooks/payos', params: payload, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['status']).to eq('success')
       end
     end
 
@@ -111,7 +126,7 @@ RSpec.describe 'PayOS Webhook API', type: :request do
 
         payload = { code: '00', desc: 'success', data: data, signature: signature }
 
-        post '/webhooks/payos', params: payload, as: :json
+        post '/api/v1/webhooks/payos', params: payload, as: :json
 
         expect(response).to have_http_status(:ok)
         expect(response.parsed_body['status']).to eq('success')
@@ -134,7 +149,7 @@ RSpec.describe 'PayOS Webhook API', type: :request do
         payload = { code: '00', desc: 'success', data: data, signature: signature }
 
         expect do
-          post('/webhooks/payos', params: payload, as: :json)
+          post('/api/v1/webhooks/payos', params: payload, as: :json)
         end.not_to(change { membership.reload.sessions_left })
 
         expect(response).to have_http_status(:ok)
@@ -149,10 +164,11 @@ RSpec.describe 'PayOS Webhook API', type: :request do
 
         payload = { code: '00', desc: 'success', data: data, signature: signature }
 
-        post '/webhooks/payos', params: payload, as: :json
+        post '/api/v1/webhooks/payos', params: payload, as: :json
 
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.parsed_body['error']).to eq('Webhook processing failed')
+        expect(response.parsed_body['code']).to eq('WEBHOOK_FAILED')
       end
     end
 
@@ -164,7 +180,7 @@ RSpec.describe 'PayOS Webhook API', type: :request do
 
         payload = { code: '00', desc: 'success', data: data, signature: signature }
 
-        post '/webhooks/payos', params: payload, as: :json
+        post '/api/v1/webhooks/payos', params: payload, as: :json
 
         expect(response).to have_http_status(:ok)
         expect(response.parsed_body['status']).to eq('success')
@@ -183,7 +199,7 @@ RSpec.describe 'PayOS Webhook API', type: :request do
 
         payload = { code: '00', desc: 'success', data: data, signature: signature }
 
-        post '/webhooks/payos', params: payload, as: :json
+        post '/api/v1/webhooks/payos', params: payload, as: :json
 
         expect(response).to have_http_status(:ok)
         expect(response.parsed_body['status']).to eq('success')
@@ -202,7 +218,7 @@ RSpec.describe 'PayOS Webhook API', type: :request do
 
         payload = { code: '01', desc: 'failed', data: data, signature: signature }
 
-        post '/webhooks/payos', params: payload, as: :json
+        post '/api/v1/webhooks/payos', params: payload, as: :json
 
         expect(response).to have_http_status(:ok)
         expect(response.parsed_body['status']).to eq('success')

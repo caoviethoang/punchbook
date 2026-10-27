@@ -12,7 +12,7 @@ class SettingsController < ApiController
     if result.success?
       render json: { shop: ShopSerializer.new(result.shop).as_json, message: 'Cập nhật thông tin tiệm thành công' }
     else
-      render json: { errors: result.errors }, status: :unprocessable_content
+      render_validation_errors(result.errors)
     end
   end
 
@@ -22,7 +22,7 @@ class SettingsController < ApiController
     if result.success?
       render json: { shop: ShopSerializer.new(result.shop).as_json, message: 'Đổi mật khẩu thành công' }
     else
-      render json: { errors: result.errors }, status: :unprocessable_content
+      render_validation_errors(result.errors)
     end
   end
 
@@ -32,7 +32,7 @@ class SettingsController < ApiController
     if result.success?
       render json: format_upgrade_response(result)
     else
-      render json: { errors: result.errors }, status: :unprocessable_content
+      render_validation_errors(result.errors)
     end
   end
 

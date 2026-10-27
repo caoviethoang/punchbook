@@ -8,25 +8,27 @@ RSpec.describe 'Current shop authentication', type: :request do
   let!(:shop) { create_shop(email: 'api@example.com') }
 
   it 'resolves current_shop from a Bearer JWT' do
-    get '/auth/me', headers: auth_headers(shop)
+    get '/api/v1/auth/me', headers: auth_headers(shop)
 
     expect(response).to have_http_status(:ok)
     expect(response.parsed_body.dig('shop', 'id')).to eq(shop.id)
   end
 
   it 'returns 401 when credentials are missing' do
-    get '/auth/me'
+    get '/api/v1/auth/me'
 
     expect(response).to have_http_status(:unauthorized)
     expect(response.parsed_body['error']).to eq('Unauthorized')
+    expect(response.parsed_body['code']).to eq('UNAUTHORIZED')
   end
 
   it 'returns 401 when the token shop no longer exists' do
     token = JsonWebToken.encode({ shop_id: SecureRandom.uuid })
 
-    get '/auth/me', headers: { 'Authorization' => "Bearer #{token}" }
+    get '/api/v1/auth/me', headers: { 'Authorization' => "Bearer #{token}" }
 
     expect(response).to have_http_status(:unauthorized)
+    expect(response.parsed_body['code']).to eq('UNAUTHORIZED')
   end
 
   it 'does not create staff records or write to database when authenticating a request' do
@@ -34,7 +36,7 @@ RSpec.describe 'Current shop authentication', type: :request do
     token = JsonWebToken.encode({ shop_id: shop.id })
 
     expect do
-      get '/auth/me', headers: { 'Authorization' => "Bearer #{token}" }
+      get '/api/v1/auth/me', headers: { 'Authorization' => "Bearer #{token}" }
     end.not_to change(Staff, :count)
 
     expect(response).to have_http_status(:ok)
