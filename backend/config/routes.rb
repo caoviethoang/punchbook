@@ -34,8 +34,12 @@ Rails.application.routes.draw do
     end
 
     post '/memberships/batch_check_in', to: 'batch_check_ins#create'
+    post '/memberships/:id/renew', to: 'membership_renewals#create'
 
     resources :audit_logs, only: [:index]
+    resources :webhook_events, only: [:index] do
+      post :retry, on: :member
+    end
 
     namespace :webhooks do
       post :payos, to: 'payos#create'

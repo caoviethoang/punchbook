@@ -17,6 +17,7 @@ export const ACTION_LABELS: Record<string, { label: string; icon: string }> = {
   membership_created: { label: "Thêm hội viên", icon: "+" },
   membership_renewed: { label: "Gia hạn hội viên", icon: "↺" },
   shop_plan_upgraded: { label: "Nâng cấp gói shop", icon: "⭐" },
+  membership_renewal_needed: { label: "Cảnh báo gia hạn", icon: "⚠️" },
 }
 
 export function useAuditLogs(shopId: string) {
