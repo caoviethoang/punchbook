@@ -24,6 +24,15 @@ RSpec.describe 'PackageCategories', type: :request do
       names = response.parsed_body['categories'].pluck('name')
       expect(names).to eq(%w[Fitness Yoga])
     end
+
+    it 'allows regular staff to view categories' do
+      PackageCategory.create!(shop: shop, name: 'CrossFit')
+
+      get '/package_categories', headers: auth_headers(shop, role: 'staff')
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['categories'].pluck('name')).to include('CrossFit')
+    end
   end
 
   describe 'POST /package_categories' do
@@ -33,6 +42,13 @@ RSpec.describe 'PackageCategories', type: :request do
       expect(response).to have_http_status(:created)
       expect(response.parsed_body['name']).to eq('Boxing')
       expect(shop.package_categories.pluck(:name)).to include('Boxing')
+    end
+
+    it 'forbids regular staff from creating categories' do
+      post '/package_categories', params: { package_category: { name: 'Boxing' } },
+                                  headers: auth_headers(shop, role: 'staff')
+
+      expect(response).to have_http_status(:forbidden)
     end
 
     it 'returns existing category if duplicate name' do
@@ -57,6 +73,16 @@ RSpec.describe 'PackageCategories', type: :request do
       expect(response.parsed_body['name']).to eq('Muay Thai')
       expect(cat.reload.name).to eq('Muay Thai')
     end
+
+    it 'forbids regular staff from updating categories' do
+      cat = PackageCategory.create!(shop: shop, name: 'Kickboxing')
+
+      patch "/package_categories/#{cat.id}",
+            params: { package_category: { name: 'Muay Thai' } },
+            headers: auth_headers(shop, role: 'staff')
+
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe 'DELETE /package_categories/:id' do
@@ -67,6 +93,14 @@ RSpec.describe 'PackageCategories', type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(PackageCategory.exists?(cat.id)).to be false
+    end
+
+    it 'forbids regular staff from deleting categories' do
+      cat = PackageCategory.create!(shop: shop, name: 'Zumba')
+
+      delete "/package_categories/#{cat.id}", headers: auth_headers(shop, role: 'staff')
+
+      expect(response).to have_http_status(:forbidden)
     end
   end
 end

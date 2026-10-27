@@ -2,6 +2,7 @@ import { AlertCircle } from "lucide-react"
 import type { Staff } from "../lib/auth"
 import { usePackagesScreen } from "../hooks/usePackagesScreen"
 import { CategoryManagerModal } from "./packages/PackageCategoryModal"
+import { PackageCategorySection } from "./packages/PackageCategorySection"
 import { PackageFormModal } from "./packages/PackageFormModal"
 import { PackageGrid } from "./packages/PackageTable"
 import { DeletePackageModal } from "./packages/DeletePackageModal"
@@ -34,12 +35,25 @@ export function PackagesScreen({ currentStaff }: PackagesScreenProps) {
         onOpenCreate={state.handleOpenCreate}
       />
 
-      {/* Category Filter Tabs */}
+      {/* Admin Section: Package Category Management */}
+      {isAdmin && (
+        <PackageCategorySection
+          categories={state.categories}
+          packages={state.packages}
+          onCategoryAdded={state.handleCategoryCreated}
+          onCategoryUpdated={state.handleCategoryUpdated}
+          onCategoryDeleted={state.handleCategoryDeleted}
+        />
+      )}
+
+      {/* Category Filter Tabs & Sort Controls */}
       <PackageCategoryFilter
         categories={state.categories}
         packages={state.packages}
         selectedCategory={state.selectedCategoryFilter}
         onSelectCategory={state.setSelectedCategoryFilter}
+        sortBy={state.sortBy}
+        onSortByChange={state.setSortBy}
       />
 
       {/* Error Banner */}
