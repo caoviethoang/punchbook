@@ -61,9 +61,15 @@ class MembershipSerializer
       {
         'id' => check_in.id,
         'checked_in_at' => check_in.checked_in_at,
-        'staff' => { 'id' => check_in.staff.id, 'name' => check_in.staff.name }
+        'staff' => format_check_in_staff(check_in.staff)
       }
     end
+  end
+
+  def format_check_in_staff(staff)
+    return { 'id' => nil, 'name' => 'Hệ thống' } if staff.blank?
+
+    { 'id' => staff.id, 'name' => staff.name }
   end
 
   def serialized_invoices

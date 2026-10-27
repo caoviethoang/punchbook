@@ -41,6 +41,11 @@ const mockDetail: membershipsApi.MembershipDetail = {
       checked_in_at: new Date().toISOString(),
       staff: { id: "st-1", name: "Nhân viên Mai" },
     },
+    {
+      id: "ci-2",
+      checked_in_at: new Date().toISOString(),
+      staff: null,
+    },
   ],
   invoices: [
     {
@@ -94,6 +99,7 @@ describe("MembershipDetailModal", () => {
     await user.click(checkInTabBtn)
 
     expect(screen.getByText("Nhân viên Mai")).toBeInTheDocument()
+    expect(screen.getByText("Hệ thống")).toBeInTheDocument()
 
     // Switch to Invoices tab
     const invoiceTabBtn = screen.getByRole("button", { name: /Lịch sử Thanh toán/i })

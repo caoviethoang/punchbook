@@ -43,10 +43,10 @@ export interface Membership {
 export interface MembershipDetailCheckIn {
   id: string
   checked_in_at: string
-  staff: {
-    id: string
+  staff?: {
+    id: string | null
     name: string
-  }
+  } | null
 }
 
 export interface MembershipDetailInvoice {
