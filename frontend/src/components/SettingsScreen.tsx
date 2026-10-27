@@ -6,6 +6,7 @@ import { SecuritySection } from "./settings/SecuritySection"
 import { DeviceIntegrationSection } from "./settings/DeviceIntegrationSection"
 import { ShopProfileSection } from "./settings/ShopProfileSection"
 import { SubscriptionSection } from "./settings/SubscriptionSection"
+import { WebhookEventsSection } from "./settings/WebhookEventsSection"
 import { StaffManagementSection } from "./StaffManagementSection"
 import { Toast } from "./ui/Toast"
 import { UpgradePlanModal } from "./UpgradePlanModal"
@@ -125,6 +126,9 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
         onShopUpdated={onShopUpdated}
         onToast={handleToast}
       />
+
+      {/* Section 2.9: PayOS Webhook Management & DLQ */}
+      <WebhookEventsSection isAdmin={isAdmin} onToast={handleToast} />
 
       {/* Section 3: Subscription Plan Info & Upgrade CTA */}
       <SubscriptionSection

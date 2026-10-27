@@ -1,8 +1,16 @@
 :concurrency: 5
 :queues:
   - default
+  - webhooks
 
 :schedule:
+  update_membership_statuses_daily:
+    cron: "0 8 * * *"
+    class: "DailyMembershipStatusUpdateJob"
+    queue: default
+    timezone: "Asia/Ho_Chi_Minh"
+    description: "Daily job to scan, update membership statuses (expired/expiring) and log renewal alerts"
+
   send_membership_reminders_daily:
     cron: "0 8 * * *"
     class: "SendMembershipRemindersJob"

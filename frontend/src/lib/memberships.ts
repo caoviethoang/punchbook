@@ -364,3 +364,27 @@ export async function restoreMembership(
 ): Promise<{ membership: Membership; message: string }> {
   return apiPost<{ membership: Membership; message: string }>(`/memberships/${id}/restore`)
 }
+
+export interface RenewMembershipPayload {
+  package_id?: string
+  staff_id?: string
+  auto_check_in?: boolean
+}
+
+export interface RenewMembershipResult {
+  membership: Membership
+  invoice: {
+    id: string
+    amount: number
+    status: string
+  }
+  check_in?: CheckInRecord | null
+}
+
+/** POST /memberships/:id/renew — renew a membership with optional package selection and auto check-in */
+export async function renewMembership(
+  id: string,
+  payload?: RenewMembershipPayload,
+): Promise<RenewMembershipResult> {
+  return apiPost<RenewMembershipResult>(`/memberships/${id}/renew`, payload || {})
+}
