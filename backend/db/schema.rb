@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_22_141500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_22_173500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -74,6 +74,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_141500) do
     t.string "phone"
     t.integer "sessions_left"
     t.uuid "shop_id", null: false
+    t.string "status", default: "active", null: false
     t.datetime "updated_at", null: false
     t.index ["discarded_at"], name: "index_memberships_on_discarded_at"
     t.index ["package_id"], name: "index_memberships_on_package_id"
@@ -81,6 +82,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_141500) do
     t.index ["shop_id", "expires_at"], name: "index_memberships_on_shop_id_and_expires_at"
     t.index ["shop_id", "phone"], name: "index_memberships_on_shop_id_and_phone"
     t.index ["shop_id", "sessions_left"], name: "index_memberships_on_shop_id_and_sessions_left"
+    t.index ["shop_id", "status"], name: "index_memberships_on_shop_id_and_status"
     t.index ["shop_id"], name: "index_memberships_on_shop_id"
   end
 
