@@ -24,7 +24,7 @@ class ApiController < ApplicationController
   end
 
   def render_not_found(_exception = nil)
-    render_error('Not found', code: 'NOT_FOUND', status: :not_found)
+    render_error(I18n.t('errors.not_found', default: 'Not found'), code: 'NOT_FOUND', status: :not_found)
   end
 
   def render_record_invalid(exception)

@@ -17,7 +17,7 @@ RSpec.describe 'Reports Export', type: :request do
     end
 
     it 'returns 403 when shop is on free plan' do
-      get '/api/v1/reports/export', headers: auth_headers(free_shop)
+      get '/api/v1/reports/export', headers: auth_headers(free_shop).merge('Accept-Language' => 'vi')
 
       expect(response).to have_http_status(:forbidden)
       expect(response.parsed_body['error']).to include('Gói Free không hỗ trợ xuất báo cáo')

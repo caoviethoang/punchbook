@@ -19,7 +19,8 @@ class AuthenticateShopService
     if payload
       Result.new(success?: true, payload: payload)
     else
-      Result.new(success?: false, error: 'Invalid username/email, shop context, or password')
+      err_msg = I18n.t('errors.invalid_credentials', default: 'Invalid username/email, shop context, or password')
+      Result.new(success?: false, error: err_msg)
     end
   end
 
