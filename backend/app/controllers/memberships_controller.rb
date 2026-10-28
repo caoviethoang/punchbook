@@ -31,7 +31,8 @@ class MembershipsController < ApiController
       customer_name: membership_params[:customer_name],
       phone: membership_params[:phone],
       package_id: membership_params[:package_id],
-      notes: membership_params[:notes]
+      notes: membership_params[:notes],
+      card_number: membership_params[:card_number]
     )
     render json: { membership: membership.as_api_json }, status: :created
   end
@@ -77,11 +78,11 @@ class MembershipsController < ApiController
   private
 
   def membership_params
-    params.expect(membership: %i[customer_name phone package_id notes])
+    params.expect(membership: %i[customer_name phone package_id notes card_number])
   end
 
   def update_membership_params
-    params.expect(membership: %i[customer_name phone package_id sessions_left expires_at notes])
+    params.expect(membership: %i[customer_name phone package_id sessions_left expires_at notes card_number])
   end
 
   def find_staff

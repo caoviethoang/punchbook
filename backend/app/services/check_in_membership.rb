@@ -5,13 +5,14 @@ class CheckInMembership
   class InsufficientSessionsError < Error; end
   class MembershipExpiredError < Error; end
 
-  def self.call(membership:, staff:)
-    new(membership: membership, staff: staff).call
+  def self.call(membership:, staff:, extra_audit_details: {})
+    new(membership: membership, staff: staff, extra_audit_details: extra_audit_details).call
   end
 
-  def initialize(membership:, staff:)
+  def initialize(membership:, staff:, extra_audit_details: {})
     @membership = membership
     @staff = staff
+    @extra_audit_details = extra_audit_details
   end
 
   def call
@@ -23,7 +24,7 @@ class CheckInMembership
 
   private
 
-  attr_reader :membership, :staff
+  attr_reader :membership, :staff, :extra_audit_details
 
   def validate_eligibility!
     if membership.package.session_based?
@@ -50,7 +51,8 @@ class CheckInMembership
 
   def log_audit_event!(check_in)
     AuditLog.log_check_in!(
-      shop: membership.shop, staff: staff, membership: membership, checked_in_at: check_in.checked_in_at
+      shop: membership.shop, staff: staff, membership: membership, checked_in_at: check_in.checked_in_at,
+      **extra_audit_details
     )
   end
 end

@@ -10,10 +10,11 @@ class AuditLog < ApplicationRecord
   scope :by_staff, ->(staff_id) { where(staff_id: staff_id) }
   scope :recent, -> { order(created_at: :desc).limit(50) }
 
-  def self.log_check_in!(shop:, staff:, membership:, checked_in_at:)
+  def self.log_check_in!(shop:, staff:, membership:, checked_in_at:, **extra)
     details = {
       membership_name: membership.customer_name, package_name: membership.package.name,
-      sessions_after: membership.sessions_left, checked_in_at: checked_in_at.iso8601
+      sessions_after: membership.sessions_left, checked_in_at: checked_in_at.iso8601,
+      **extra
     }
     create!(shop: shop, staff: staff, action: 'check_in', target_type: 'Membership', target_id: membership.id,
             details: details)
