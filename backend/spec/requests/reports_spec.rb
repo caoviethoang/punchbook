@@ -8,18 +8,20 @@ RSpec.describe 'Reports Export', type: :request do
 
   let(:package) { Package.create!(shop: paid_shop, name: '10-session massage', sessions_count: 10, price: 1_000_000) }
 
-  describe 'GET /reports/export' do
+  describe 'GET /api/v1/reports/export' do
     it 'returns 401 when unauthenticated' do
-      get '/reports/export'
+      get '/api/v1/reports/export'
 
       expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body['code']).to eq('UNAUTHORIZED')
     end
 
     it 'returns 403 when shop is on free plan' do
-      get '/reports/export', headers: auth_headers(free_shop)
+      get '/api/v1/reports/export', headers: auth_headers(free_shop)
 
       expect(response).to have_http_status(:forbidden)
       expect(response.parsed_body['error']).to include('Gói Free không hỗ trợ xuất báo cáo')
+      expect(response.parsed_body['code']).to eq('PLAN_UPGRADE_REQUIRED')
     end
 
     it 'returns 403 when user is non-admin staff' do
@@ -28,9 +30,10 @@ RSpec.describe 'Reports Export', type: :request do
       )
       token = JsonWebToken.encode({ shop_id: paid_shop.id, staff_id: staff.id, role: 'staff' })
 
-      get '/reports/export', headers: { 'Authorization' => "Bearer #{token}" }
+      get '/api/v1/reports/export', headers: { 'Authorization' => "Bearer #{token}" }
 
       expect(response).to have_http_status(:forbidden)
+      expect(response.parsed_body['code']).to eq('FORBIDDEN')
     end
 
     it 'returns 200 with an XLSX attachment when shop is on paid plan' do
@@ -42,7 +45,7 @@ RSpec.describe 'Reports Export', type: :request do
         sessions_left: 5
       )
 
-      get '/reports/export', headers: auth_headers(paid_shop)
+      get '/api/v1/reports/export', headers: auth_headers(paid_shop)
 
       expect(response).to have_http_status(:ok)
       expect(response.headers['Content-Type']).to eq(

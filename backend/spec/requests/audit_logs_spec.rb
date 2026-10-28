@@ -6,11 +6,12 @@ RSpec.describe 'AuditLogs', type: :request do
   let!(:shop) { create_shop(name: 'Spa Club', email: 'spa@example.com') }
   let!(:staff) { Staff.create!(shop: shop, name: 'Anna', role: 'staff') }
 
-  describe 'GET /audit_logs' do
+  describe 'GET /api/v1/audit_logs' do
     it 'returns 401 when unauthenticated' do
-      get '/audit_logs'
+      get '/api/v1/audit_logs'
 
       expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body['code']).to eq('UNAUTHORIZED')
     end
 
     it 'returns shop-scoped audit logs' do
@@ -36,7 +37,7 @@ RSpec.describe 'AuditLogs', type: :request do
       )
       AuditLog.log_check_in!(shop: other_shop, staff: nil, membership: other_mem, checked_in_at: Time.current)
 
-      get '/audit_logs', params: { log_action: 'check_in' }, headers: auth_headers(shop)
+      get '/api/v1/audit_logs', params: { log_action: 'check_in' }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
@@ -64,7 +65,7 @@ RSpec.describe 'AuditLogs', type: :request do
         expires_at_before: Time.current
       )
 
-      get '/audit_logs', params: { log_action: 'membership_renewed' }, headers: auth_headers(shop)
+      get '/api/v1/audit_logs', params: { log_action: 'membership_renewed' }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body

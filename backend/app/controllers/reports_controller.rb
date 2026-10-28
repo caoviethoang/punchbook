@@ -21,8 +21,10 @@ class ReportsController < ApiController
   def ensure_paid_plan!
     return if current_shop.plan == 'paid'
 
-    render json: {
-      error: 'Gói Free không hỗ trợ xuất báo cáo Excel. Vui lòng nâng cấp gói trả phí để sử dụng tính năng này.'
-    }, status: :forbidden
+    render_error(
+      'Gói Free không hỗ trợ xuất báo cáo Excel. Vui lòng nâng cấp gói trả phí để sử dụng tính năng này.',
+      code: 'PLAN_UPGRADE_REQUIRED',
+      status: :forbidden
+    )
   end
 end

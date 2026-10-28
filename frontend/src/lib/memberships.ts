@@ -28,6 +28,7 @@ export interface Membership {
   id: string
   customer_name: string
   phone: string
+  card_number?: string | null
   sessions_left: number | null
   expires_at: string | null
   package: MembershipPackage
@@ -241,6 +242,7 @@ export interface CreateMembershipPayload {
   phone: string
   package_id: string
   notes?: string | null
+  card_number?: string | null
 }
 
 export interface UpdateMembershipPayload {
@@ -250,6 +252,7 @@ export interface UpdateMembershipPayload {
   sessions_left?: number | null
   expires_at?: string | null
   notes?: string | null
+  card_number?: string | null
 }
 
 /** POST /memberships — create member; backend inits sessions_left / expires_at from package. */

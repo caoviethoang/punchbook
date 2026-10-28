@@ -21,6 +21,7 @@ function packageLabel(pkg: PackageItem): string {
 export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCreateFormProps) {
   const [customerName, setCustomerName] = useState("")
   const [phone, setPhone] = useState("")
+  const [cardNumber, setCardNumber] = useState("")
   const [packageId, setPackageId] = useState("")
   const [notes, setNotes] = useState("")
   const [packages, setPackages] = useState<PackageItem[]>([])
@@ -81,12 +82,14 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
         customer_name: name,
         phone: phoneValue,
         package_id: packageId,
+        card_number: cardNumber.trim() || undefined,
         notes: notes.trim() || undefined,
       })
       setCreated(membership)
       setIsQrModalOpen(true)
       setCustomerName("")
       setPhone("")
+      setCardNumber("")
       setNotes("")
       onSuccess?.(membership)
     } catch (err) {
@@ -166,6 +169,14 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="0902000000"
+        />
+
+        <FormField
+          label="Mã thẻ từ / RFID / Mã định danh thiết bị (tùy chọn)"
+          type="text"
+          value={cardNumber}
+          onChange={(e) => setCardNumber(e.target.value)}
+          placeholder="Ví dụ: RFID_123456 hoặc quẹt thẻ vào đây"
         />
 
         <div>
