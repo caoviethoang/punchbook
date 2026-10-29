@@ -5,11 +5,12 @@ require 'rails_helper'
 RSpec.describe 'Packages', type: :request do
   let!(:shop) { create_shop(name: 'Lan Spa', email: 'lan@example.com') }
 
-  describe 'GET /packages' do
+  describe 'GET /api/v1/packages' do
     it 'returns 401 when unauthenticated' do
-      get '/packages'
+      get '/api/v1/packages'
 
       expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body['code']).to eq('UNAUTHORIZED')
     end
 
     it 'returns only current_shop packages ordered by name' do
@@ -18,7 +19,7 @@ RSpec.describe 'Packages', type: :request do
       other_shop = create_shop(name: 'Other', email: 'other@example.com')
       Package.create!(shop: other_shop, name: 'Secret', sessions_count: 5, price: 100_000)
 
-      get '/packages', headers: auth_headers(shop)
+      get '/api/v1/packages', headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       names = response.parsed_body['packages'].pluck('name')
@@ -27,11 +28,12 @@ RSpec.describe 'Packages', type: :request do
     end
   end
 
-  describe 'POST /packages' do
+  describe 'POST /api/v1/packages' do
     it 'returns 401 when unauthenticated' do
-      post '/packages', params: { package: { name: 'Gói 10 buổi', price: 500_000, sessions_count: 10 } }
+      post '/api/v1/packages', params: { package: { name: 'Gói 10 buổi', price: 500_000, sessions_count: 10 } }
 
       expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body['code']).to eq('UNAUTHORIZED')
     end
 
     it 'creates a session-based package successfully for current_shop' do
@@ -44,7 +46,7 @@ RSpec.describe 'Packages', type: :request do
       }
 
       expect do
-        post '/packages', params: payload, headers: auth_headers(shop)
+        post '/api/v1/packages', params: payload, headers: auth_headers(shop)
       end.to change(Package, :count).by(1)
 
       expect(response).to have_http_status(:created)
@@ -66,7 +68,7 @@ RSpec.describe 'Packages', type: :request do
       }
 
       expect do
-        post '/packages', params: payload, headers: auth_headers(shop)
+        post '/api/v1/packages', params: payload, headers: auth_headers(shop)
       end.to change(Package, :count).by(1)
 
       expect(response).to have_http_status(:created)
@@ -78,20 +80,21 @@ RSpec.describe 'Packages', type: :request do
       expect(body['shop_id']).to eq(shop.id)
     end
 
-    it 'returns 422 unprocessable_entity when invalid (missing name and price)' do
+    it 'returns 422 unprocessable_content when invalid (missing name and price)' do
       payload = {
         package: {
           sessions_count: 10
         }
       }
 
-      post '/packages', params: payload, headers: auth_headers(shop)
+      post '/api/v1/packages', params: payload, headers: auth_headers(shop)
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(response.parsed_body['errors']).to include("Name can't be blank", "Price can't be blank")
+      expect(response.parsed_body['code']).to eq('VALIDATION_ERROR')
     end
 
-    it 'returns 422 unprocessable_entity when both sessions_count and duration_days are set' do
+    it 'returns 422 unprocessable_content when both sessions_count and duration_days are set' do
       payload = {
         package: {
           name: 'Invalid Combo',
@@ -101,13 +104,14 @@ RSpec.describe 'Packages', type: :request do
         }
       }
 
-      post '/packages', params: payload, headers: auth_headers(shop)
+      post '/api/v1/packages', params: payload, headers: auth_headers(shop)
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(response.parsed_body['errors']).to include('Must set exactly one of sessions_count or duration_days')
+      expect(response.parsed_body['code']).to eq('VALIDATION_ERROR')
     end
 
-    it 'returns 422 unprocessable_entity when neither sessions_count nor duration_days is set' do
+    it 'returns 422 unprocessable_content when neither sessions_count nor duration_days is set' do
       payload = {
         package: {
           name: 'Empty Package',
@@ -115,20 +119,22 @@ RSpec.describe 'Packages', type: :request do
         }
       }
 
-      post '/packages', params: payload, headers: auth_headers(shop)
+      post '/api/v1/packages', params: payload, headers: auth_headers(shop)
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(response.parsed_body['errors']).to include('Must set exactly one of sessions_count or duration_days')
+      expect(response.parsed_body['code']).to eq('VALIDATION_ERROR')
     end
   end
 
-  describe 'PATCH /packages/:id' do
+  describe 'PATCH /api/v1/packages/:id' do
     let!(:package) { Package.create!(shop: shop, name: 'Yoga 10', sessions_count: 10, price: 500_000) }
 
     it 'returns 401 when unauthenticated' do
-      patch "/packages/#{package.id}", params: { package: { name: 'Yoga VIP' } }
+      patch "/api/v1/packages/#{package.id}", params: { package: { name: 'Yoga VIP' } }
 
       expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body['code']).to eq('UNAUTHORIZED')
     end
 
     it 'updates package successfully' do
@@ -140,7 +146,7 @@ RSpec.describe 'Packages', type: :request do
         }
       }
 
-      patch "/packages/#{package.id}", params: payload, headers: auth_headers(shop)
+      patch "/api/v1/packages/#{package.id}", params: payload, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
@@ -154,9 +160,10 @@ RSpec.describe 'Packages', type: :request do
       other_shop = create_shop(name: 'Other', email: 'other@example.com')
       other_pkg = Package.create!(shop: other_shop, name: 'Secret', sessions_count: 5, price: 100_000)
 
-      patch "/packages/#{other_pkg.id}", params: { package: { name: 'Hack' } }, headers: auth_headers(shop)
+      patch "/api/v1/packages/#{other_pkg.id}", params: { package: { name: 'Hack' } }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:not_found)
+      expect(response.parsed_body['code']).to eq('NOT_FOUND')
     end
   end
 end

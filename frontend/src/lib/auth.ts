@@ -20,6 +20,7 @@ export interface Shop {
   bank_name?: string | null
   bank_account_no?: string | null
   bank_account_name?: string | null
+  device_api_key?: string | null
 }
 
 export interface AuthResponse {

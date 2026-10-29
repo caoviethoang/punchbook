@@ -15,7 +15,7 @@ class StaffsController < ApiController
     if staff.save
       render json: { staff: StaffSerializer.new(staff).as_json }, status: :created
     else
-      render json: { errors: staff.errors.full_messages }, status: :unprocessable_content
+      render_validation_errors(staff.errors.full_messages, details: staff.errors.to_hash)
     end
   end
 
@@ -23,7 +23,7 @@ class StaffsController < ApiController
     staff = current_shop.staffs.find(params.expect(:id))
 
     if staff.id == current_staff.id
-      return render json: { error: 'Cannot delete your own account' }, status: :unprocessable_content
+      return render_unprocessable_message('Cannot delete your own account', code: 'CANNOT_DELETE_SELF')
     end
 
     staff.destroy

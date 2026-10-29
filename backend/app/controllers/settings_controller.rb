@@ -1,9 +1,17 @@
 # frozen_string_literal: true
 
 class SettingsController < ApiController
-  before_action :authorize_shop_update!, only: %i[update_profile update_password upgrade_plan]
+  before_action :authorize_shop_update!, only: %i[update_profile update_password upgrade_plan regenerate_device_api_key]
   def show
     render json: { shop: ShopSerializer.new(current_shop).as_json }
+  end
+
+  def regenerate_device_api_key
+    current_shop.regenerate_device_api_key!
+    render json: {
+      shop: ShopSerializer.new(current_shop).as_json,
+      message: 'Tạo mới Device API Key thành công'
+    }
   end
 
   def update_profile
@@ -12,7 +20,7 @@ class SettingsController < ApiController
     if result.success?
       render json: { shop: ShopSerializer.new(result.shop).as_json, message: 'Cập nhật thông tin tiệm thành công' }
     else
-      render json: { errors: result.errors }, status: :unprocessable_content
+      render_validation_errors(result.errors)
     end
   end
 
@@ -22,7 +30,7 @@ class SettingsController < ApiController
     if result.success?
       render json: { shop: ShopSerializer.new(result.shop).as_json, message: 'Đổi mật khẩu thành công' }
     else
-      render json: { errors: result.errors }, status: :unprocessable_content
+      render_validation_errors(result.errors)
     end
   end
 
@@ -32,7 +40,7 @@ class SettingsController < ApiController
     if result.success?
       render json: format_upgrade_response(result)
     else
-      render json: { errors: result.errors }, status: :unprocessable_content
+      render_validation_errors(result.errors)
     end
   end
 

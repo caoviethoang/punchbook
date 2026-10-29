@@ -54,13 +54,13 @@ module Webhooks
 
     def render_invalid_signature(event)
       event.mark_invalid_signature!('Invalid signature')
-      render json: { error: 'Invalid signature' }, status: :bad_request
+      render json: { error: 'Invalid signature', code: 'INVALID_SIGNATURE' }, status: :bad_request
     end
 
     def handle_failure(event, message)
       event.mark_failed!(message)
       ProcessPayosWebhookJob.perform_async(event.id)
-      render json: { error: 'Webhook processing failed' }, status: :unprocessable_content
+      render json: { error: 'Webhook processing failed', code: 'WEBHOOK_FAILED' }, status: :unprocessable_content
     end
 
     def handle_unexpected_error(event, error)

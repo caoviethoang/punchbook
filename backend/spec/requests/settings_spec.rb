@@ -22,9 +22,9 @@ RSpec.describe 'Settings API', type: :request do
     { 'Authorization' => "Bearer #{token}" }
   end
 
-  describe 'GET /settings' do
+  describe 'GET /api/v1/settings' do
     it 'returns the current shop settings' do
-      get '/settings', headers: auth_headers(shop)
+      get '/api/v1/settings', headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
@@ -36,21 +36,22 @@ RSpec.describe 'Settings API', type: :request do
     end
 
     it 'allows staff user to view shop settings' do
-      get '/settings', headers: staff_headers
+      get '/api/v1/settings', headers: staff_headers
 
       expect(response).to have_http_status(:ok)
     end
 
     it 'rejects unauthenticated requests' do
-      get '/settings'
+      get '/api/v1/settings'
 
       expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body['code']).to eq('UNAUTHORIZED')
     end
   end
 
-  describe 'PATCH /settings/profile' do
+  describe 'PATCH /api/v1/settings/profile' do
     it 'updates profile info successfully' do
-      patch '/settings/profile',
+      patch '/api/v1/settings/profile',
             params: {
               name: 'PunchBook Gym',
               phone: '0988776655',
@@ -72,22 +73,24 @@ RSpec.describe 'Settings API', type: :request do
     end
 
     it 'forbids non-admin staff from updating profile' do
-      patch '/settings/profile', params: { name: 'Unauthorized Gym' }, headers: staff_headers
+      patch '/api/v1/settings/profile', params: { name: 'Unauthorized Gym' }, headers: staff_headers
 
       expect(response).to have_http_status(:forbidden)
+      expect(response.parsed_body['code']).to eq('FORBIDDEN')
     end
 
     it 'returns unprocessable when params are invalid' do
-      patch '/settings/profile', params: { name: '' }, headers: auth_headers(shop)
+      patch '/api/v1/settings/profile', params: { name: '' }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.parsed_body['errors']).to include("Name can't be blank")
+      expect(response.parsed_body['code']).to eq('VALIDATION_ERROR')
     end
   end
 
-  describe 'PATCH /settings/password' do
+  describe 'PATCH /api/v1/settings/password' do
     it 'changes password successfully' do
-      patch '/settings/password', params: {
+      patch '/api/v1/settings/password', params: {
         current_password: 'password123',
         password: 'newsecurepassword',
         password_confirmation: 'newsecurepassword'
@@ -100,17 +103,18 @@ RSpec.describe 'Settings API', type: :request do
     end
 
     it 'forbids non-admin staff from changing password' do
-      patch '/settings/password', params: {
+      patch '/api/v1/settings/password', params: {
         current_password: 'password123',
         password: 'newsecurepassword',
         password_confirmation: 'newsecurepassword'
       }, headers: staff_headers
 
       expect(response).to have_http_status(:forbidden)
+      expect(response.parsed_body['code']).to eq('FORBIDDEN')
     end
 
     it 'returns error when current password is invalid' do
-      patch '/settings/password', params: {
+      patch '/api/v1/settings/password', params: {
         current_password: 'wrongpassword',
         password: 'newsecurepassword',
         password_confirmation: 'newsecurepassword'
@@ -118,12 +122,13 @@ RSpec.describe 'Settings API', type: :request do
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.parsed_body['errors']).to include('Mật khẩu hiện tại không đúng')
+      expect(response.parsed_body['code']).to eq('VALIDATION_ERROR')
     end
   end
 
-  describe 'POST /settings/upgrade_plan' do
+  describe 'POST /api/v1/settings/upgrade_plan' do
     it 'upgrades plan to paid and sets plan_expires_at' do
-      post '/settings/upgrade_plan', params: { months: 6 }, headers: auth_headers(shop)
+      post '/api/v1/settings/upgrade_plan', params: { months: 6 }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
@@ -134,9 +139,10 @@ RSpec.describe 'Settings API', type: :request do
     end
 
     it 'forbids non-admin staff from upgrading plan' do
-      post '/settings/upgrade_plan', params: { months: 6 }, headers: staff_headers
+      post '/api/v1/settings/upgrade_plan', params: { months: 6 }, headers: staff_headers
 
       expect(response).to have_http_status(:forbidden)
+      expect(response.parsed_body['code']).to eq('FORBIDDEN')
     end
   end
 end

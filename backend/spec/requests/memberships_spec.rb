@@ -29,7 +29,7 @@ RSpec.describe 'Memberships', type: :request do
 
   describe 'GET /memberships' do
     it 'returns 401 when unauthenticated' do
-      get '/memberships'
+      get '/api/v1/memberships'
 
       expect(response).to have_http_status(:unauthorized)
     end
@@ -45,7 +45,7 @@ RSpec.describe 'Memberships', type: :request do
         sessions_left: 9
       )
 
-      get '/memberships', headers: auth_headers(shop)
+      get '/api/v1/memberships', headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       ids = response.parsed_body['memberships'].pluck('id')
@@ -54,7 +54,7 @@ RSpec.describe 'Memberships', type: :request do
     end
 
     it 'searches by customer_name (ILIKE) within current_shop' do
-      get '/memberships', params: { query: 'hoa' }, headers: auth_headers(shop)
+      get '/api/v1/memberships', params: { query: 'hoa' }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       memberships = response.parsed_body['memberships']
@@ -76,7 +76,7 @@ RSpec.describe 'Memberships', type: :request do
       staff = Staff.create!(shop: shop, name: 'Receptionist', role: 'staff')
       CheckIn.create!(membership: hoa, staff: staff, checked_in_at: Time.current)
 
-      get '/memberships', params: { query: 'hoa' }, headers: auth_headers(shop)
+      get '/api/v1/memberships', params: { query: 'hoa' }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       member = response.parsed_body['memberships'].first
@@ -85,47 +85,47 @@ RSpec.describe 'Memberships', type: :request do
     end
 
     it 'searches by phone within current_shop' do
-      get '/memberships', params: { query: '0911' }, headers: auth_headers(shop)
+      get '/api/v1/memberships', params: { query: '0911' }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['memberships'].pluck('id')).to eq([lan.id])
     end
 
     it 'searches by partial phone number (last digits)' do
-      get '/memberships', params: { query: '0000' }, headers: auth_headers(shop)
+      get '/api/v1/memberships', params: { query: '0000' }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
     end
 
     it 'handles query string with surrounding whitespace' do
-      get '/memberships', params: { query: '  0902000000  ' }, headers: auth_headers(shop)
+      get '/api/v1/memberships', params: { query: '  0902000000  ' }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
     end
 
     it 'searches by formatted phone number with spaces or dashes' do
-      get '/memberships', params: { query: '090 200 0000' }, headers: auth_headers(shop)
+      get '/api/v1/memberships', params: { query: '090 200 0000' }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
 
-      get '/memberships', params: { query: '090-200-0000' }, headers: auth_headers(shop)
+      get '/api/v1/memberships', params: { query: '090-200-0000' }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
     end
 
     it 'searches by membership ID within current_shop' do
-      get '/memberships', params: { query: hoa.id }, headers: auth_headers(shop)
+      get '/api/v1/memberships', params: { query: hoa.id }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
     end
 
     it 'searches by PUNCHBOOK:id formatted QR value within current_shop' do
-      get '/memberships', params: { query: "PUNCHBOOK:#{hoa.id}" }, headers: auth_headers(shop)
+      get '/api/v1/memberships', params: { query: "PUNCHBOOK:#{hoa.id}" }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['memberships'].pluck('id')).to eq([hoa.id])
@@ -142,7 +142,7 @@ RSpec.describe 'Memberships', type: :request do
         sessions_left: 9
       )
 
-      get '/memberships', params: { query: 'Hoa' }, headers: auth_headers(shop)
+      get '/api/v1/memberships', params: { query: 'Hoa' }, headers: auth_headers(shop)
 
       ids = response.parsed_body['memberships'].pluck('id')
       expect(ids).to eq([hoa.id])
@@ -150,7 +150,7 @@ RSpec.describe 'Memberships', type: :request do
     end
 
     it 'returns an empty list when nothing matches' do
-      get '/memberships', params: { query: 'zzzz-no-match' }, headers: auth_headers(shop)
+      get '/api/v1/memberships', params: { query: 'zzzz-no-match' }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['memberships']).to eq([])
@@ -170,7 +170,7 @@ RSpec.describe 'Memberships', type: :request do
         )
         CheckIn.create!(membership: hoa, staff: staff, checked_in_at: Time.current)
 
-        get '/memberships', params: { sort: 'checkin_priority' }, headers: auth_headers(shop)
+        get '/api/v1/memberships', params: { sort: 'checkin_priority' }, headers: auth_headers(shop)
 
         expect(response).to have_http_status(:ok)
         names = response.parsed_body['memberships'].pluck('customer_name')
@@ -181,7 +181,7 @@ RSpec.describe 'Memberships', type: :request do
       end
 
       it 'falls back to alphabetical order when sort is not checkin_priority' do
-        get '/memberships', headers: auth_headers(shop)
+        get '/api/v1/memberships', headers: auth_headers(shop)
 
         expect(response).to have_http_status(:ok)
         names = response.parsed_body['memberships'].pluck('customer_name')
@@ -203,7 +203,7 @@ RSpec.describe 'Memberships', type: :request do
         )
         CheckIn.create!(membership: hoa, staff: staff, checked_in_at: Time.current)
 
-        get '/memberships', params: { status: 'not_checked_in' }, headers: auth_headers(shop)
+        get '/api/v1/memberships', params: { status: 'not_checked_in' }, headers: auth_headers(shop)
 
         expect(response).to have_http_status(:ok)
         names = response.parsed_body['memberships'].pluck('customer_name')
@@ -221,7 +221,7 @@ RSpec.describe 'Memberships', type: :request do
                               role: 'staff')
         token = JsonWebToken.encode({ shop_id: shop.id, staff_id: staff.id, role: 'staff' })
 
-        get '/memberships', params: { status: 'deleted' }, headers: { 'Authorization' => "Bearer #{token}" }
+        get '/api/v1/memberships', params: { status: 'deleted' }, headers: { 'Authorization' => "Bearer #{token}" }
 
         expect(response).to have_http_status(:forbidden)
       end
@@ -229,7 +229,7 @@ RSpec.describe 'Memberships', type: :request do
       it 'returns only discarded memberships for admin' do
         hoa.discard
 
-        get '/memberships', params: { status: 'deleted' }, headers: auth_headers(shop)
+        get '/api/v1/memberships', params: { status: 'deleted' }, headers: auth_headers(shop)
 
         expect(response).to have_http_status(:ok)
         ids = response.parsed_body['memberships'].pluck('id')
@@ -241,7 +241,7 @@ RSpec.describe 'Memberships', type: :request do
 
   describe 'GET /memberships/:id' do
     it 'returns 401 when unauthenticated' do
-      get "/memberships/#{hoa.id}"
+      get "/api/v1/memberships/#{hoa.id}"
 
       expect(response).to have_http_status(:unauthorized)
     end
@@ -253,7 +253,7 @@ RSpec.describe 'Memberships', type: :request do
       latest_check_in = CheckIn.create!(membership: hoa, staff: staff, checked_in_at: 1.hour.ago)
       invoice = Invoice.create!(membership: hoa, amount: 1_000_000, status: 'paid', payos_transaction_id: 'P123')
 
-      get "/memberships/#{hoa.id}", headers: auth_headers(shop)
+      get "/api/v1/memberships/#{hoa.id}", headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body['membership']
@@ -283,7 +283,7 @@ RSpec.describe 'Memberships', type: :request do
         sessions_left: 9
       )
 
-      get "/memberships/#{other_member.id}", headers: auth_headers(shop)
+      get "/api/v1/memberships/#{other_member.id}", headers: auth_headers(shop)
 
       expect(response).to have_http_status(:not_found)
     end
@@ -291,7 +291,7 @@ RSpec.describe 'Memberships', type: :request do
 
   describe 'POST /memberships' do
     it 'returns 401 when unauthenticated' do
-      post '/memberships', params: {
+      post '/api/v1/memberships', params: {
         membership: { customer_name: 'Mai Le', phone: '0903000000', package_id: package.id }
       }
 
@@ -308,7 +308,7 @@ RSpec.describe 'Memberships', type: :request do
       }
 
       expect do
-        post '/memberships', params: payload, headers: auth_headers(shop)
+        post '/api/v1/memberships', params: payload, headers: auth_headers(shop)
       end.to change(Membership, :count).by(1)
 
       expect(response).to have_http_status(:created)
@@ -333,7 +333,7 @@ RSpec.describe 'Memberships', type: :request do
       }
 
       expect do
-        post '/memberships', params: payload, headers: auth_headers(shop)
+        post '/api/v1/memberships', params: payload, headers: auth_headers(shop)
       end.to change(Membership, :count).by(1)
 
       expect(response).to have_http_status(:created)
@@ -356,7 +356,7 @@ RSpec.describe 'Memberships', type: :request do
         }
       }
 
-      post '/memberships', params: payload, headers: auth_headers(shop)
+      post '/api/v1/memberships', params: payload, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:created)
       created_id = response.parsed_body['membership']['id']
@@ -365,7 +365,7 @@ RSpec.describe 'Memberships', type: :request do
     end
 
     it 'returns 422 when customer_name is blank' do
-      post '/memberships',
+      post '/api/v1/memberships',
            params: { membership: { customer_name: '', phone: '0903000000', package_id: package.id } },
            headers: auth_headers(shop)
 
@@ -378,7 +378,7 @@ RSpec.describe 'Memberships', type: :request do
       other_package = Package.create!(shop: other_shop, name: 'Secret', sessions_count: 5, price: 100_000)
 
       expect do
-        post '/memberships',
+        post '/api/v1/memberships',
              params: {
                membership: {
                  customer_name: 'Mai Le',
@@ -407,7 +407,7 @@ RSpec.describe 'Memberships', type: :request do
         end
 
         expect do
-          post '/memberships',
+          post '/api/v1/memberships',
                params: {
                  membership: {
                    customer_name: 'Customer 16',
@@ -438,7 +438,7 @@ RSpec.describe 'Memberships', type: :request do
         end
 
         expect do
-          post '/memberships',
+          post '/api/v1/memberships',
                params: {
                  membership: {
                    customer_name: 'Customer 16',
@@ -456,13 +456,13 @@ RSpec.describe 'Memberships', type: :request do
 
   describe 'PATCH /memberships/:id' do
     it 'returns 401 when unauthenticated' do
-      patch "/memberships/#{hoa.id}", params: { membership: { customer_name: 'Hoa Updated' } }
+      patch "/api/v1/memberships/#{hoa.id}", params: { membership: { customer_name: 'Hoa Updated' } }
 
       expect(response).to have_http_status(:unauthorized)
     end
 
     it 'updates customer_name, phone, and sessions_left successfully' do
-      patch "/memberships/#{hoa.id}",
+      patch "/api/v1/memberships/#{hoa.id}",
             params: {
               membership: {
                 customer_name: 'Hoa Nguyen Updated',
@@ -486,7 +486,7 @@ RSpec.describe 'Memberships', type: :request do
     end
 
     it 'updates notes successfully' do
-      patch "/memberships/#{hoa.id}",
+      patch "/api/v1/memberships/#{hoa.id}",
             params: {
               membership: {
                 notes: 'Yêu cầu đặc biệt: không dùng dầu dừa'
@@ -506,7 +506,7 @@ RSpec.describe 'Memberships', type: :request do
         shop: other_shop, package: other_pkg, customer_name: 'Other', phone: '0900000000'
       )
 
-      patch "/memberships/#{other_member.id}",
+      patch "/api/v1/memberships/#{other_member.id}",
             params: { membership: { customer_name: 'Hacked' } },
             headers: auth_headers(shop)
 
@@ -518,14 +518,14 @@ RSpec.describe 'Memberships', type: :request do
     let!(:staff) { Staff.create!(shop: shop, name: 'Mai', role: 'staff') }
 
     it 'returns 401 when unauthenticated' do
-      post "/memberships/#{hoa.id}/check_in", params: { staff_id: staff.id }
+      post "/api/v1/memberships/#{hoa.id}/check_in", params: { staff_id: staff.id }
 
       expect(response).to have_http_status(:unauthorized)
     end
 
     it 'checks in successfully, decrements sessions_left, and returns check_in' do
       expect do
-        post "/memberships/#{hoa.id}/check_in",
+        post "/api/v1/memberships/#{hoa.id}/check_in",
              params: { staff_id: staff.id },
              headers: auth_headers(shop)
       end.to change(CheckIn, :count).by(1)
@@ -543,7 +543,7 @@ RSpec.describe 'Memberships', type: :request do
       hoa.update!(sessions_left: 0)
 
       expect do
-        post "/memberships/#{hoa.id}/check_in",
+        post "/api/v1/memberships/#{hoa.id}/check_in",
              params: { staff_id: staff.id },
              headers: auth_headers(shop)
       end.not_to change(CheckIn, :count)
@@ -565,7 +565,7 @@ RSpec.describe 'Memberships', type: :request do
       )
 
       expect do
-        post "/memberships/#{member.id}/check_in",
+        post "/api/v1/memberships/#{member.id}/check_in",
              params: { staff_id: staff.id },
              headers: auth_headers(shop)
       end.not_to change(CheckIn, :count)
@@ -579,7 +579,7 @@ RSpec.describe 'Memberships', type: :request do
       initial_staff_count = shop.staffs.count
 
       expect do
-        post "/memberships/#{hoa.id}/check_in", headers: headers
+        post "/api/v1/memberships/#{hoa.id}/check_in", headers: headers
       end.to change(CheckIn, :count).by(1)
 
       expect(response).to have_http_status(:ok)
@@ -599,7 +599,7 @@ RSpec.describe 'Memberships', type: :request do
       )
 
       expect do
-        post "/memberships/#{other_member.id}/check_in",
+        post "/api/v1/memberships/#{other_member.id}/check_in",
              params: { staff_id: staff.id },
              headers: auth_headers(shop)
       end.not_to change(CheckIn, :count)
@@ -612,7 +612,7 @@ RSpec.describe 'Memberships', type: :request do
       other_shop = create_shop(name: 'Other Spa', email: 'other@example.com')
       other_staff = Staff.create!(shop: other_shop, name: 'Other', role: 'staff')
 
-      post "/memberships/#{hoa.id}/check_in",
+      post "/api/v1/memberships/#{hoa.id}/check_in",
            params: { staff_id: other_staff.id },
            headers: auth_headers(shop)
 
@@ -623,7 +623,7 @@ RSpec.describe 'Memberships', type: :request do
 
   describe 'GET /memberships/export' do
     it 'returns 401 when unauthenticated' do
-      get '/memberships/export'
+      get '/api/v1/memberships/export'
 
       expect(response).to have_http_status(:unauthorized)
     end
@@ -634,13 +634,13 @@ RSpec.describe 'Memberships', type: :request do
       )
       token = JsonWebToken.encode({ shop_id: shop.id, staff_id: staff.id, role: 'staff' })
 
-      get '/memberships/export', headers: { 'Authorization' => "Bearer #{token}" }
+      get '/api/v1/memberships/export', headers: { 'Authorization' => "Bearer #{token}" }
 
       expect(response).to have_http_status(:forbidden)
     end
 
     it 'returns 200 with an XLSX attachment when requested by admin' do
-      get '/memberships/export', headers: auth_headers(shop)
+      get '/api/v1/memberships/export', headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       expect(response.headers['Content-Type']).to include(
@@ -651,7 +651,7 @@ RSpec.describe 'Memberships', type: :request do
     end
 
     it 'filters exported memberships by status and query params' do
-      get '/memberships/export', params: { query: 'Hoa', status: 'expiring' }, headers: auth_headers(shop)
+      get '/api/v1/memberships/export', params: { query: 'Hoa', status: 'expiring' }, headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       doc = Roo::Excelx.new(StringIO.new(response.body))
@@ -662,13 +662,13 @@ RSpec.describe 'Memberships', type: :request do
 
   describe 'GET /memberships/import_template' do
     it 'returns 401 when unauthenticated' do
-      get '/memberships/import_template'
+      get '/api/v1/memberships/import_template'
 
       expect(response).to have_http_status(:unauthorized)
     end
 
     it 'returns Excel template binary stream' do
-      get '/memberships/import_template', headers: auth_headers(shop)
+      get '/api/v1/memberships/import_template', headers: auth_headers(shop)
 
       expect(response.headers['Content-Type']).to include(
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -680,13 +680,13 @@ RSpec.describe 'Memberships', type: :request do
 
   describe 'POST /memberships/import' do
     it 'returns 401 when unauthenticated' do
-      post '/memberships/import'
+      post '/api/v1/memberships/import'
 
       expect(response).to have_http_status(:unauthorized)
     end
 
     it 'returns 422 when file parameter is missing' do
-      post '/memberships/import', headers: auth_headers(shop)
+      post '/api/v1/memberships/import', headers: auth_headers(shop)
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.parsed_body['error']).to eq('Vui lòng chọn file để import')
@@ -705,7 +705,7 @@ RSpec.describe 'Memberships', type: :request do
       file = fixture_file_upload(temp_file.path, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
       expect do
-        post '/memberships/import', params: { file: file }, headers: auth_headers(shop)
+        post '/api/v1/memberships/import', params: { file: file }, headers: auth_headers(shop)
       end.to change(Membership, :count).by(1)
 
       expect(response).to have_http_status(:ok)
@@ -719,7 +719,7 @@ RSpec.describe 'Memberships', type: :request do
 
   describe 'DELETE /memberships/:id' do
     it 'soft deletes the membership' do
-      delete "/memberships/#{hoa.id}", headers: auth_headers(shop)
+      delete "/api/v1/memberships/#{hoa.id}", headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       expect(hoa.reload).to be_discarded
@@ -733,7 +733,7 @@ RSpec.describe 'Memberships', type: :request do
                             role: 'staff')
       token = JsonWebToken.encode({ shop_id: shop.id, staff_id: staff.id, role: 'staff' })
 
-      post "/memberships/#{hoa.id}/restore", headers: { 'Authorization' => "Bearer #{token}" }
+      post "/api/v1/memberships/#{hoa.id}/restore", headers: { 'Authorization' => "Bearer #{token}" }
 
       expect(response).to have_http_status(:forbidden)
       expect(hoa.reload).to be_discarded
@@ -743,7 +743,7 @@ RSpec.describe 'Memberships', type: :request do
       hoa.discard
       expect(hoa.reload).to be_discarded
 
-      post "/memberships/#{hoa.id}/restore", headers: auth_headers(shop)
+      post "/api/v1/memberships/#{hoa.id}/restore", headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['message']).to eq('Đã khôi phục hội viên thành công')
@@ -752,7 +752,7 @@ RSpec.describe 'Memberships', type: :request do
     end
 
     it 'returns 404 when membership is not discarded or does not exist' do
-      post "/memberships/#{hoa.id}/restore", headers: auth_headers(shop)
+      post "/api/v1/memberships/#{hoa.id}/restore", headers: auth_headers(shop)
 
       expect(response).to have_http_status(:not_found)
     end
