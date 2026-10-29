@@ -45,13 +45,18 @@ export function CheckInHistoryTab({ checkIns, onPrintReceipt }: CheckInHistoryTa
               <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-slate-400" />
-                  <span>{item.staff?.name ?? "Nhân viên"}</span>
+                  <span>{item.staff?.name?.trim() ? item.staff.name : "Hệ thống"}</span>
                 </div>
               </td>
               <td className="px-4 py-3 text-right">
                 <button
                   type="button"
-                  onClick={() => onPrintReceipt(item.checked_in_at, item.staff?.name)}
+                  onClick={() =>
+                    onPrintReceipt(
+                      item.checked_in_at,
+                      item.staff?.name?.trim() ? item.staff.name : "Hệ thống",
+                    )
+                  }
                   title="In phiếu check-in"
                   className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                 >

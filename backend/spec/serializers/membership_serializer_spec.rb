@@ -78,19 +78,34 @@ RSpec.describe MembershipSerializer do
     end
   end
 
-  describe '#as_dashboard_json' do
-    it 'returns the same payload as as_api_json' do
-      membership = Membership.create!(
+  describe '#as_detail_json' do
+    let(:staff) { Staff.create!(shop: shop, name: 'Coach Linh', role: 'staff') }
+    let(:membership) do
+      Membership.create!(
         shop: shop,
         package: session_package,
-        customer_name: 'Nguyen Van F',
-        phone: '0901234572',
-        sessions_left: 2
+        customer_name: 'Nguyen Van Detail',
+        phone: '0901234573',
+        sessions_left: 5
       )
+    end
 
-      serializer = described_class.new(membership)
-      expect(serializer.as_dashboard_json).to eq(serializer.as_api_json)
-      expect(serializer.as_dashboard_json['status']).to eq('expiring')
+    it 'serializes check_ins with staff name' do
+      check_in = CheckIn.create!(membership: membership, staff: staff, checked_in_at: Time.current)
+
+      json = described_class.new(membership).as_detail_json
+      ci_json = json['check_ins'].first
+      expect(ci_json['id']).to eq(check_in.id)
+      expect(ci_json['staff']).to eq({ 'id' => staff.id, 'name' => 'Coach Linh' })
+    end
+
+    it 'falls back to Hệ thống when check-in has no staff' do
+      check_in = CheckIn.create!(membership: membership, staff: nil, checked_in_at: Time.current)
+
+      json = described_class.new(membership).as_detail_json
+      ci_json = json['check_ins'].first
+      expect(ci_json['id']).to eq(check_in.id)
+      expect(ci_json['staff']).to eq({ 'id' => nil, 'name' => 'Hệ thống' })
     end
   end
 end
