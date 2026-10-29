@@ -272,6 +272,16 @@ RSpec.describe 'Memberships', type: :request do
                                                 'payos_transaction_id' => 'P123')
     end
 
+    it 'falls back to Hệ thống when check-in has no staff' do
+      check_in = CheckIn.create!(membership: hoa, staff: nil, checked_in_at: Time.current)
+
+      get "/api/v1/memberships/#{hoa.id}", headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      ci = response.parsed_body['membership']['check_ins'].find { |c| c['id'] == check_in.id }
+      expect(ci['staff']).to eq({ 'id' => nil, 'name' => 'Hệ thống' })
+    end
+
     it 'returns 404 for a membership belonging to another shop' do
       other_shop = create_shop(name: 'Other Spa', email: 'other@example.com')
       other_package = Package.create!(shop: other_shop, name: 'Secret package', sessions_count: 5, price: 500_000)
