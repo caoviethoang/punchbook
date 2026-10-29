@@ -24,53 +24,60 @@ interface ThermalReceiptModalProps {
 
 function ThermalReceiptContent({ receipt }: { receipt: ReceiptData }) {
   return (
-    <>
-      {/* Header */}
-      <div className="text-center pb-2 border-b border-dashed border-slate-300 dark:border-slate-700 receipt-dashed-divider">
-        <h2 className="text-base font-extrabold uppercase tracking-wide">
+    <div className="receipt-container text-xs font-mono leading-relaxed text-slate-900 dark:text-slate-100">
+      {/* Shop Header */}
+      <div className="text-center pb-1">
+        <h2 className="text-base font-black uppercase tracking-wide">
           {receipt.shopName}
         </h2>
         {receipt.shopAddress && (
-          <p className="text-[11px] text-slate-600 dark:text-slate-400 receipt-subtext">
+          <p className="text-[11px] text-slate-600 dark:text-slate-400 receipt-secondary">
             {receipt.shopAddress}
           </p>
         )}
         {receipt.shopPhone && (
-          <p className="text-[11px] text-slate-600 dark:text-slate-400 receipt-subtext">
+          <p className="text-[11px] text-slate-600 dark:text-slate-400 receipt-secondary">
             SĐT: {receipt.shopPhone}
           </p>
         )}
-        <div className="mt-2 text-sm font-bold uppercase tracking-wider receipt-title">
+        <div className="mt-2 text-xs font-black uppercase tracking-wider receipt-title">
           PHIẾU XÁC NHẬN CHECK-IN
         </div>
       </div>
 
+      {/* Header Divider */}
+      <div className="receipt-divider border-t border-dashed border-slate-300 dark:border-slate-700 my-2" />
+
       {/* Content Details */}
-      <div className="py-3 space-y-1.5">
-        <div className="flex justify-between">
-          <span className="text-slate-500 dark:text-slate-400 receipt-label">Thời gian:</span>
-          <span className="font-bold">{formatDateTime(receipt.checkedInAt)}</span>
+      <div className="py-1 space-y-1.5">
+        <div className="flex justify-between items-start gap-2">
+          <span className="text-slate-600 dark:text-slate-400 receipt-secondary shrink-0">Thời gian:</span>
+          <span className="font-bold text-right">{formatDateTime(receipt.checkedInAt)}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-slate-500 dark:text-slate-400 receipt-label">Hội viên:</span>
-          <span className="font-bold">{receipt.customerName}</span>
+        <div className="flex justify-between items-start gap-2">
+          <span className="text-slate-600 dark:text-slate-400 receipt-secondary shrink-0">Hội viên:</span>
+          <span className="font-bold text-right">{receipt.customerName}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-slate-500 dark:text-slate-400 receipt-label">SĐT:</span>
-          <span>{receipt.customerPhone}</span>
+        <div className="flex justify-between items-start gap-2">
+          <span className="text-slate-600 dark:text-slate-400 receipt-secondary shrink-0">Số điện thoại:</span>
+          <span className="text-right font-medium">{receipt.customerPhone}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-slate-500 dark:text-slate-400 receipt-label">Gói cước:</span>
-          <span className="font-semibold text-right max-w-[150px] truncate">
+        <div className="flex justify-between items-start gap-2">
+          <span className="text-slate-600 dark:text-slate-400 receipt-secondary shrink-0">Gói dịch vụ:</span>
+          <span className="font-semibold text-right break-words max-w-[65%]">
             {receipt.packageName}
           </span>
         </div>
+      </div>
 
-        <div className="my-2 border-t border-dashed border-slate-300 dark:border-slate-700 receipt-dashed-divider" />
+      {/* Sessions Remaining Divider */}
+      <div className="receipt-divider border-t border-dashed border-slate-300 dark:border-slate-700 my-2" />
 
-        <div className="flex justify-between text-sm font-bold">
+      {/* Summary Highlight */}
+      <div className="py-1 space-y-1.5">
+        <div className="flex justify-between items-center text-sm font-bold">
           <span>Buổi còn lại:</span>
-          <span className="text-indigo-600 dark:text-indigo-400 font-extrabold receipt-highlight">
+          <span className="text-indigo-600 dark:text-indigo-400 font-black text-base receipt-highlight">
             {receipt.sessionsLeft !== null
               ? `${receipt.sessionsLeft} buổi`
               : "Không giới hạn"}
@@ -78,19 +85,22 @@ function ThermalReceiptContent({ receipt }: { receipt: ReceiptData }) {
         </div>
 
         {receipt.staffName && (
-          <div className="flex justify-between text-[11px] pt-1">
-            <span className="text-slate-500 dark:text-slate-400 receipt-label">Thu ngân:</span>
-            <span>{receipt.staffName}</span>
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-slate-600 dark:text-slate-400 receipt-secondary shrink-0">Thu ngân:</span>
+            <span className="font-medium text-right">{receipt.staffName}</span>
           </div>
         )}
       </div>
 
+      {/* Footer Divider */}
+      <div className="receipt-divider border-t border-dashed border-slate-300 dark:border-slate-700 my-2" />
+
       {/* Footer */}
-      <div className="mt-3 pt-2 border-t border-dashed border-slate-300 dark:border-slate-700 text-center text-[10px] text-slate-500 dark:text-slate-400 receipt-dashed-divider receipt-footer">
+      <div className="pt-1 text-center text-[10px] text-slate-500 dark:text-slate-400 receipt-secondary space-y-0.5">
         <p>Cảm ơn quý khách!</p>
         <p>PunchBook - Quản lý hội viên dễ dàng</p>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -109,15 +119,15 @@ export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalPro
 
   return (
     <>
-      {/* Print stylesheet */}
+      {/* Print stylesheet for 80mm POS Thermal Receipt */}
       <style>{`
         @media print {
           @page {
-            size: 80mm auto;
-            margin: 0mm;
+            size: 80mm 140mm;
+            margin: 0;
           }
 
-          /* Hide everything in #root and any open modals */
+          /* Hide entire screen UI and any open dialog overlays */
           #root,
           [role="dialog"] {
             display: none !important;
@@ -129,19 +139,20 @@ export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalPro
             padding: 0 !important;
             background: #ffffff !important;
             color: #000000 !important;
-            width: 100% !important;
-            height: auto !important;
-            min-height: auto !important;
-            overflow: visible !important;
+            width: 80mm !important;
+            height: 140mm !important;
+            max-width: 80mm !important;
+            max-height: 140mm !important;
+            overflow: hidden !important;
           }
 
           #thermal-receipt-print-root {
             display: block !important;
             position: static !important;
-            width: 76mm !important;
-            max-width: 76mm !important;
-            margin: 0 auto !important;
-            padding: 4mm 3mm !important;
+            width: 80mm !important;
+            max-width: 80mm !important;
+            margin: 0 !important;
+            padding: 5mm 4mm !important;
             background: #ffffff !important;
             color: #000000 !important;
             font-family: 'Courier New', Courier, monospace, sans-serif !important;
@@ -158,20 +169,28 @@ export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalPro
             text-shadow: none !important;
           }
 
-          #thermal-receipt-print-root .receipt-dashed-divider {
+          #thermal-receipt-print-root .receipt-divider {
             border-top: 1px dashed #000000 !important;
+            border-bottom: none !important;
+            border-left: none !important;
+            border-right: none !important;
             margin: 6px 0 !important;
           }
 
-          #thermal-receipt-print-root .receipt-subtext,
-          #thermal-receipt-print-root .receipt-label,
-          #thermal-receipt-print-root .receipt-footer {
+          #thermal-receipt-print-root .receipt-secondary {
             color: #222222 !important;
           }
 
           #thermal-receipt-print-root .receipt-highlight {
             font-weight: 900 !important;
+            font-size: 13px !important;
             color: #000000 !important;
+          }
+
+          #thermal-receipt-print-root .receipt-title {
+            font-weight: 900 !important;
+            font-size: 12px !important;
+            letter-spacing: 0.05em !important;
           }
         }
       `}</style>

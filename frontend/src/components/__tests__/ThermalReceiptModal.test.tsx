@@ -92,3 +92,4 @@ describe("ThermalReceiptModal", () => {
     expect(onCloseMock).toHaveBeenCalled()
   })
 })
+
