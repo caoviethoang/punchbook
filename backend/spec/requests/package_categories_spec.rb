@@ -29,7 +29,7 @@ RSpec.describe 'PackageCategories', type: :request do
     it 'allows regular staff to view categories' do
       PackageCategory.create!(shop: shop, name: 'CrossFit')
 
-      get '/package_categories', headers: auth_headers(shop, role: 'staff')
+      get '/api/v1/package_categories', headers: auth_headers(shop, role: 'staff')
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['categories'].pluck('name')).to include('CrossFit')
@@ -46,8 +46,8 @@ RSpec.describe 'PackageCategories', type: :request do
     end
 
     it 'forbids regular staff from creating categories' do
-      post '/package_categories', params: { package_category: { name: 'Boxing' } },
-                                  headers: auth_headers(shop, role: 'staff')
+      post '/api/v1/package_categories', params: { package_category: { name: 'Boxing' } },
+                                         headers: auth_headers(shop, role: 'staff')
 
       expect(response).to have_http_status(:forbidden)
     end
@@ -78,7 +78,7 @@ RSpec.describe 'PackageCategories', type: :request do
     it 'forbids regular staff from updating categories' do
       cat = PackageCategory.create!(shop: shop, name: 'Kickboxing')
 
-      patch "/package_categories/#{cat.id}",
+      patch "/api/v1/package_categories/#{cat.id}",
             params: { package_category: { name: 'Muay Thai' } },
             headers: auth_headers(shop, role: 'staff')
 
@@ -99,7 +99,7 @@ RSpec.describe 'PackageCategories', type: :request do
     it 'forbids regular staff from deleting categories' do
       cat = PackageCategory.create!(shop: shop, name: 'Zumba')
 
-      delete "/package_categories/#{cat.id}", headers: auth_headers(shop, role: 'staff')
+      delete "/api/v1/package_categories/#{cat.id}", headers: auth_headers(shop, role: 'staff')
 
       expect(response).to have_http_status(:forbidden)
     end
