@@ -72,19 +72,42 @@ export function DigitalMembershipCard({
       {/* Print stylesheet to isolate card during window.print() */}
       <style>{`
         @media print {
+          @page {
+            size: auto;
+            margin: 10mm;
+          }
+          html, body {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            overflow: visible !important;
+            height: auto !important;
+          }
           body * {
             visibility: hidden !important;
+          }
+          div[role="dialog"],
+          div[role="dialog"] > div,
+          [class*="overflow-"] {
+            position: static !important;
+            overflow: visible !important;
+            max-height: none !important;
+            height: auto !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            transform: none !important;
           }
           #digital-membership-card-print-area,
           #digital-membership-card-print-area * {
             visibility: visible !important;
           }
           #digital-membership-card-print-area {
-            position: absolute !important;
-            left: 50% !important;
-            top: 20px !important;
-            transform: translateX(-50%) !important;
+            position: static !important;
+            display: block !important;
+            margin: 20px auto !important;
             width: 380px !important;
+            max-width: 380px !important;
             box-shadow: none !important;
             border: 1px solid #cbd5e1 !important;
             background: #ffffff !important;
