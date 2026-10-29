@@ -10,6 +10,7 @@ RSpec.describe MembershipSerializer do
   let(:day_package) do
     Package.create!(shop: shop, name: '30 days', duration_days: 30, price: 500_000)
   end
+  let(:staff) { shop.staffs.create!(name: 'Staff 1', role: 'admin') }
 
   describe '#as_api_json' do
     it 'includes status: expiring when sessions_left is 3 or less' do
@@ -91,6 +92,48 @@ RSpec.describe MembershipSerializer do
       serializer = described_class.new(membership)
       expect(serializer.as_dashboard_json).to eq(serializer.as_api_json)
       expect(serializer.as_dashboard_json['status']).to eq('expiring')
+    end
+  end
+
+  describe '.batch_api_json' do
+    it 'returns empty array when given empty memberships' do
+      expect(described_class.batch_api_json([])).to eq([])
+    end
+
+    it 'batch loads check-in summaries accurately for multiple members' do
+      member_with_today = Membership.create!(
+        shop: shop, package: session_package, customer_name: 'Member Today', phone: '0901111111', sessions_left: 5
+      )
+      member_with_past = Membership.create!(
+        shop: shop, package: session_package, customer_name: 'Member Past', phone: '0902222222', sessions_left: 5
+      )
+      member_no_checkin = Membership.create!(
+        shop: shop, package: session_package, customer_name: 'Member None', phone: '0903333333', sessions_left: 5
+      )
+
+      # Past check-in (yesterday)
+      past_time = 1.day.ago.change(hour: 10)
+      CheckIn.create!(membership: member_with_past, staff: staff, checked_in_at: past_time)
+
+      # Today check-in
+      today_time = Time.zone.now.change(hour: 8)
+      CheckIn.create!(membership: member_with_today, staff: staff, checked_in_at: 2.days.ago)
+      CheckIn.create!(membership: member_with_today, staff: staff, checked_in_at: today_time)
+
+      results = described_class.batch_api_json([member_with_today, member_with_past, member_no_checkin])
+
+      today_json = results.find { |r| r['id'] == member_with_today.id }
+      past_json = results.find { |r| r['id'] == member_with_past.id }
+      none_json = results.find { |r| r['id'] == member_no_checkin.id }
+
+      expect(today_json['checked_in_today']).to be(true)
+      expect(Time.zone.parse(today_json['last_checked_in_at'].to_s).to_i).to eq(today_time.to_i)
+
+      expect(past_json['checked_in_today']).to be(false)
+      expect(Time.zone.parse(past_json['last_checked_in_at'].to_s).to_i).to eq(past_time.to_i)
+
+      expect(none_json['checked_in_today']).to be(false)
+      expect(none_json['last_checked_in_at']).to be_nil
     end
   end
 end

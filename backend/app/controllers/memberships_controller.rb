@@ -11,7 +11,7 @@ class MembershipsController < ApiController
     memberships = fetch_paginated_memberships(memberships_relation, page, per_page)
 
     render json: {
-      memberships: memberships.map(&:as_api_json),
+      memberships: MembershipSerializer.batch_api_json(memberships),
       meta: build_pagination_meta(memberships, page, per_page)
     }
   end
@@ -102,7 +102,7 @@ class MembershipsController < ApiController
   end
 
   def fetch_paginated_memberships(relation, page, per_page)
-    ordered = relation.includes(:package, :check_ins)
+    ordered = relation.preload(:package, :shop)
     ordered = if params[:status] == 'deleted'
                 ordered.order(discarded_at: :desc)
               else

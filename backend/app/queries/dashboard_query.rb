@@ -11,7 +11,7 @@ class DashboardQuery
   end
 
   def to_h
-    memberships = shop.memberships.includes(:package, :check_ins).order(:customer_name).to_a
+    memberships = shop.memberships.preload(:package, :shop).order(:customer_name).to_a
     hourly = check_in_frequency_by_hour
 
     {
@@ -19,7 +19,7 @@ class DashboardQuery
       expiring_within_7_days_count: expiring_count(memberships), daily_revenue_30_days: daily_revenue_30_days,
       check_in_frequency_by_hour: hourly, peak_check_in_hour: calculate_peak_hour(hourly),
       revenue_by_package: revenue_by_package,
-      memberships: memberships.map(&:as_dashboard_json)
+      memberships: MembershipSerializer.batch_dashboard_json(memberships)
     }
   end
 
