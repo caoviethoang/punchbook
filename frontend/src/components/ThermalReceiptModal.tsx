@@ -196,7 +196,7 @@ export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalPro
       `}</style>
 
       {/* Screen Preview Modal */}
-      <Modal isOpen={true} onClose={onClose} maxWidthClass="max-w-md" className="print:hidden">
+      <Modal isOpen={true} onClose={onClose} maxWidthClass="max-w-md" className="print:hidden" hideCloseButton>
         <div className="flex flex-col">
           {/* Top Header - Screen Only */}
           <div className="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-800">
@@ -210,7 +210,7 @@ export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalPro
               <button
                 type="button"
                 onClick={handlePrint}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 cursor-pointer transition-colors"
               >
                 <Printer className="h-4 w-4" />
                 In ngay
@@ -218,7 +218,8 @@ export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalPro
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                aria-label="Đóng modal"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300 cursor-pointer transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>

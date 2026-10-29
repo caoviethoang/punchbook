@@ -79,16 +79,18 @@ describe("ThermalReceiptModal", () => {
     expect(printSpy).toHaveBeenCalled()
   })
 
-  it("calls onClose when clicking close button", async () => {
+  it("calls onClose when clicking close button and has only one close button", async () => {
     vi.useRealTimers()
     const user = userEvent.setup()
     const onCloseMock = vi.fn()
 
     render(<ThermalReceiptModal receipt={mockReceipt} onClose={onCloseMock} />)
 
-    const closeButtons = screen.getAllByRole("button", { name: "" })
-    await user.click(closeButtons[0])
+    // Ensure only one close button is rendered without duplicate X buttons
+    const closeButtons = screen.getAllByRole("button", { name: "Đóng modal" })
+    expect(closeButtons).toHaveLength(1)
 
+    await user.click(closeButtons[0])
     expect(onCloseMock).toHaveBeenCalled()
   })
 })
