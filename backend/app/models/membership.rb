@@ -18,6 +18,7 @@ class Membership < ApplicationRecord
 
   validates :customer_name, :phone, presence: true
   validates :sessions_left, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
+  validates :card_number, uniqueness: { scope: :shop_id }, allow_blank: true
   validate :validate_free_plan_limit, on: :create
 
   scope :search_by_query, lambda { |query|
@@ -33,10 +34,11 @@ class Membership < ApplicationRecord
       phone_pattern = "%#{sanitize_sql_like(digits_only)}%"
       sql = 'memberships.customer_name ILIKE :q OR memberships.phone ILIKE :q OR ' \
             "regexp_replace(memberships.phone, '\\D', '', 'g') ILIKE :pq OR " \
-            'memberships.id::text ILIKE :cq'
+            'memberships.card_number ILIKE :q OR memberships.id::text ILIKE :cq'
       where(sql, q: name_pattern, pq: phone_pattern, cq: clean_pattern)
     else
-      where('memberships.customer_name ILIKE :q OR memberships.phone ILIKE :q OR memberships.id::text ILIKE :cq',
+      where('memberships.customer_name ILIKE :q OR memberships.phone ILIKE :q OR ' \
+            'memberships.card_number ILIKE :q OR memberships.id::text ILIKE :cq',
             q: name_pattern, cq: clean_pattern)
     end
   }

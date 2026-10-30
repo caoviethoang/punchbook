@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_22_173500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_27_024829) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -35,7 +35,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_173500) do
     t.datetime "checked_in_at"
     t.datetime "created_at", null: false
     t.uuid "membership_id", null: false
-    t.uuid "staff_id", null: false
+    t.uuid "staff_id"
     t.datetime "updated_at", null: false
     t.index ["membership_id"], name: "index_check_ins_on_membership_id"
     t.index ["staff_id"], name: "index_check_ins_on_staff_id"
@@ -65,6 +65,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_173500) do
   end
 
   create_table "memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "card_number"
     t.datetime "created_at", null: false
     t.string "customer_name"
     t.datetime "discarded_at"
@@ -78,6 +79,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_173500) do
     t.datetime "updated_at", null: false
     t.index ["discarded_at"], name: "index_memberships_on_discarded_at"
     t.index ["package_id"], name: "index_memberships_on_package_id"
+    t.index ["shop_id", "card_number"], name: "index_memberships_on_shop_id_and_card_number", unique: true, where: "(card_number IS NOT NULL)"
     t.index ["shop_id", "customer_name"], name: "index_memberships_on_shop_id_and_customer_name"
     t.index ["shop_id", "expires_at"], name: "index_memberships_on_shop_id_and_expires_at"
     t.index ["shop_id", "phone"], name: "index_memberships_on_shop_id_and_phone"
@@ -131,6 +133,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_173500) do
     t.string "bank_account_no"
     t.string "bank_name"
     t.datetime "created_at", null: false
+    t.string "device_api_key"
     t.string "email", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "name"
@@ -138,6 +141,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_173500) do
     t.string "plan", default: "free", null: false
     t.datetime "plan_expires_at"
     t.datetime "updated_at", null: false
+    t.index ["device_api_key"], name: "index_shops_on_device_api_key", unique: true
     t.index ["email"], name: "index_shops_on_email", unique: true
   end
 

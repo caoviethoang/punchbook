@@ -81,12 +81,16 @@ export function PackageGrid({
             className="group relative flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-indigo-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-900/60"
           >
             <div>
-              {pkg.category_name && (
-                <div className="mb-2 flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                  <Tag className="h-3 w-3" />
-                  <span>{pkg.category_name}</span>
-                </div>
-              )}
+              <div
+                className={`mb-2 flex items-center gap-1 text-xs font-semibold ${
+                  pkg.category_name
+                    ? "text-indigo-600 dark:text-indigo-400"
+                    : "text-slate-400 dark:text-slate-500"
+                }`}
+              >
+                <Tag className="h-3 w-3" />
+                <span>{pkg.category_name || "Chưa phân loại"}</span>
+              </div>
 
               <div className="flex items-start justify-between gap-2">
                 <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50">

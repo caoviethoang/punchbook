@@ -1,4 +1,4 @@
-import { renderHook, act, waitFor } from "@testing-library/react"
+import { renderHook, act, waitFor, cleanup } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { useCheckInScreen } from "../useCheckInScreen"
 import * as membershipsApi from "../../lib/memberships"
@@ -7,6 +7,7 @@ import type { Membership, CheckInResult } from "../../lib/memberships"
 import type { Staff } from "../../lib/auth"
 
 afterEach(() => {
+  cleanup()
   vi.clearAllMocks()
   vi.useRealTimers()
 })

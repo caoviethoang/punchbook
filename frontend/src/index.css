@@ -113,4 +113,27 @@
       "rlig" 1,
       "calt" 1;
   }
+
+  button,
+  select,
+  option,
+  [type="button"],
+  [type="reset"],
+  [type="submit"],
+  [role="button"],
+  [role="option"] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled,
+  option:disabled,
+  [type="button"]:disabled,
+  [type="reset"]:disabled,
+  [type="submit"]:disabled,
+  [role="button"][aria-disabled="true"],
+  [role="option"][aria-disabled="true"],
+  [disabled] {
+    cursor: not-allowed;
+  }
 }

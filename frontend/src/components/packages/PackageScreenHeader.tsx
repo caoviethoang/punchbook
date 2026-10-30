@@ -31,7 +31,7 @@ export function PackageScreenHeader({
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             <Settings2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-            <span>Quản lý bộ môn</span>
+            <span>Quản lý danh mục</span>
           </button>
 
           <button
