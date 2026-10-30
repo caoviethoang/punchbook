@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Package, Award, ShoppingBag, PieChart } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { PackageRevenueData } from "../../lib/dashboard"
 import { formatVnd } from "../../lib/formatters"
 
@@ -19,6 +20,7 @@ const PALETTE = [
 ]
 
 export function PackageRevenueChart({ packageRevenue = [] }: PackageRevenueChartProps) {
+  const { t } = useTranslation()
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   const totalRevenue = packageRevenue.reduce((acc, item) => acc + item.total_revenue, 0)
@@ -32,10 +34,13 @@ export function PackageRevenueChart({ packageRevenue = [] }: PackageRevenueChart
           <Package className="h-6 w-6" />
         </div>
         <h4 className="mt-3 text-base font-semibold text-slate-800 dark:text-slate-200">
-          Chưa có dữ liệu doanh thu gói
+          {t("dashboard.empty_package_revenue", "Chưa có dữ liệu doanh thu gói")}
         </h4>
         <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
-          Chưa có giao dịch thanh toán gói dịch vụ nào được ghi nhận trong tháng này.
+          {t(
+            "dashboard.empty_package_revenue_desc",
+            "Chưa có giao dịch thanh toán gói dịch vụ nào được ghi nhận trong tháng này.",
+          )}
         </p>
       </div>
     )
@@ -48,7 +53,7 @@ export function PackageRevenueChart({ packageRevenue = [] }: PackageRevenueChart
         <div className="rounded-xl bg-indigo-50/60 p-4 dark:bg-indigo-950/30">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
             <PieChart className="h-4 w-4" />
-            <span>Doanh thu gói tháng này</span>
+            <span>{t("dashboard.package_revenue_month", "Doanh thu gói tháng này")}</span>
           </div>
           <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-50">
             {formatVnd(totalRevenue)}
@@ -58,24 +63,31 @@ export function PackageRevenueChart({ packageRevenue = [] }: PackageRevenueChart
         <div className="rounded-xl bg-emerald-50/60 p-4 dark:bg-emerald-950/30">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
             <ShoppingBag className="h-4 w-4" />
-            <span>Tổng lượt bán</span>
+            <span>{t("dashboard.total_sales", "Tổng lượt bán")}</span>
           </div>
           <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-50">
-            {totalSales} <span className="text-sm font-medium text-slate-500 dark:text-slate-400">lượt</span>
+            {totalSales}{" "}
+            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              {t("dashboard.sales_suffix", "lượt")}
+            </span>
           </p>
         </div>
 
         <div className="rounded-xl bg-amber-50/60 p-4 dark:bg-amber-950/30">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
             <Award className="h-4 w-4" />
-            <span>Gói bán chạy nhất</span>
+            <span>{t("dashboard.best_selling_package", "Gói bán chạy nhất")}</span>
           </div>
           <p className="mt-1 truncate text-lg font-bold text-slate-900 dark:text-slate-50" title={topPackage?.package_name}>
             {topPackage?.package_name || "—"}
           </p>
           {topPackage && (
             <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-              {topPackage.sales_count} lượt bán • {formatVnd(topPackage.total_revenue)}
+              {t("dashboard.sales_breakdown", {
+                defaultValue: "{{count}} lượt bán • {{amount}}",
+                count: topPackage.sales_count,
+                amount: formatVnd(topPackage.total_revenue),
+              })}
             </p>
           )}
         </div>
@@ -84,7 +96,7 @@ export function PackageRevenueChart({ packageRevenue = [] }: PackageRevenueChart
       {/* Visual Stacked Distribution Bar */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
-          <span>Tỷ lệ đóng góp doanh thu theo gói</span>
+          <span>{t("dashboard.revenue_contribution_ratio", "Tỷ lệ đóng góp doanh thu theo gói")}</span>
           <span>100%</span>
         </div>
         <div className="flex h-5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 dark:bg-slate-800">
@@ -115,10 +127,18 @@ export function PackageRevenueChart({ packageRevenue = [] }: PackageRevenueChart
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
               <tr>
-                <th scope="col" className="px-4 py-3 font-semibold">Tên gói dịch vụ</th>
-                <th scope="col" className="px-4 py-3 text-center font-semibold">Số lượng bán</th>
-                <th scope="col" className="px-4 py-3 text-right font-semibold">Tổng doanh thu</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Tỷ trọng</th>
+                <th scope="col" className="px-4 py-3 font-semibold">
+                  {t("dashboard.col_package_name", "Tên gói dịch vụ")}
+                </th>
+                <th scope="col" className="px-4 py-3 text-center font-semibold">
+                  {t("dashboard.col_sales_qty", "Số lượng bán")}
+                </th>
+                <th scope="col" className="px-4 py-3 text-right font-semibold">
+                  {t("dashboard.col_total_revenue", "Tổng doanh thu")}
+                </th>
+                <th scope="col" className="px-4 py-3 font-semibold">
+                  {t("dashboard.col_share", "Tỷ trọng")}
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">

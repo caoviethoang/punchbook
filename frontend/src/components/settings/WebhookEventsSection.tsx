@@ -10,6 +10,7 @@ import {
   RefreshCw,
   RotateCcw,
 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import {
   fetchWebhookEvents,
   retryWebhookEvent,
@@ -26,6 +27,7 @@ interface WebhookEventsSectionProps {
 type FilterOption = "all" | "attention" | "dead_letter" | "success"
 
 export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionProps) {
+  const { t } = useTranslation()
   const [events, setEvents] = useState<WebhookEvent[]>([])
   const [loading, setLoading] = useState(false)
   const [retryingId, setRetryingId] = useState<string | null>(null)
@@ -58,7 +60,7 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
       })
       .catch((err) => {
         if (!active) return
-        const msg = err instanceof Error ? err.message : "Không thể tải danh sách webhook"
+        const msg = err instanceof Error ? err.message : t("settings.webhook.load_failed", "Không thể tải danh sách webhook")
         onToast(msg, "error")
       })
       .finally(() => {
@@ -68,7 +70,7 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
     return () => {
       active = false
     }
-  }, [isAdmin, filter, page, resolveStatusParam, onToast])
+  }, [isAdmin, filter, page, resolveStatusParam, onToast, t])
 
   const handleRefresh = async () => {
     setLoading(true)
@@ -82,7 +84,7 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
       setEvents(list)
       setTotalCount(data.meta.total)
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Không thể tải danh sách webhook"
+      const msg = err instanceof Error ? err.message : t("settings.webhook.load_failed", "Không thể tải danh sách webhook")
       onToast(msg, "error")
     } finally {
       setLoading(false)
@@ -94,14 +96,17 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
     try {
       const res = await retryWebhookEvent(event.id)
       onToast(
-        `Đã đưa đơn #${event.order_code ?? event.id.slice(0, 8)} vào hàng đợi thử lại.`,
-        "success"
+        t("settings.webhook.retry_queued", {
+          defaultValue: "Đã đưa đơn #{{order}} vào hàng đợi thử lại.",
+          order: event.order_code ?? event.id.slice(0, 8),
+        }),
+        "success",
       )
       setEvents((prev) =>
         prev.map((item) => (item.id === event.id ? res.webhook_event : item))
       )
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Không thể thử lại webhook"
+      const msg = err instanceof Error ? err.message : t("settings.webhook.retry_failed", "Không thể thử lại webhook")
       onToast(msg, "error")
     } finally {
       setRetryingId(null)
@@ -114,42 +119,42 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
             <CheckCircle2 className="h-3.5 w-3.5" />
-            Thành công
+            {t("settings.webhook.status_success", "Thành công")}
           </span>
         )
       case "failed":
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
             <AlertCircle className="h-3.5 w-3.5" />
-            Thất bại
+            {t("settings.webhook.status_failed", "Thất bại")}
           </span>
         )
       case "dead_letter":
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2.5 py-0.5 text-xs font-semibold text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
             <AlertTriangle className="h-3.5 w-3.5" />
-            Dead Letter (DLQ)
+            {t("settings.webhook.status_dead_letter", "Dead Letter (DLQ)")}
           </span>
         )
       case "invalid_signature":
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
             <AlertTriangle className="h-3.5 w-3.5" />
-            Sai chữ ký
+            {t("settings.webhook.status_invalid_signature", "Sai chữ ký")}
           </span>
         )
       case "processing":
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            Đang xử lý
+            {t("settings.webhook.status_processing", "Đang xử lý")}
           </span>
         )
       default:
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
             <Clock className="h-3.5 w-3.5" />
-            Chờ xử lý
+            {t("settings.webhook.status_pending", "Chờ xử lý")}
           </span>
         )
     }
@@ -164,10 +169,13 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
         <div>
           <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-            Lịch sử Webhook PayOS & Dead-Letter Queue
+            {t("settings.webhook.title", "Lịch sử Webhook PayOS & Dead-Letter Queue")}
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Tự động lưu webhook, hàng đợi thử lại (Sidekiq retry 5 lần) và xử lý lỗi dead-letter.
+            {t(
+              "settings.webhook.subtitle",
+              "Tự động lưu webhook, hàng đợi thử lại (Sidekiq retry 5 lần) và xử lý lỗi dead-letter.",
+            )}
           </p>
         </div>
 
@@ -178,7 +186,7 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
           className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-          Làm mới
+          {t("common.refresh", "Làm mới")}
         </button>
       </div>
 
@@ -196,7 +204,7 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
               : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
           }`}
         >
-          Tất cả
+          {t("settings.webhook.filter_all", "Tất cả")}
         </button>
         <button
           type="button"
@@ -210,7 +218,7 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
               : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
           }`}
         >
-          Cần xử lý (Lỗi / DLQ)
+          {t("settings.webhook.filter_attention", "Cần xử lý (Lỗi / DLQ)")}
         </button>
         <button
           type="button"
@@ -224,7 +232,7 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
               : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
           }`}
         >
-          Dead-Letter Queue
+          {t("settings.webhook.filter_dead_letter", "Dead-Letter Queue")}
         </button>
         <button
           type="button"
@@ -238,7 +246,7 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
               : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
           }`}
         >
-          Thành công
+          {t("settings.webhook.filter_success", "Thành công")}
         </button>
       </div>
 
@@ -248,12 +256,12 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
           <table className="w-full text-left text-xs">
             <thead className="border-b border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
               <tr>
-                <th className="px-4 py-3 font-semibold">Thời gian</th>
-                <th className="px-4 py-3 font-semibold">Mã đơn PayOS</th>
-                <th className="px-4 py-3 font-semibold">Trạng thái</th>
-                <th className="px-4 py-3 font-semibold">Số lần thử</th>
-                <th className="px-4 py-3 font-semibold">Lỗi gần nhất</th>
-                <th className="px-4 py-3 font-semibold text-right">Thao tác</th>
+                <th className="px-4 py-3 font-semibold">{t("settings.webhook.col_time", "Thời gian")}</th>
+                <th className="px-4 py-3 font-semibold">{t("settings.webhook.col_order_code", "Mã đơn PayOS")}</th>
+                <th className="px-4 py-3 font-semibold">{t("settings.webhook.col_status", "Trạng thái")}</th>
+                <th className="px-4 py-3 font-semibold">{t("settings.webhook.col_attempts", "Số lần thử")}</th>
+                <th className="px-4 py-3 font-semibold">{t("settings.webhook.col_last_error", "Lỗi gần nhất")}</th>
+                <th className="px-4 py-3 font-semibold text-right">{t("settings.webhook.col_actions", "Thao tác")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -261,13 +269,13 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
                     <Loader2 className="mx-auto h-5 w-5 animate-spin text-slate-400" />
-                    <span className="mt-2 block text-xs">Đang tải webhook...</span>
+                    <span className="mt-2 block text-xs">{t("settings.webhook.loading", "Đang tải webhook...")}</span>
                   </td>
                 </tr>
               ) : events.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
-                    Không có webhook nào phù hợp bộ lọc.
+                    {t("settings.webhook.empty", "Không có webhook nào phù hợp bộ lọc.")}
                   </td>
                 </tr>
               ) : (
@@ -306,7 +314,9 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
                           <RotateCcw
                             className={`h-3 w-3 ${retryingId === event.id ? "animate-spin" : ""}`}
                           />
-                          {retryingId === event.id ? "Đang xử lý..." : "Thử lại"}
+                          {retryingId === event.id
+                            ? t("common.processing", "Đang xử lý...")
+                            : t("common.retry", "Thử lại")}
                         </button>
                       ) : (
                         <span className="text-slate-400 dark:text-slate-600 text-xs">—</span>
@@ -323,7 +333,12 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
         {totalPages > 1 && (
           <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-800/40">
             <span className="text-xs text-slate-500 dark:text-slate-400">
-              Trang {page} / {totalPages} (Tổng số: {totalCount})
+              {t("settings.webhook.pagination", {
+                defaultValue: "Trang {{page}} / {{totalPages}} (Tổng số: {{totalCount}})",
+                page,
+                totalPages,
+                totalCount,
+              })}
             </span>
             <div className="flex items-center gap-1">
               <button
@@ -331,7 +346,7 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
                 className="rounded-lg p-1 text-slate-600 hover:bg-slate-200 disabled:opacity-30 dark:text-slate-400 dark:hover:bg-slate-700"
-                aria-label="Trang trước"
+                aria-label={t("common.prev", "Trang trước")}
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -340,7 +355,7 @@ export function WebhookEventsSection({ isAdmin, onToast }: WebhookEventsSectionP
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
                 className="rounded-lg p-1 text-slate-600 hover:bg-slate-200 disabled:opacity-30 dark:text-slate-400 dark:hover:bg-slate-700"
-                aria-label="Trang sau"
+                aria-label={t("common.next", "Trang sau")}
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
