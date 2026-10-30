@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 class PackageCategoriesController < ApiController
+  before_action :authorize_package_category_management!, only: %i[create update destroy]
+
   def index
+    authorize! :read, PackageCategory
     categories = current_shop.package_categories.order(:name)
     render json: { categories: categories.as_json(only: %i[id shop_id name]) }
   end
@@ -25,6 +28,10 @@ class PackageCategoriesController < ApiController
   end
 
   private
+
+  def authorize_package_category_management!
+    authorize! :manage, PackageCategory
+  end
 
   def category_params
     params.expect(package_category: [:name])
