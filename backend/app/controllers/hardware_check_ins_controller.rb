@@ -29,13 +29,15 @@ class HardwareCheckInsController < ApplicationController
   def authenticate_device!
     api_key = request.headers['X-Device-Api-Key'].presence || params[:device_api_key].presence
     if api_key.blank?
-      return render json: { error: 'Device API Key missing', code: 'UNAUTHORIZED' }, status: :unauthorized
+      msg = I18n.t('errors.hardware.api_key_missing', default: 'Device API Key missing')
+      return render json: { error: msg, code: 'UNAUTHORIZED' }, status: :unauthorized
     end
 
     @device_shop = Shop.find_by(device_api_key: api_key)
     return if @device_shop.present?
 
-    render json: { error: 'Invalid Device API Key', code: 'UNAUTHORIZED' }, status: :unauthorized
+    invalid_msg = I18n.t('errors.hardware.api_key_invalid', default: 'Invalid Device API Key')
+    render json: { error: invalid_msg, code: 'UNAUTHORIZED' }, status: :unauthorized
   end
 
   def check_in_params

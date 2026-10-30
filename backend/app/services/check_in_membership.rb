@@ -28,9 +28,12 @@ class CheckInMembership
 
   def validate_eligibility!
     if membership.package.session_based?
-      raise InsufficientSessionsError, 'Membership has no sessions left' if membership.no_sessions_left?
+      return unless membership.no_sessions_left?
+
+      raise InsufficientSessionsError,
+            I18n.t('errors.membership.no_sessions_left', default: 'Membership has no sessions left')
     elsif membership.expired? || membership.expires_at.blank?
-      raise MembershipExpiredError, 'Membership has expired'
+      raise MembershipExpiredError, I18n.t('errors.membership.expired', default: 'Membership has expired')
     end
   end
 

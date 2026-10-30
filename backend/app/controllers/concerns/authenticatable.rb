@@ -28,7 +28,7 @@ module Authenticatable
   end
 
   def render_unauthorized
-    render_error('Unauthorized', code: 'UNAUTHORIZED', status: :unauthorized)
+    render_error(I18n.t('errors.unauthorized', default: 'Unauthorized'), code: 'UNAUTHORIZED', status: :unauthorized)
   end
 
   def current_ability

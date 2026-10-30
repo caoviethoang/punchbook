@@ -52,6 +52,14 @@ export function authToken(): string {
   return token
 }
 
+function getAppLanguage(): string {
+  try {
+    return localStorage.getItem("punchbook_language") || "vi"
+  } catch {
+    return "vi"
+  }
+}
+
 /**
  * Builds the Authorization + Content-Type headers for authenticated requests.
  * Throws if no token is stored (user not logged in).
@@ -60,6 +68,7 @@ export function authHeaders(): HeadersInit {
   return {
     Authorization: `Bearer ${authToken()}`,
     "Content-Type": "application/json",
+    "Accept-Language": getAppLanguage(),
   }
 }
 
@@ -134,7 +143,9 @@ export async function downloadBlob(path: string, fallbackFilename: string): Prom
 }
 
 function jsonHeaders(authenticated: boolean): HeadersInit {
-  return authenticated ? authHeaders() : { "Content-Type": "application/json" }
+  return authenticated
+    ? authHeaders()
+    : { "Content-Type": "application/json", "Accept-Language": getAppLanguage() }
 }
 
 function withQuery(path: string, query?: Record<string, string>): string {
@@ -152,7 +163,7 @@ export async function apiGet<T>(
 ): Promise<T> {
   const authenticated = options?.auth !== false
   const headers = options?.token
-    ? { Authorization: `Bearer ${options.token}` }
+    ? { Authorization: `Bearer ${options.token}`, "Accept-Language": getAppLanguage() }
     : jsonHeaders(authenticated)
 
   const response = await fetch(withQuery(path, options?.query), { headers })
