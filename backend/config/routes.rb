@@ -10,6 +10,8 @@ Rails.application.routes.draw do
 
     get '/dashboard', to: 'dashboard#show'
     get '/reports/export', to: 'reports#export'
+    get '/reports/attendance', to: 'reports#attendance'
+    get '/reports/attendance/export', to: 'reports#export_attendance'
 
     get '/settings', to: 'settings#show'
     patch '/settings/profile', to: 'settings#update_profile'

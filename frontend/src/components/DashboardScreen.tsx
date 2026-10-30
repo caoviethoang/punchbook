@@ -10,6 +10,7 @@ import { formatVnd } from "../lib/formatters"
 import { computeMembershipStatus } from "../lib/memberships"
 import { downloadExcelReport } from "../lib/reports"
 import { AnalyticsCharts } from "./AnalyticsCharts"
+import { AttendanceReportSection } from "./dashboard/AttendanceReportSection"
 import { DashboardHeader } from "./dashboard/DashboardHeader"
 import { DashboardMembershipsTable } from "./dashboard/DashboardMembershipsTable"
 import { MetricCard } from "./dashboard/MetricCard"
@@ -156,12 +157,17 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
 
       {/* Analytics Charts (30-day Revenue, Package Revenue & 24h Check-in Frequency) */}
       {!currentStaff || currentStaff.role === "admin" ? (
-        <AnalyticsCharts
-          dailyRevenue={data.daily_revenue_30_days}
-          checkInFrequency={data.check_in_frequency_by_hour}
-          peakHour={data.peak_check_in_hour}
-          packageRevenue={data.revenue_by_package}
-        />
+        <>
+          <AnalyticsCharts
+            dailyRevenue={data.daily_revenue_30_days}
+            checkInFrequency={data.check_in_frequency_by_hour}
+            peakHour={data.peak_check_in_hour}
+            packageRevenue={data.revenue_by_package}
+          />
+          <AttendanceReportSection
+            onSelectDetail={setSelectedMembershipIdForDetail}
+          />
+        </>
       ) : null}
 
       {/* Memberships Table with search & pagination */}
