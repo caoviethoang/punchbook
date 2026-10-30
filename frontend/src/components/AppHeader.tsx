@@ -28,6 +28,19 @@ interface AppHeaderProps {
   onLogout: () => void
 }
 
+function formatPlanLabel(plan: string, planDetails: string | undefined, t: (k: string, d: string) => string): string {
+  if (planDetails) {
+    if (planDetails.includes("1 năm") || planDetails.includes("1 year")) {
+      return t("common.premium_1_year", "Premium 1 năm")
+    }
+    if (planDetails.includes("1 tháng") || planDetails.includes("1 month")) {
+      return t("common.premium_1_month", "Premium 1 tháng")
+    }
+    return planDetails
+  }
+  return plan === "paid" ? t("common.premium", "Premium") : t("common.free", "Free")
+}
+
 export function AppHeader({
   shop,
   staff,
@@ -71,7 +84,7 @@ export function AppHeader({
             ))}
           </nav>
           <span className="shrink-0 whitespace-nowrap">
-            <span className="hidden sm:inline">Plan: </span>
+            <span className="hidden sm:inline">{t("common.plan", "Plan")}: </span>
             <strong
               className={`font-bold ${
                 shop.plan === "paid"
@@ -79,7 +92,7 @@ export function AppHeader({
                   : "text-slate-700 dark:text-slate-200"
               }`}
             >
-              {shop.plan_details || (shop.plan === "paid" ? "Premium" : "Free")}
+              {formatPlanLabel(shop.plan, shop.plan_details, t)}
             </strong>
           </span>
           <LanguageToggle className="shrink-0" />

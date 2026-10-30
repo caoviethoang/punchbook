@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { Plus, Trash2, Users, UserCheck } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { Staff } from "../lib/auth"
 import { toApiError } from "../lib/errors"
 import { formatDate } from "../lib/formatters"
@@ -12,6 +13,7 @@ interface StaffManagementSectionProps {
 }
 
 export function StaffManagementSection({ currentStaff, onToast }: StaffManagementSectionProps) {
+  const { t } = useTranslation()
   const [staffs, setStaffs] = useState<Staff[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -103,10 +105,10 @@ export function StaffManagementSection({ currentStaff, onToast }: StaffManagemen
           </div>
           <div>
             <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-              Quản lý Nhân viên & Lễ tân
+              {t("settings.staff.title", "Quản lý Nhân viên & Lễ tân")}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Tạo tài khoản đăng nhập riêng cho lễ tân và quản trị viên phòng tập.
+              {t("settings.staff.subtitle", "Tạo tài khoản đăng nhập riêng cho lễ tân và quản trị viên phòng tập.")}
             </p>
           </div>
         </div>
@@ -117,28 +119,28 @@ export function StaffManagementSection({ currentStaff, onToast }: StaffManagemen
           className="inline-flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-purple-500 shadow-sm"
         >
           <Plus className="h-4 w-4" />
-          <span>Thêm Nhân viên</span>
+          <span>{t("settings.staff.add_btn", "Thêm Nhân viên")}</span>
         </button>
       </div>
 
       {loading ? (
         <div className="py-8 text-center text-sm text-slate-400">
-          Đang tải danh sách nhân viên...
+          {t("common.loading", "Đang tải danh sách nhân viên...")}
         </div>
       ) : staffs.length === 0 ? (
         <div className="py-8 text-center text-sm text-slate-400">
-          Chưa có tài khoản nhân viên nào.
+          {t("settings.staff.empty", "Chưa có tài khoản nhân viên nào.")}
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-100 text-xs font-semibold text-slate-500 dark:border-slate-800 dark:text-slate-400">
               <tr>
-                <th className="py-3 px-3">Tên nhân viên</th>
-                <th className="py-3 px-3">Tên đăng nhập</th>
-                <th className="py-3 px-3">Vai trò</th>
-                <th className="py-3 px-3">Ngày tạo</th>
-                <th className="py-3 px-3 text-right">Thao tác</th>
+                <th className="py-3 px-3">{t("settings.staff.name", "Tên nhân viên")}</th>
+                <th className="py-3 px-3">{t("settings.staff.username", "Tên đăng nhập")}</th>
+                <th className="py-3 px-3">{t("settings.staff.role", "Vai trò")}</th>
+                <th className="py-3 px-3">{t("common.created_at", "Ngày tạo")}</th>
+                <th className="py-3 px-3 text-right">{t("common.actions", "Thao tác")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -161,7 +163,9 @@ export function StaffManagementSection({ currentStaff, onToast }: StaffManagemen
                           : "bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300"
                       }`}
                     >
-                      {s.role === "admin" ? "Quản trị viên (Admin)" : "Lễ tân (Staff)"}
+                      {s.role === "admin"
+                        ? t("settings.staff.role_admin", "Quản trị viên (Admin)")
+                        : t("settings.staff.role_staff", "Lễ tân (Staff)")}
                     </span>
                   </td>
                   <td className="py-3 px-3 text-xs text-slate-500">

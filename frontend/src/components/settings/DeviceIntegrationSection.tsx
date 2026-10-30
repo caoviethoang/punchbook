@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Cpu, Copy, Check, RefreshCw } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { Shop } from "../../lib/auth"
 import { regenerateDeviceApiKey } from "../../lib/settings"
 
@@ -16,6 +17,7 @@ export function DeviceIntegrationSection({
   onShopUpdated,
   onToast,
 }: DeviceIntegrationSectionProps) {
+  const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -25,14 +27,14 @@ export function DeviceIntegrationSection({
       await navigator.clipboard.writeText(shop.device_api_key)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-      onToast("Đã sao chép Device API Key vào bộ nhớ tạm", "success")
+      onToast(t("settings.device.copy_success", "Đã sao chép Device API Key vào bộ nhớ tạm"), "success")
     } catch {
       onToast("Không thể sao chép, vui lòng copy thủ công", "error")
     }
   }
 
   async function handleRegenerate() {
-    if (!confirm("Bạn có chắc muốn tạo lại Device API Key? Thiết bị cũ đang dùng key này sẽ cần cập nhật lại.")) {
+    if (!confirm(t("settings.device.confirm_regenerate", "Bạn có chắc muốn tạo lại Device API Key? Thiết bị cũ đang dùng key này sẽ cần cập nhật lại."))) {
       return
     }
 
@@ -40,7 +42,7 @@ export function DeviceIntegrationSection({
     try {
       const res = await regenerateDeviceApiKey()
       onShopUpdated(res.shop)
-      onToast("Tạo mới Device API Key thành công!", "success")
+      onToast(t("settings.device.regenerate_success", "Tạo mới Device API Key thành công!"), "success")
     } catch (err) {
       onToast(err instanceof Error ? err.message : "Tạo mới API Key thất bại", "error")
     } finally {
@@ -56,10 +58,10 @@ export function DeviceIntegrationSection({
         </div>
         <div>
           <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-            Tích hợp Thiết bị phần cứng (FaceID / Vân tay / Thẻ từ)
+            {t("settings.device.title", "Tích hợp Thiết bị phần cứng (FaceID / Vân tay / Thẻ từ)")}
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Cấu hình webhook hoặc gửi API từ máy chấm công, cổng xoay, máy quét thẻ RFID
+            {t("settings.device.subtitle", "Kết nối đầu đọc thẻ hoặc máy chấm công để check-in tự động.")}
           </p>
         </div>
       </div>

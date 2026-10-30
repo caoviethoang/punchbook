@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { Check, Copy, Download, Loader2, Printer, QrCode, ShieldCheck, Sparkles } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { Membership, MembershipDetail } from "../lib/memberships"
 import { remainingLabel } from "../lib/formatters"
 import { StatusBadge } from "./ui/StatusBadge"
@@ -21,6 +22,7 @@ export function DigitalMembershipCard({
   showActions = true,
   className = "",
 }: DigitalMembershipCardProps) {
+  const { t } = useTranslation()
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [downloading, setDownloading] = useState(false)
@@ -123,7 +125,7 @@ export function DigitalMembershipCard({
           </div>
 
           <span className="rounded-full border border-indigo-400/30 bg-indigo-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-200">
-            Thẻ hội viên
+            {t("card.member_badge", "Thẻ hội viên")}
           </span>
         </div>
 
@@ -139,12 +141,12 @@ export function DigitalMembershipCard({
             ) : (
               <div className="flex flex-col items-center justify-center gap-2 text-slate-400">
                 <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-                <span className="text-xs font-medium">Đang tạo mã QR...</span>
+                <span className="text-xs font-medium">{t("card.generating_qr", "Đang tạo mã QR...")}</span>
               </div>
             )}
           </div>
           <p className="mt-2 text-center text-xs text-slate-400">
-            Quét mã QR để điểm danh tức thì
+            {t("card.scan_hint", "Quét mã QR để điểm danh tức thì")}
           </p>
         </div>
 
@@ -173,7 +175,7 @@ export function DigitalMembershipCard({
           </p>
 
           <div className="mt-4 rounded-xl border border-white/10 bg-white/5 py-1.5 px-3 text-center font-mono text-[11px] text-slate-400">
-            Mã: <span className="font-semibold text-slate-200">{membership.id}</span>
+            {t("card.code_label", "Mã:")} <span className="font-semibold text-slate-200">{membership.id}</span>
           </div>
         </div>
       </div>
@@ -189,12 +191,14 @@ export function DigitalMembershipCard({
             {copied ? (
               <>
                 <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-emerald-600 dark:text-emerald-400">Đã chép mã</span>
+                <span className="text-emerald-600 dark:text-emerald-400">
+                  {t("card.copied", "Đã chép mã")}
+                </span>
               </>
             ) : (
               <>
                 <Copy className="h-4 w-4 text-slate-500" />
-                <span>Sao chép mã</span>
+                <span>{t("card.copy_code", "Sao chép mã")}</span>
               </>
             )}
           </button>
@@ -208,12 +212,12 @@ export function DigitalMembershipCard({
             {downloading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Đang tải...</span>
+                <span>{t("card.downloading", "Đang tải...")}</span>
               </>
             ) : (
               <>
                 <Download className="h-4 w-4" />
-                <span>Tải về PNG</span>
+                <span>{t("card.download_png", "Tải về PNG")}</span>
               </>
             )}
           </button>
@@ -224,7 +228,7 @@ export function DigitalMembershipCard({
             className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-3 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-500"
           >
             <Printer className="h-4 w-4" />
-            <span>In thẻ</span>
+            <span>{t("card.print_card", "In thẻ")}</span>
           </button>
         </div>
       )}

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { STATUS_CLASS, STATUS_LABEL, type MembershipStatus } from "../../lib/dashboard"
 
 export interface StatusBadgeProps {
@@ -7,9 +8,16 @@ export interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, type = "membership", className = "" }: StatusBadgeProps) {
+  const { t } = useTranslation()
+
   if (type === "membership") {
     const memStatus = status as MembershipStatus
-    const label = STATUS_LABEL[memStatus] || status
+    const fallbackLabel = STATUS_LABEL[memStatus] || status
+    let label = fallbackLabel
+    if (memStatus === "active") label = t("common.active", fallbackLabel)
+    else if (memStatus === "expiring") label = t("common.expiring", fallbackLabel)
+    else if (memStatus === "expired") label = t("common.expired", fallbackLabel)
+
     const style =
       STATUS_CLASS[memStatus] || "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
 
@@ -29,7 +37,7 @@ export function StatusBadge({ status, type = "membership", className = "" }: Sta
         <span
           className={`inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 ${className}`}
         >
-          Đã thanh toán
+          {t("common.paid", "Đã thanh toán")}
         </span>
       )
     case "pending":
@@ -37,7 +45,7 @@ export function StatusBadge({ status, type = "membership", className = "" }: Sta
         <span
           className={`inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 ${className}`}
         >
-          Chờ thanh toán
+          {t("common.pending", "Chờ thanh toán")}
         </span>
       )
     case "failed":
@@ -46,7 +54,7 @@ export function StatusBadge({ status, type = "membership", className = "" }: Sta
         <span
           className={`inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-700 dark:bg-red-950/50 dark:text-red-300 ${className}`}
         >
-          {status === "failed" ? "Thất bại" : "Đã hủy"}
+          {status === "failed" ? t("common.failed", "Thất bại") : t("common.cancelled", "Đã hủy")}
         </span>
       )
     default:

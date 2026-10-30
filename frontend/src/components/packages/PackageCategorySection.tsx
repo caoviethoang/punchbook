@@ -11,6 +11,7 @@ import {
   Trash2,
   X,
 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import {
   createPackageCategory,
   deletePackageCategory,
@@ -36,6 +37,7 @@ export function PackageCategorySection({
   onCategoryUpdated,
   onCategoryDeleted,
 }: PackageCategorySectionProps) {
+  const { t } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(true)
   const [newCatName, setNewCatName] = useState("")
   const [adding, setAdding] = useState(false)
@@ -109,7 +111,7 @@ export function PackageCategorySection({
 
   return (
     <section
-      aria-label="Quản lý danh mục gói tập"
+      aria-label={t("packages.categories", "Quản lý danh mục gói tập")}
       className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition dark:border-slate-800 dark:bg-slate-900"
     >
       {/* Header */}
@@ -121,14 +123,17 @@ export function PackageCategorySection({
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Danh mục gói tập
+                {t("packages.categories", "Danh mục gói tập")}
               </h3>
               <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                {categories.length} danh mục
+                {t("packages.categories_count", "{{count}} danh mục", { count: categories.length })}
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Quản lý các môn tập và phân loại gói dịch vụ (Fitness, Yoga, Boxing...)
+              {t(
+                "packages.categories_desc",
+                "Quản lý các môn tập và phân loại gói dịch vụ (Fitness, Yoga, Boxing...)",
+              )}
             </p>
           </div>
         </div>
@@ -139,7 +144,7 @@ export function PackageCategorySection({
           className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           aria-expanded={isExpanded}
         >
-          <span>{isExpanded ? "Thu gọn" : "Mở rộng"}</span>
+          <span>{isExpanded ? t("common.collapse", "Thu gọn") : t("common.expand", "Mở rộng")}</span>
           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </button>
       </div>
@@ -161,7 +166,10 @@ export function PackageCategorySection({
                 required
                 value={newCatName}
                 onChange={(e) => setNewCatName(e.target.value)}
-                placeholder="Nhập tên danh mục mới (ví dụ: Fitness, Yoga, Boxing, Pilates...)"
+                placeholder={t(
+                  "packages.new_category_placeholder",
+                  "Nhập tên danh mục mới (ví dụ: Fitness, Yoga, Boxing, Pilates...)",
+                )}
                 className={cn(FORM_CONTROL_CLASS, "text-sm")}
                 aria-label="Tên danh mục mới"
               />
@@ -176,14 +184,17 @@ export function PackageCategorySection({
               ) : (
                 <Plus className="h-4 w-4" />
               )}
-              <span>Thêm danh mục</span>
+              <span>{t("packages.add_category_btn", "Thêm danh mục")}</span>
             </button>
           </form>
 
           {/* Danh sách danh mục */}
           {categories.length === 0 ? (
             <p className="py-4 text-center text-sm text-slate-400">
-              Chưa có danh mục nào. Hãy nhập tên và bấm &quot;Thêm danh mục&quot; ở trên để bắt đầu!
+              {t(
+                "packages.empty_categories",
+                'Chưa có danh mục nào. Hãy nhập tên và bấm "Thêm danh mục" ở trên để bắt đầu!',
+              )}
             </p>
           ) : (
             <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
@@ -240,7 +251,9 @@ export function PackageCategorySection({
                             {cat.name}
                           </span>
                           <span className="shrink-0 rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                            {packageCount} gói
+                            {t("packages.packages_count_unit", "{{count}} gói", {
+                              count: packageCount,
+                            })}
                           </span>
                         </div>
 
@@ -249,8 +262,14 @@ export function PackageCategorySection({
                             type="button"
                             onClick={() => startEdit(cat)}
                             className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-200 hover:text-indigo-600 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
-                            title={`Sửa danh mục ${cat.name}`}
-                            aria-label={`Sửa danh mục ${cat.name}`}
+                            title={t("packages.edit_category_named", `Sửa danh mục ${cat.name}`, {
+                              name: cat.name,
+                            })}
+                            aria-label={t(
+                              "packages.edit_category_named",
+                              `Sửa danh mục ${cat.name}`,
+                              { name: cat.name },
+                            )}
                           >
                             <Edit2 className="h-3.5 w-3.5" />
                           </button>
@@ -259,8 +278,14 @@ export function PackageCategorySection({
                             onClick={() => handleDeleteCategory(cat.id, cat.name)}
                             disabled={deletingId === cat.id}
                             className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-950/60"
-                            title={`Xóa danh mục ${cat.name}`}
-                            aria-label={`Xóa danh mục ${cat.name}`}
+                            title={t("packages.delete_category_named", `Xóa danh mục ${cat.name}`, {
+                              name: cat.name,
+                            })}
+                            aria-label={t(
+                              "packages.delete_category_named",
+                              `Xóa danh mục ${cat.name}`,
+                              { name: cat.name },
+                            )}
                           >
                             {deletingId === cat.id ? (
                               <Loader2 className="h-3.5 w-3.5 animate-spin" />

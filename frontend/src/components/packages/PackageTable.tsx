@@ -1,4 +1,5 @@
 import { Calendar, Clock, Edit2, Package as PackageIcon, Plus, Tag, Trash2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { formatPackageDuration, formatPackageTypeBadge, type PackageItem } from "../../lib/packages"
 import { formatVndInput } from "../../lib/formatters"
 
@@ -21,6 +22,8 @@ export function PackageGrid({
   onOpenEdit,
   onDeleteRequest,
 }: PackageGridProps) {
+  const { t } = useTranslation()
+
   if (loading) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -46,13 +49,13 @@ export function PackageGrid({
         </div>
         <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
           {packages.length === 0
-            ? "Chưa có gói dịch vụ nào"
-            : "Không tìm thấy gói thuộc môn tập này"}
+            ? t("packages.empty_packages", "Chưa có gói dịch vụ nào")
+            : t("packages.empty_filtered", "Không tìm thấy gói thuộc môn tập này")}
         </h3>
         <p className="mt-2 max-w-sm text-base text-slate-500 dark:text-slate-400">
           {packages.length === 0
-            ? "Chưa có gói dịch vụ nào"
-            : "Thử chọn bộ môn khác hoặc chọn tất cả bộ môn."}
+            ? t("packages.empty_packages", "Chưa có gói dịch vụ nào")
+            : t("packages.empty_filtered_hint", "Thử chọn bộ môn khác hoặc chọn tất cả bộ môn.")}
         </p>
         {!readOnly && (
           <button
@@ -61,7 +64,7 @@ export function PackageGrid({
             className="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-base font-semibold text-white hover:bg-indigo-500"
           >
             <Plus className="h-5 w-5" />
-            Tạo gói ngay
+            {t("packages.create_package_btn", "Tạo gói ngay")}
           </button>
         )}
       </div>
@@ -72,8 +75,8 @@ export function PackageGrid({
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {filteredPackages.map((pkg) => {
         const isSessionType = pkg.sessions_count !== null
-        const badgeLabel = formatPackageTypeBadge(pkg)
-        const durationLabel = formatPackageDuration(pkg)
+        const badgeLabel = formatPackageTypeBadge(pkg, t)
+        const durationLabel = formatPackageDuration(pkg, t)
 
         return (
           <div
@@ -89,7 +92,7 @@ export function PackageGrid({
                 }`}
               >
                 <Tag className="h-3 w-3" />
-                <span>{pkg.category_name || "Chưa phân loại"}</span>
+                <span>{pkg.category_name || t("packages.uncategorized", "Chưa phân loại")}</span>
               </div>
 
               <div className="flex items-start justify-between gap-2">
@@ -117,12 +120,12 @@ export function PackageGrid({
                   {formatVndInput(String(pkg.price))}
                 </span>
                 <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                  VNĐ
+                  {t("packages.currency_vnd", "VNĐ")}
                 </span>
               </div>
 
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-                Thời hạn / Số lượng:{" "}
+                {t("packages.duration_quantity", "Thời hạn / Số lượng:")}{" "}
                 <strong className="font-semibold text-slate-900 dark:text-slate-200">
                   {durationLabel}
                 </strong>
@@ -135,21 +138,21 @@ export function PackageGrid({
                 <button
                   type="button"
                   onClick={() => onOpenEdit(pkg)}
-                  title="Chỉnh sửa gói"
+                  title={t("common.edit", "Chỉnh sửa gói")}
                   className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                 >
                   <Edit2 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  <span>Sửa</span>
+                  <span>{t("common.edit", "Sửa")}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onDeleteRequest(pkg)}
-                  title="Xóa gói dịch vụ"
+                  title={t("common.delete", "Xóa gói dịch vụ")}
                   className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 shadow-sm transition hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/60"
                 >
                   <Trash2 className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-                  <span>Xóa</span>
+                  <span>{t("common.delete", "Xóa")}</span>
                 </button>
               </div>
             )}

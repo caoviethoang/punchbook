@@ -1,4 +1,5 @@
 import { AlertCircle, CheckCircle2, Printer, Users } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { BatchCheckInResult, Membership } from "../../lib/memberships"
 import { Modal } from "../ui/Modal"
 
@@ -15,6 +16,8 @@ export function GroupCheckInResultModal({
   onClose,
   onPrintReceipt,
 }: GroupCheckInResultModalProps) {
+  const { t } = useTranslation()
+
   if (!result) return null
 
   return (
@@ -28,10 +31,10 @@ export function GroupCheckInResultModal({
             </div>
             <div>
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Kết quả điểm danh nhóm
+                {t("checkin.group_result_title", "Kết quả điểm danh nhóm")}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Tổng hợp lượt điểm danh lớp học nhóm
+                {t("checkin.group_result_desc", "Tổng hợp lượt điểm danh lớp học nhóm")}
               </p>
             </div>
           </div>
@@ -39,16 +42,16 @@ export function GroupCheckInResultModal({
           {/* Summary Badges */}
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-              Tổng số: {result.total}
+              {t("checkin.group_total", "Tổng số: {{count}}", { count: result.total })}
             </span>
             <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200 dark:border-emerald-800/60 dark:bg-emerald-950/50 dark:text-emerald-300">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              {result.success_count} thành công
+              {t("checkin.group_success", "{{count}} thành công", { count: result.success_count })}
             </span>
             {result.failed_count > 0 && (
               <span className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 border border-red-200 dark:border-red-800/60 dark:bg-red-950/50 dark:text-red-300">
                 <AlertCircle className="h-3.5 w-3.5" />
-                {result.failed_count} thất bại
+                {t("checkin.group_failed", "{{count}} thất bại", { count: result.failed_count })}
               </span>
             )}
           </div>
@@ -96,9 +99,13 @@ export function GroupCheckInResultModal({
                       {isSuccess
                         ? item.membership?.sessions_left !== null &&
                           item.membership?.sessions_left !== undefined
-                          ? `Check-in thành công (Còn lại ${item.membership.sessions_left} buổi)`
-                          : "Check-in thành công"
-                        : item.error || "Điểm danh không thành công"}
+                          ? t(
+                              "checkin.group_checkin_success_sessions",
+                              `Check-in thành công (Còn lại ${item.membership.sessions_left} buổi)`,
+                              { count: item.membership.sessions_left },
+                            )
+                          : t("checkin.group_checkin_success", "Check-in thành công")
+                        : item.error || t("checkin.group_checkin_failed", "Điểm danh không thành công")}
                     </p>
                   </div>
                 </div>
@@ -108,12 +115,16 @@ export function GroupCheckInResultModal({
                   <button
                     type="button"
                     onClick={() => onPrintReceipt(item.membership!, item.check_in?.checked_in_at)}
-                    title={`In phiếu check-in cho ${item.customer_name}`}
-                    aria-label={`In phiếu cho ${item.customer_name}`}
+                    title={t("checkin.print_receipt_for", `In phiếu check-in cho ${item.customer_name}`, {
+                      name: item.customer_name,
+                    })}
+                    aria-label={t("checkin.print_receipt_for_aria", `In phiếu cho ${item.customer_name}`, {
+                      name: item.customer_name,
+                    })}
                     className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                   >
                     <Printer className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                    <span className="hidden sm:inline">In phiếu</span>
+                    <span className="hidden sm:inline">{t("common.print_receipt", "In phiếu")}</span>
                   </button>
                 )}
               </div>
@@ -128,7 +139,7 @@ export function GroupCheckInResultModal({
             onClick={onClose}
             className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white sm:text-sm"
           >
-            Đóng
+            {t("common.close", "Đóng")}
           </button>
         </div>
       </div>

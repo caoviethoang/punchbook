@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Sparkles, CheckCircle2, ShieldCheck, X, Loader2, Copy, Check, Zap } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { Shop } from "../lib/auth"
 import { upgradeShopPlan } from "../lib/settings"
 import { formatVnd } from "../lib/formatters"
@@ -56,6 +57,7 @@ const PLAN_OPTIONS: PlanOption[] = [
 ]
 
 export function UpgradePlanModal({ shop, isOpen, onClose, onSuccess }: UpgradePlanModalProps) {
+  const { t } = useTranslation()
   const [selectedMonths, setSelectedMonths] = useState(12)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -80,7 +82,7 @@ export function UpgradePlanModal({ shop, isOpen, onClose, onSuccess }: UpgradePl
       onSuccess(res.shop)
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Nâng cấp gói thất bại. Vui lòng thử lại.")
+      setError(err instanceof Error ? err.message : t("upgrade_modal.upgrade_failed", "Nâng cấp gói thất bại. Vui lòng thử lại."))
     } finally {
       setLoading(false)
     }
@@ -90,6 +92,18 @@ export function UpgradePlanModal({ shop, isOpen, onClose, onSuccess }: UpgradePl
     void navigator.clipboard.writeText(transferContent)
     setCopiedContent(true)
     setTimeout(() => setCopiedContent(false), 2000)
+  }
+
+  const getOptionLabel = (months: number, defaultLabel: string) => {
+    if (months === 1) return t("upgrade_modal.plan_1m", "1 Tháng")
+    if (months === 12) return t("upgrade_modal.plan_1y", "1 Năm (12 tháng)")
+    return defaultLabel
+  }
+
+  const getOptionBadge = (months: number, defaultBadge?: string) => {
+    if (months === 1) return t("upgrade_modal.standard_badge", "Gói Tiêu Chuẩn")
+    if (months === 12) return t("upgrade_modal.vip_badge", "Gói VIP Đặc Quyền")
+    return defaultBadge
   }
 
   return (
@@ -113,14 +127,14 @@ export function UpgradePlanModal({ shop, isOpen, onClose, onSuccess }: UpgradePl
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-xl font-extrabold text-slate-900 dark:text-slate-50">
-                Nâng cấp Gói PunchBook Premium
+                {t("upgrade_modal.title", "Nâng cấp Gói PunchBook Premium")}
               </h3>
               <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-black uppercase text-amber-700 dark:bg-amber-950 dark:text-amber-300">
                 PRO
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Mở khóa toàn bộ tính năng cao cấp không giới hạn cho cửa hàng của bạn
+              {t("upgrade_modal.subtitle", "Mở khóa toàn bộ tính năng cao cấp không giới hạn cho cửa hàng của bạn")}
             </p>
           </div>
         </div>
@@ -135,7 +149,7 @@ export function UpgradePlanModal({ shop, isOpen, onClose, onSuccess }: UpgradePl
           {/* Left Column: Plan Options & Features */}
           <div className="space-y-4">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              1. Chọn thời hạn đăng ký
+              {t("upgrade_modal.step1", "1. Chọn thời hạn đăng ký")}
             </h4>
 
             <div className="space-y-2.5">
@@ -153,11 +167,11 @@ export function UpgradePlanModal({ shop, isOpen, onClose, onSuccess }: UpgradePl
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-slate-900 dark:text-slate-100">
-                        {opt.label}
+                        {getOptionLabel(opt.months, opt.label)}
                       </span>
                       {opt.discount && (
                         <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                          {opt.discount}
+                          {t("upgrade_modal.save_percent", "Tiết kiệm 17%")}
                         </span>
                       )}
                     </div>
@@ -181,11 +195,11 @@ export function UpgradePlanModal({ shop, isOpen, onClose, onSuccess }: UpgradePl
 
             <div className="flex items-center justify-between pt-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Quyền lợi gói ({selectedOption.label})
+                {t("upgrade_modal.plan_benefits", "Quyền lợi gói")} ({getOptionLabel(selectedOption.months, selectedOption.label)})
               </h4>
               {selectedOption.badgeText && (
                 <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-[11px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                  {selectedOption.badgeText}
+                  {getOptionBadge(selectedOption.months, selectedOption.badgeText)}
                 </span>
               )}
             </div>
@@ -206,7 +220,7 @@ export function UpgradePlanModal({ shop, isOpen, onClose, onSuccess }: UpgradePl
           <div className="flex flex-col items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-950/60">
             <div className="w-full text-center">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                2. Quét mã VietQR Thanh toán
+                {t("upgrade_modal.step2", "2. Quét mã VietQR Thanh toán")}
               </h4>
 
               <div className="mt-3 flex justify-center">
@@ -221,23 +235,23 @@ export function UpgradePlanModal({ shop, isOpen, onClose, onSuccess }: UpgradePl
 
               <div className="mt-4 space-y-1.5 rounded-xl border border-slate-200 bg-white p-3 text-left text-xs dark:border-slate-800 dark:bg-slate-900">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Ngân hàng:</span>
+                  <span className="text-slate-500">{t("upgrade_modal.bank", "Ngân hàng:")}</span>
                   <span className="font-bold text-slate-800 dark:text-slate-200">MBBank</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Số tài khoản:</span>
+                  <span className="text-slate-500">{t("upgrade_modal.account_number", "Số tài khoản:")}</span>
                   <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
                     0346384750
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Chủ tài khoản:</span>
+                  <span className="text-slate-500">{t("upgrade_modal.account_holder", "Chủ tài khoản:")}</span>
                   <span className="font-bold text-slate-800 dark:text-slate-200">
                     CAO VIET HOANG
                   </span>
                 </div>
                 <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-500">Nội dung CK:</span>
+                  <span className="text-slate-500">{t("upgrade_modal.transfer_content", "Nội dung CK:")}</span>
                   <button
                     type="button"
                     onClick={handleCopyContent}
@@ -264,7 +278,7 @@ export function UpgradePlanModal({ shop, isOpen, onClose, onSuccess }: UpgradePl
             disabled={loading}
             className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
-            Để sau
+            {t("upgrade_modal.dismiss", "Để sau")}
           </button>
 
           <button
@@ -278,7 +292,7 @@ export function UpgradePlanModal({ shop, isOpen, onClose, onSuccess }: UpgradePl
             ) : (
               <Zap className="h-4 w-4 fill-current" />
             )}
-            <span>Xác nhận Kích hoạt Premium</span>
+            <span>{t("upgrade_modal.confirm_activate", "Xác nhận Kích hoạt Premium")}</span>
           </button>
         </div>
       </div>

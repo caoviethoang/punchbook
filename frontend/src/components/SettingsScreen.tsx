@@ -1,4 +1,5 @@
 import { ShieldAlert } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { Shop, Staff } from "../lib/auth"
 import { useShopSettings } from "../hooks/useShopSettings"
 import { AppearanceSection } from "./settings/AppearanceSection"
@@ -18,6 +19,7 @@ interface SettingsScreenProps {
 }
 
 export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsScreenProps) {
+  const { t } = useTranslation()
   const isAdmin = !currentStaff || currentStaff.role === "admin"
 
   const {
@@ -62,10 +64,10 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
 
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-          Cài đặt Cửa hàng & Tài khoản
+          {t("settings.title", "Cài đặt Cửa hàng & Tài khoản")}
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Quản lý thông tin chung, bảo mật tài khoản chủ tiệm và gói dịch vụ.
+          {t("settings.subtitle", "Quản lý thông tin chung, bảo mật tài khoản chủ tiệm và gói dịch vụ.")}
         </p>
       </div>
 
@@ -73,10 +75,9 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
         <div className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
           <ShieldAlert className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
           <div className="text-xs sm:text-sm">
-            <p className="font-bold">Chế độ chỉ xem (Dành cho Lễ tân)</p>
+            <p className="font-bold">{t("settings.read_only_badge", "Chế độ chỉ xem (Dành cho Lễ tân)")}</p>
             <p className="mt-0.5 text-amber-700 dark:text-amber-300">
-              Tài khoản của bạn không có quyền chỉnh sửa thông tin cửa hàng, đổi mật khẩu hoặc quản
-              lý nhân viên.
+              {t("settings.read_only_notice", "Tài khoản của bạn không có quyền chỉnh sửa thông tin cửa hàng, đổi mật khẩu hoặc quản lý nhân viên.")}
             </p>
           </div>
         </div>
@@ -150,7 +151,7 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
         onSuccess={(updatedShop) => {
           onShopUpdated(updatedShop)
           setToast({
-            message: "Chúc mừng! Cửa hàng đã được nâng cấp lên gói Premium thành công.",
+            message: t("settings.upgrade_success", "Chúc mừng! Cửa hàng đã được nâng cấp lên gói Premium thành công."),
             type: "success",
           })
         }}

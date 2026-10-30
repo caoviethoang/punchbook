@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { AlertCircle, Check, CheckCircle2, Copy, CreditCard, Loader2, QrCode, RefreshCw } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { formatVndInput } from "../lib/formatters"
 import { fetchSettings } from "../lib/settings"
 import { renewMembership, type Membership, type RenewMembershipResult } from "../lib/memberships"
@@ -23,6 +24,7 @@ export function RenewalModal({
   initialAutoCheckIn = true,
   staffId,
 }: RenewalModalProps) {
+  const { t } = useTranslation()
   const [shop, setShop] = useState<Shop | null>(null)
   const [packages, setPackages] = useState<PackageItem[]>([])
   const [selectedPackageId, setSelectedPackageId] = useState<string>(
@@ -137,7 +139,9 @@ export function RenewalModal({
           <RefreshCw className="h-6 w-6" />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-slate-900 dark:text-slate-50">Gia hạn hội viên</h3>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-slate-50">
+            {t("renewal.title", "Gia hạn hội viên")}
+          </h3>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {membership.customer_name} &bull; {membership.phone}
           </p>
@@ -157,7 +161,9 @@ export function RenewalModal({
       {loading ? (
         <div className="mt-8 flex flex-col items-center justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
-          <p className="mt-2 text-xs font-medium text-slate-400">Đang tải thông tin gói tập...</p>
+          <p className="mt-2 text-xs font-medium text-slate-400">
+            {t("renewal.loading", "Đang tải thông tin gói tập...")}
+          </p>
         </div>
       ) : (
         <div className="mt-5 space-y-4">
@@ -167,7 +173,7 @@ export function RenewalModal({
               htmlFor="renewal-package-select"
               className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400"
             >
-              Chọn gói gia hạn
+              {t("renewal.select_package", "Chọn gói gia hạn")}
             </label>
             <select
               id="renewal-package-select"
@@ -178,7 +184,13 @@ export function RenewalModal({
               {packages.map((pkg) => (
                 <option key={pkg.id} value={pkg.id}>
                   {pkg.name} — {formatVndInput(String(pkg.price))} VNĐ (
-                  {pkg.sessions_count ? `${pkg.sessions_count} buổi` : `${pkg.duration_days} ngày`})
+                  {pkg.sessions_count
+                    ? t("common.sessions_count", `${pkg.sessions_count} buổi`, {
+                        count: pkg.sessions_count,
+                      })
+                    : t("common.days_count", `${pkg.duration_days} ngày`, {
+                        count: pkg.duration_days ?? 0,
+                      })})
                 </option>
               ))}
             </select>
@@ -187,12 +199,14 @@ export function RenewalModal({
           {/* Package info summary */}
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium text-slate-500 dark:text-slate-400">Gói áp dụng:</span>
+              <span className="font-medium text-slate-500 dark:text-slate-400">
+                {t("renewal.applied_package", "Gói áp dụng:")}
+              </span>
               <span className="font-semibold text-slate-900 dark:text-slate-100">{packageName}</span>
             </div>
             <div className="mt-2 flex items-center justify-between text-sm border-t border-slate-200/60 pt-2 dark:border-slate-800">
               <span className="font-medium text-slate-500 dark:text-slate-400">
-                Giá gói / Thu phí:
+                {t("renewal.package_price", "Giá gói / Thu phí:")}
               </span>
               <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
                 {price > 0 ? `${formatVndInput(String(price))} VNĐ` : "0 VNĐ"}
@@ -208,7 +222,9 @@ export function RenewalModal({
               onChange={(e) => setAutoCheckIn(e.target.checked)}
               className="h-4 w-4 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500 dark:border-indigo-800 dark:bg-slate-900"
             />
-            <span>Tự động điểm danh (check-in) ngay sau khi gia hạn</span>
+            <span>
+              {t("renewal.auto_checkin", "Tự động điểm danh (check-in) ngay sau khi gia hạn")}
+            </span>
           </label>
 
           {/* VietQR Toggle button */}
@@ -219,7 +235,11 @@ export function RenewalModal({
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
             >
               <QrCode className="h-4 w-4" />
-              <span>{showQrCode ? "Ẩn mã QR chuyển khoản" : "Hiển thị mã VietQR chuyển khoản"}</span>
+              <span>
+                {showQrCode
+                  ? t("renewal.hide_qr", "Ẩn mã QR chuyển khoản")
+                  : t("renewal.show_qr", "Hiển thị mã VietQR chuyển khoản")}
+              </span>
             </button>
           </div>
 
@@ -237,7 +257,7 @@ export function RenewalModal({
                   </div>
                   <div className="mt-3 w-full space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs dark:border-slate-800 dark:bg-slate-900/80">
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-500">STK:</span>
+                      <span className="text-slate-500">{t("renewal.account_number", "STK:")}</span>
                       <div className="flex items-center gap-1 font-semibold text-slate-900 dark:text-slate-100">
                         <span>
                           {bankName} - {accountNo} {accountName ? `(${accountName})` : ""}
@@ -246,7 +266,7 @@ export function RenewalModal({
                           type="button"
                           onClick={() => copyToClipboard(accountNo || "", setCopiedAccount)}
                           className="ml-1 rounded p-1 text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
-                          title="Sao chép số tài khoản"
+                          title={t("renewal.copy_account", "Sao chép số tài khoản")}
                         >
                           {copiedAccount ? (
                             <Check className="h-3.5 w-3.5 text-emerald-600" />
@@ -257,14 +277,14 @@ export function RenewalModal({
                       </div>
                     </div>
                     <div className="flex items-center justify-between border-t border-slate-200/60 pt-2 dark:border-slate-800">
-                      <span className="text-slate-500">Nội dung CK:</span>
+                      <span className="text-slate-500">{t("renewal.transfer_memo", "Nội dung CK:")}</span>
                       <div className="flex items-center gap-1 font-mono font-semibold text-indigo-600 dark:text-indigo-400">
                         <span>{transferMemo}</span>
                         <button
                           type="button"
                           onClick={() => copyToClipboard(transferMemo, setCopiedMemo)}
                           className="ml-1 rounded p-1 text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
-                          title="Sao chép nội dung chuyển khoản"
+                          title={t("renewal.copy_memo", "Sao chép nội dung chuyển khoản")}
                         >
                           {copiedMemo ? (
                             <Check className="h-3.5 w-3.5 text-emerald-600" />
@@ -280,7 +300,10 @@ export function RenewalModal({
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-center dark:border-amber-900/60 dark:bg-amber-950/40">
                   <CreditCard className="mx-auto mb-1 h-5 w-5 text-amber-600 dark:text-amber-300" />
                   <p className="text-xs text-amber-800 dark:text-amber-300">
-                    Cửa hàng chưa cài đặt tài khoản ngân hàng trong phần Cài đặt.
+                    {t(
+                      "renewal.no_bank_config",
+                      "Cửa hàng chưa cài đặt tài khoản ngân hàng trong phần Cài đặt.",
+                    )}
                   </p>
                 </div>
               )}
@@ -297,7 +320,7 @@ export function RenewalModal({
           disabled={submitting}
           className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 sm:text-sm"
         >
-          Đóng
+          {t("common.close", "Đóng")}
         </button>
         <button
           type="button"
@@ -308,17 +331,17 @@ export function RenewalModal({
           {submitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Đang xử lý...</span>
+              <span>{t("common.processing", "Đang xử lý...")}</span>
             </>
           ) : autoCheckIn ? (
             <>
               <CheckCircle2 className="h-4 w-4" />
-              <span>Gia hạn & Check-in ngay</span>
+              <span>{t("renewal.renew_and_checkin", "Gia hạn & Check-in ngay")}</span>
             </>
           ) : (
             <>
               <RefreshCw className="h-4 w-4" />
-              <span>Xác nhận gia hạn</span>
+              <span>{t("renewal.confirm", "Xác nhận gia hạn")}</span>
             </>
           )}
         </button>
