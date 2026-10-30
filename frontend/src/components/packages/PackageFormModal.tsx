@@ -190,14 +190,14 @@ function PackageFormContent({
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Loại môn / Bộ môn
+              Danh mục gói / Bộ môn
             </label>
             <button
               type="button"
               onClick={() => setShowNewCatInput(!showNewCatInput)}
               className="text-xs font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
             >
-              {showNewCatInput ? "Chọn danh mục có sẵn" : "+ Thêm bộ môn mới"}
+              {showNewCatInput ? "Chọn danh mục có sẵn" : "+ Thêm danh mục mới"}
             </button>
           </div>
 
@@ -221,11 +221,12 @@ function PackageFormContent({
             </div>
           ) : (
             <select
+              aria-label="Chọn danh mục gói"
               value={selectedCategoryId}
               onChange={(e) => setSelectedCategoryId(e.target.value)}
               className={FORM_CONTROL_CLASS}
             >
-              <option value="">-- Chưa chọn bộ môn --</option>
+              <option value="">-- Chưa chọn danh mục --</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
