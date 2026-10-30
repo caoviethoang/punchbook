@@ -9,6 +9,7 @@ import {
   RefreshCw,
   UserCheck,
 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { computeMembershipStatus, isMembershipExhausted, type Membership } from "../../lib/memberships"
 import { formatDate } from "../../lib/formatters"
 
@@ -20,6 +21,7 @@ interface RemainingProps {
 }
 
 export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) {
+  const { t } = useTranslation()
   const isExpired = expiresAt ? new Date(expiresAt) < new Date() : false
   const hasNoSessions = sessionsLeft === 0
 
@@ -30,7 +32,7 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
           0
         </span>
         <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-red-500 dark:text-red-500 sm:text-[11px]">
-          buổi còn lại
+          {t("checkin.remaining_sessions", "buổi còn lại")}
         </span>
       </div>
     )
@@ -41,7 +43,7 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
       <div className="flex w-24 sm:w-28 shrink-0 h-12 sm:h-13 flex-col items-center justify-center rounded-xl bg-amber-50 px-2 py-1 text-center dark:bg-amber-950/40">
         <Calendar className="h-5 w-5 text-amber-500 dark:text-amber-400" />
         <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 sm:text-[11px]">
-          Đã hết hạn
+          {t("checkin.expired_badge", "Đã hết hạn")}
         </span>
       </div>
     )
@@ -73,7 +75,9 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
               : "text-emerald-600 dark:text-emerald-500"
           }`}
         >
-          {isExpiring ? "sắp hết buổi" : "buổi còn lại"}
+          {isExpiring
+            ? t("checkin.expiring_sessions", "sắp hết buổi")
+            : t("checkin.remaining_sessions", "buổi còn lại")}
         </span>
       </div>
     )
@@ -112,7 +116,9 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
               : "text-indigo-500 dark:text-indigo-400"
           }`}
         >
-          {isExpiring ? `còn ${diffDays} ngày` : "hạn dùng"}
+          {isExpiring
+            ? t("checkin.days_remaining", "còn {{count}} ngày", { count: diffDays })
+            : t("checkin.expires_at_label", "hạn dùng")}
         </span>
       </div>
     )
@@ -122,7 +128,7 @@ export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) 
     <div className="flex w-24 sm:w-28 shrink-0 h-12 sm:h-13 flex-col items-center justify-center rounded-xl bg-slate-100 px-2 py-1 text-center dark:bg-slate-800">
       <span className="text-lg font-bold text-slate-600 dark:text-slate-300 sm:text-xl">∞</span>
       <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 sm:text-[11px]">
-        không giới hạn
+        {t("checkin.unlimited_label", "không giới hạn")}
       </span>
     </div>
   )
@@ -166,6 +172,7 @@ export function MembershipResultList({
   selectedIds,
   onToggleSelect,
 }: MembershipResultListProps) {
+  const { t } = useTranslation()
   return (
     <div role="list" aria-label="Danh sách hội viên" className="grid gap-2.5 sm:gap-3">
       {memberships.map((membership) => {
@@ -231,13 +238,13 @@ export function MembershipResultList({
                   {membership.checked_in_today && (
                     <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
                       <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                      <span>Đã check-in{checkInTime ? ` (${checkInTime})` : ""}</span>
+                      <span>{t("checkin.already_checked_in", "Đã check-in")}{checkInTime ? ` (${checkInTime})` : ""}</span>
                     </span>
                   )}
                   {computeMembershipStatus(membership) === "expiring" && !isExhausted && (
                     <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700 border border-amber-200 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
                       <AlertCircle className="h-3 w-3 shrink-0 text-amber-600 dark:text-amber-400" />
-                      <span>Sắp hết hạn</span>
+                      <span>{t("checkin.expiring_soon", "Sắp hết hạn")}</span>
                     </span>
                   )}
                 </div>
@@ -265,7 +272,7 @@ export function MembershipResultList({
                       className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
                     >
                       <Printer className="h-3 w-3" />
-                      In phiếu ngay
+                      {t("checkin.print_receipt_now", "In phiếu ngay")}
                     </button>
                   )}
                 </div>
@@ -286,7 +293,7 @@ export function MembershipResultList({
                 <button
                   type="button"
                   onClick={() => onPrintReceipt(membership)}
-                  title="In phiếu check-in (POS)"
+                  title={t("checkin.print_receipt_now", "In phiếu check-in (POS)")}
                   aria-label={`In phiếu check-in cho ${membership.customer_name}`}
                   className="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-2xs transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
@@ -296,23 +303,23 @@ export function MembershipResultList({
               <button
                 type="button"
                 onClick={() => onViewDetail(membership.id)}
-                title="Xem chi tiết & lịch sử"
+                title={t("common.details", "Chi tiết & Lịch sử")}
                 aria-label={`Xem chi tiết cho ${membership.customer_name}`}
                 className="inline-flex h-8 sm:h-9 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:px-3 sm:text-sm"
               >
                 <Eye className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Chi tiết</span>
+                <span className="hidden sm:inline">{t("common.details", "Chi tiết")}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => onRenew(membership)}
-                title="Gia hạn gói"
+                title={t("common.renew", "Gia hạn gói")}
                 aria-label={`Gia hạn cho ${membership.customer_name}`}
                 className="inline-flex h-8 sm:h-9 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:px-3 sm:text-sm"
               >
                 <RefreshCw className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Gia hạn</span>
+                <span className="hidden sm:inline">{t("common.renew", "Gia hạn")}</span>
               </button>
 
               <button

@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { AlertCircle, Loader2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import {
   createPackage,
   createPackageCategory,
@@ -20,14 +21,7 @@ const typeButtonClass = (active: boolean) =>
       : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700/60"
   }`
 
-const DURATION_PRESETS = [
-  { label: "1 ngày (Gói lẻ)", days: 1 },
-  { label: "1 tháng (30 ngày)", days: 30 },
-  { label: "2 tháng (60 ngày)", days: 60 },
-  { label: "3 tháng (90 ngày)", days: 90 },
-  { label: "6 tháng (180 ngày)", days: 180 },
-  { label: "1 năm (365 ngày)", days: 365 },
-]
+const DURATION_PRESET_DAYS = [1, 30, 60, 90, 180, 365]
 
 export interface PackageFormModalProps {
   isOpen: boolean
@@ -51,6 +45,7 @@ function PackageFormContent({
   onSuccess: (pkg: PackageItem, isEdit: boolean) => void
   onCategoryCreated: (cat: PackageCategory) => void
 }) {
+  const { t } = useTranslation()
   const [name, setName] = useState(editingPackage?.name ?? "")
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
     editingPackage?.package_category_id ?? "",
@@ -74,6 +69,16 @@ function PackageFormContent({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  function getPresetLabel(days: number): string {
+    if (days === 1) return t("packages.duration_1d", "1 ngày (Gói lẻ)")
+    if (days === 30) return t("packages.duration_30d", "1 tháng (30 ngày)")
+    if (days === 60) return t("packages.duration_60d", "2 tháng (60 ngày)")
+    if (days === 90) return t("packages.duration_90d", "3 tháng (90 ngày)")
+    if (days === 180) return t("packages.duration_180d", "6 tháng (180 ngày)")
+    if (days === 365) return t("packages.duration_365d", "1 năm (365 ngày)")
+    return `${days} days`
+  }
+
   function handlePriceChange(e: React.ChangeEvent<HTMLInputElement>) {
     setPrice(e.target.value.replace(/\D/g, ""))
   }
@@ -89,7 +94,7 @@ function PackageFormContent({
       setNewCatName("")
       setShowNewCatInput(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Tạo loại dịch vụ mới thất bại")
+      setError(err instanceof Error ? err.message : t("packages.create_category_failed", "Tạo loại dịch vụ mới thất bại"))
     } finally {
       setCreatingCat(false)
     }
@@ -101,13 +106,13 @@ function PackageFormContent({
 
     const trimmedName = name.trim()
     if (!trimmedName) {
-      setError("Vui lòng nhập tên gói")
+      setError(t("packages.error_name_required", "Vui lòng nhập tên gói"))
       return
     }
 
     const parsedPrice = parseInt(price, 10)
     if (isNaN(parsedPrice) || parsedPrice < 0) {
-      setError("Vui lòng nhập giá hợp lệ (≥ 0 VNĐ)")
+      setError(t("packages.error_invalid_price", "Vui lòng nhập giá hợp lệ (≥ 0 VNĐ)"))
       return
     }
 
@@ -117,14 +122,14 @@ function PackageFormContent({
     if (packageType === "sessions") {
       const parsedSessions = parseInt(sessionsCount, 10)
       if (isNaN(parsedSessions) || parsedSessions <= 0) {
-        setError("Vui lòng nhập số buổi hợp lệ (> 0)")
+        setError(t("packages.error_invalid_sessions", "Vui lòng nhập số buổi hợp lệ (> 0)"))
         return
       }
       payloadSessions = parsedSessions
     } else {
       const parsedDays = parseInt(durationDays, 10)
       if (isNaN(parsedDays) || parsedDays <= 0) {
-        setError("Vui lòng nhập số ngày hợp lệ (> 0)")
+        setError(t("packages.error_invalid_days", "Vui lòng nhập số ngày hợp lệ (> 0)"))
         return
       }
       payloadDays = parsedDays
@@ -155,8 +160,8 @@ function PackageFormContent({
         err instanceof Error
           ? err.message
           : editingPackage
-            ? "Cập nhật gói thất bại"
-            : "Tạo gói thất bại",
+            ? t("packages.update_package_failed", "Cập nhật gói thất bại")
+            : t("packages.create_package_failed", "Tạo gói thất bại"),
       )
     } finally {
       setLoading(false)
@@ -168,12 +173,14 @@ function PackageFormContent({
       <div className="mb-5 flex items-center justify-between">
         <div>
           <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-            {editingPackage ? "Chỉnh sửa gói dịch vụ" : "Tạo gói dịch vụ mới"}
+            {editingPackage
+              ? t("packages.edit_modal_title", "Chỉnh sửa gói dịch vụ")
+              : t("packages.create_modal_title", "Tạo gói dịch vụ mới")}
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             {editingPackage
-              ? "Cập nhật tên, bộ môn, loại gói hoặc giá của gói dịch vụ"
-              : "Điền thông tin để tạo gói tập / lượt dịch vụ cho cửa hàng"}
+              ? t("packages.edit_modal_subtitle", "Cập nhật tên, bộ môn, loại gói hoặc giá của gói dịch vụ")
+              : t("packages.create_modal_subtitle", "Điền thông tin để tạo gói tập / lượt dịch vụ cho cửa hàng")}
           </p>
         </div>
       </div>
@@ -190,14 +197,16 @@ function PackageFormContent({
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Danh mục gói / Bộ môn
+              {t("packages.category_label", "Danh mục gói / Bộ môn")}
             </label>
             <button
               type="button"
               onClick={() => setShowNewCatInput(!showNewCatInput)}
               className="text-xs font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
             >
-              {showNewCatInput ? "Chọn danh mục có sẵn" : "+ Thêm danh mục mới"}
+              {showNewCatInput
+                ? t("packages.select_existing_category", "Chọn danh mục có sẵn")
+                : t("packages.add_new_category", "+ Thêm danh mục mới")}
             </button>
           </div>
 
@@ -207,7 +216,7 @@ function PackageFormContent({
                 type="text"
                 value={newCatName}
                 onChange={(e) => setNewCatName(e.target.value)}
-                placeholder="Ví dụ: Fitness, Yoga, Boxing, Swimming..."
+                placeholder={t("packages.new_category_placeholder_example", "Ví dụ: Fitness, Yoga, Boxing, Swimming...")}
                 className={FORM_CONTROL_CLASS}
               />
               <button
@@ -216,17 +225,17 @@ function PackageFormContent({
                 disabled={creatingCat || !newCatName.trim()}
                 className="shrink-0 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-50"
               >
-                {creatingCat ? "Đang thêm..." : "Thêm"}
+                {creatingCat ? t("packages.adding_btn", "Đang thêm...") : t("packages.add_btn", "Thêm")}
               </button>
             </div>
           ) : (
             <select
-              aria-label="Chọn danh mục gói"
+              aria-label={t("packages.select_category_aria", "Chọn danh mục gói")}
               value={selectedCategoryId}
               onChange={(e) => setSelectedCategoryId(e.target.value)}
               className={FORM_CONTROL_CLASS}
             >
-              <option value="">-- Chưa chọn danh mục --</option>
+              <option value="">{t("packages.no_category_selected", "-- Chưa chọn danh mục --")}</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
@@ -237,17 +246,17 @@ function PackageFormContent({
         </div>
 
         <FormField
-          label="Tên gói"
+          label={t("packages.name_label", "Tên gói")}
           required
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Ví dụ: Fitness 1 tháng, Gói lẻ 1 ngày, Yoga 10 buổi..."
+          placeholder={t("packages.name_placeholder", "Ví dụ: Fitness 1 tháng, Gói lẻ 1 ngày, Yoga 10 buổi...")}
         />
 
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            Loại gói <span className="text-rose-500">*</span>
+            {t("packages.type_label", "Loại gói")} <span className="text-rose-500">*</span>
           </label>
           <div className="grid grid-cols-2 gap-3">
             <button
@@ -255,21 +264,21 @@ function PackageFormContent({
               onClick={() => setPackageType("sessions")}
               className={typeButtonClass(packageType === "sessions")}
             >
-              Theo buổi
+              {t("packages.type_sessions", "Theo buổi")}
             </button>
             <button
               type="button"
               onClick={() => setPackageType("days")}
               className={typeButtonClass(packageType === "days")}
             >
-              Theo ngày / tháng
+              {t("packages.type_days", "Theo ngày / tháng")}
             </button>
           </div>
         </div>
 
         {packageType === "sessions" ? (
           <FormField
-            label="Số buổi"
+            label={t("packages.sessions_count_label", "Số buổi")}
             required
             type="number"
             min="1"
@@ -280,7 +289,7 @@ function PackageFormContent({
         ) : (
           <div className="space-y-2">
             <FormField
-              label="Số ngày"
+              label={t("packages.duration_days_label", "Số ngày")}
               required
               type="number"
               min="1"
@@ -290,23 +299,23 @@ function PackageFormContent({
             />
             <div>
               <span className="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
-                Gợi ý chọn nhanh thời hạn:
+                {t("packages.duration_presets_hint", "Gợi ý chọn nhanh thời hạn:")}
               </span>
               <div className="flex flex-wrap gap-1.5">
-                {DURATION_PRESETS.map((preset) => {
-                  const isActive = String(preset.days) === durationDays
+                {DURATION_PRESET_DAYS.map((days) => {
+                  const isActive = String(days) === durationDays
                   return (
                     <button
-                      key={preset.days}
+                      key={days}
                       type="button"
-                      onClick={() => setDurationDays(String(preset.days))}
+                      onClick={() => setDurationDays(String(days))}
                       className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
                         isActive
                           ? "border-indigo-600 bg-indigo-600 text-white"
                           : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                       }`}
                     >
-                      {preset.label}
+                      {getPresetLabel(days)}
                     </button>
                   )
                 })}
@@ -317,7 +326,7 @@ function PackageFormContent({
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            Giá (VNĐ) <span className="text-rose-500">*</span>
+            {t("packages.price_label", "Giá (VNĐ)")} <span className="text-rose-500">*</span>
           </label>
           <div className="relative">
             <input
@@ -329,7 +338,7 @@ function PackageFormContent({
               className={cn(FORM_CONTROL_CLASS, "pr-14")}
             />
             <span className="pointer-events-none absolute right-3.5 top-2.5 text-sm font-medium text-slate-400">
-              VNĐ
+              {t("packages.currency_vnd", "VNĐ")}
             </span>
           </div>
         </div>
@@ -341,7 +350,7 @@ function PackageFormContent({
             disabled={loading}
             className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
-            Hủy
+            {t("common.cancel", "Hủy")}
           </button>
           <button
             type="submit"
@@ -351,12 +360,16 @@ function PackageFormContent({
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                <span>{editingPackage ? "Đang lưu..." : "Đang tạo..."}</span>
+                <span>
+                  {editingPackage
+                    ? t("packages.saving", "Đang lưu...")
+                    : t("packages.creating", "Đang tạo...")}
+                </span>
               </>
             ) : editingPackage ? (
-              "Lưu thay đổi"
+              t("packages.save_btn", "Lưu thay đổi")
             ) : (
-              "Tạo gói"
+              t("packages.create_btn", "Tạo gói")
             )}
           </button>
         </div>

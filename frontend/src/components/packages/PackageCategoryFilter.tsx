@@ -1,4 +1,5 @@
 import { ArrowUpDown, Filter } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { PackageCategory, PackageItem } from "../../lib/packages"
 import type { PackageSortOption } from "../../hooks/usePackagesScreen"
 
@@ -19,6 +20,7 @@ export function PackageCategoryFilter({
   sortBy,
   onSortByChange,
 }: PackageCategoryFilterProps) {
+  const { t } = useTranslation()
   const uncategorizedCount = packages.filter((p) => !p.package_category_id).length
 
   return (
@@ -27,7 +29,7 @@ export function PackageCategoryFilter({
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
         <div className="mr-1 flex shrink-0 items-center gap-1.5 text-xs font-semibold text-slate-400">
           <Filter className="h-3.5 w-3.5" />
-          <span>Bộ môn:</span>
+          <span>{t("packages.discipline", "Bộ môn:")}</span>
         </div>
 
         <button
@@ -39,7 +41,7 @@ export function PackageCategoryFilter({
               : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
           }`}
         >
-          <span>Tất cả môn</span>
+          <span>{t("packages.all_disciplines", "Tất cả môn")}</span>
           <span
             className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
               selectedCategory === "all"
@@ -89,7 +91,7 @@ export function PackageCategoryFilter({
                 : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
             }`}
           >
-            <span>Chưa phân loại</span>
+            <span>{t("packages.uncategorized", "Chưa phân loại")}</span>
             <span
               className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
                 selectedCategory === "uncategorized"
@@ -108,7 +110,7 @@ export function PackageCategoryFilter({
         <div className="flex shrink-0 items-center gap-2">
           <ArrowUpDown className="h-3.5 w-3.5 text-slate-400" />
           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-            Sắp xếp:
+            {t("packages.sort_by", "Sắp xếp:")}
           </span>
           <select
             value={sortBy}
@@ -116,10 +118,10 @@ export function PackageCategoryFilter({
             aria-label="Sắp xếp danh sách gói"
             className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:border-indigo-500 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
           >
-            <option value="category">Theo danh mục</option>
-            <option value="name">Theo tên (A-Z)</option>
-            <option value="price_asc">Giá: Thấp đến cao</option>
-            <option value="price_desc">Giá: Cao đến thấp</option>
+            <option value="category">{t("packages.sort_category", "Theo danh mục")}</option>
+            <option value="name">{t("packages.sort_name", "Theo tên (A-Z)")}</option>
+            <option value="price_asc">{t("packages.sort_price_asc", "Giá: Thấp đến cao")}</option>
+            <option value="price_desc">{t("packages.sort_price_desc", "Giá: Cao đến thấp")}</option>
           </select>
         </div>
       )}

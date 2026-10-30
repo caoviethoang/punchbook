@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import {
   AlertCircle,
   AlertTriangle,
@@ -26,6 +27,7 @@ export function AttendanceReportSection({
   onSelectDetail,
   onUpgradeRequired,
 }: AttendanceReportSectionProps) {
+  const { t } = useTranslation()
   const {
     month,
     setMonth,
@@ -75,10 +77,13 @@ export function AttendanceReportSection({
           </div>
           <div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">
-              Báo cáo chuyên cần hội viên
+              {t("attendance.title", "Báo cáo chuyên cần hội viên")}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Theo dõi mức độ tích cực và phát hiện hội viên có nguy cơ bỏ tập theo tháng
+              {t(
+                "attendance.subtitle",
+                "Theo dõi mức độ tích cực và phát hiện hội viên có nguy cơ bỏ tập theo tháng",
+              )}
             </p>
           </div>
         </div>
@@ -89,8 +94,8 @@ export function AttendanceReportSection({
             <button
               type="button"
               onClick={prevMonth}
-              title="Tháng trước"
-              aria-label="Tháng trước"
+              title={t("attendance.prev_month", "Tháng trước")}
+              aria-label={t("attendance.prev_month", "Tháng trước")}
               className="rounded-lg p-1.5 text-slate-600 hover:bg-white hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -107,8 +112,8 @@ export function AttendanceReportSection({
             <button
               type="button"
               onClick={nextMonth}
-              title="Tháng sau"
-              aria-label="Tháng sau"
+              title={t("attendance.next_month", "Tháng sau")}
+              aria-label={t("attendance.next_month", "Tháng sau")}
               className="rounded-lg p-1.5 text-slate-600 hover:bg-white hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
             >
               <ChevronRight className="h-4 w-4" />
@@ -126,7 +131,7 @@ export function AttendanceReportSection({
             ) : (
               <FileSpreadsheet className="h-4 w-4" />
             )}
-            <span>Xuất Excel</span>
+            <span>{t("attendance.export_excel", "Xuất Excel")}</span>
           </button>
         </div>
       </div>
@@ -145,7 +150,7 @@ export function AttendanceReportSection({
           <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-slate-950/40">
             <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
               <Users className="h-4 w-4 text-slate-400" />
-              <span>Tổng hội viên</span>
+              <span>{t("attendance.total_members", "Tổng hội viên")}</span>
             </div>
             <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-50">
               {summary.total_members}
@@ -155,7 +160,7 @@ export function AttendanceReportSection({
           <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-3.5 dark:border-emerald-950/40 dark:bg-emerald-950/20">
             <div className="flex items-center gap-2 text-xs font-medium text-emerald-700 dark:text-emerald-400">
               <CheckCircle2 className="h-4 w-4" />
-              <span>Đã đi tập</span>
+              <span>{t("attendance.active_members", "Đã đi tập")}</span>
             </div>
             <div className="mt-1 flex items-baseline gap-2">
               <p className="text-2xl font-bold text-emerald-800 dark:text-emerald-300">
@@ -172,14 +177,14 @@ export function AttendanceReportSection({
           <div className="rounded-xl border border-rose-100 bg-rose-50/50 p-3.5 dark:border-rose-950/40 dark:bg-rose-950/20">
             <div className="flex items-center gap-2 text-xs font-medium text-rose-700 dark:text-rose-400">
               <AlertTriangle className="h-4 w-4" />
-              <span>Chưa đi tập</span>
+              <span>{t("attendance.inactive_members", "Chưa đi tập")}</span>
             </div>
             <div className="mt-1 flex items-baseline gap-2">
               <p className="text-2xl font-bold text-rose-800 dark:text-rose-300">
                 {summary.inactive_members_count}
               </p>
               <span className="text-xs font-medium text-rose-600 dark:text-rose-400">
-                nguy cơ bỏ tập
+                {t("attendance.churn_risk", "nguy cơ bỏ tập")}
               </span>
             </div>
           </div>
@@ -187,7 +192,7 @@ export function AttendanceReportSection({
           <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-3.5 dark:border-indigo-950/40 dark:bg-indigo-950/20">
             <div className="flex items-center gap-2 text-xs font-medium text-indigo-700 dark:text-indigo-400">
               <Flame className="h-4 w-4" />
-              <span>Tổng lượt check-in</span>
+              <span>{t("attendance.total_check_ins", "Tổng lượt check-in")}</span>
             </div>
             <div className="mt-1 flex items-baseline gap-2">
               <p className="text-2xl font-bold text-indigo-800 dark:text-indigo-300">
@@ -195,7 +200,9 @@ export function AttendanceReportSection({
               </p>
               {summary.active_members_count > 0 && (
                 <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400">
-                  ~{summary.avg_check_ins_per_active_member}/người
+                  {t("attendance.avg_per_member", "~{{avg}}/người", {
+                    avg: summary.avg_check_ins_per_active_member,
+                  })}
                 </span>
               )}
             </div>
@@ -208,19 +215,19 @@ export function AttendanceReportSection({
         <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800/80">
           <FilterTabButton
             active={filterTab === "all"}
-            label="Tất cả"
+            label={t("attendance.tab_all", "Tất cả")}
             count={summary?.total_members}
             onClick={() => setFilterTab("all")}
           />
           <FilterTabButton
             active={filterTab === "active"}
-            label="Chuyên cần"
+            label={t("attendance.tab_active", "Chuyên cần")}
             count={summary?.active_members_count}
             onClick={() => setFilterTab("active")}
           />
           <FilterTabButton
             active={filterTab === "inactive"}
-            label="Chưa tập buổi nào"
+            label={t("attendance.tab_inactive", "Chưa tập buổi nào")}
             count={summary?.inactive_members_count}
             variant="danger"
             onClick={() => setFilterTab("inactive")}
@@ -233,7 +240,7 @@ export function AttendanceReportSection({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm theo tên, SĐT, gói..."
+            placeholder={t("attendance.search_placeholder", "Tìm theo tên, SĐT, gói...")}
             className="w-full rounded-xl border border-slate-200 bg-white py-1.5 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
         </div>
@@ -252,27 +259,33 @@ export function AttendanceReportSection({
             onClick={() => void loadReport()}
             className="mt-2 text-xs font-semibold underline hover:text-red-800"
           >
-            Thử lại
+            {t("common.retry", "Thử lại")}
           </button>
         </div>
       ) : filteredRecords.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-200 py-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
           {searchQuery
-            ? "Không tìm thấy hội viên phù hợp với từ khóa."
-            : "Chưa có dữ liệu hội viên cho tháng này."}
+            ? t("attendance.no_search_results", "Không tìm thấy hội viên phù hợp với từ khóa.")
+            : t("attendance.no_data", "Chưa có dữ liệu hội viên cho tháng này.")}
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-200 text-xs font-semibold uppercase text-slate-500 dark:border-slate-800 dark:text-slate-400">
               <tr>
-                <th className="py-2.5 pl-2 pr-3">Xếp hạng</th>
-                <th className="px-3 py-2.5">Hội viên</th>
-                <th className="px-3 py-2.5">Gói dịch vụ</th>
-                <th className="px-3 py-2.5 text-center">Số buổi tháng này</th>
-                <th className="px-3 py-2.5">Buổi gần nhất</th>
-                <th className="px-3 py-2.5">Đánh giá</th>
-                {onSelectDetail && <th className="py-2.5 pl-3 pr-2 text-right">Chi tiết</th>}
+                <th className="py-2.5 pl-2 pr-3">{t("attendance.col_rank", "Xếp hạng")}</th>
+                <th className="px-3 py-2.5">{t("attendance.col_member", "Hội viên")}</th>
+                <th className="px-3 py-2.5">{t("attendance.col_package", "Gói dịch vụ")}</th>
+                <th className="px-3 py-2.5 text-center">
+                  {t("attendance.col_sessions_month", "Số buổi tháng này")}
+                </th>
+                <th className="px-3 py-2.5">{t("attendance.col_last_checkin", "Buổi gần nhất")}</th>
+                <th className="px-3 py-2.5">{t("attendance.col_evaluation", "Đánh giá")}</th>
+                {onSelectDetail && (
+                  <th className="py-2.5 pl-3 pr-2 text-right">
+                    {t("attendance.col_detail", "Chi tiết")}
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -342,6 +355,7 @@ interface AttendanceRowProps {
 }
 
 function AttendanceRow({ record, onSelectDetail }: AttendanceRowProps) {
+  const { t } = useTranslation()
   return (
     <tr
       className={`transition hover:bg-slate-50/80 dark:hover:bg-slate-800/50 ${
@@ -379,7 +393,7 @@ function AttendanceRow({ record, onSelectDetail }: AttendanceRowProps) {
                   : "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"
           }`}
         >
-          {record.check_ins_count} buổi
+          {record.check_ins_count} {t("attendance.sessions_unit", "buổi")}
         </span>
       </td>
 
@@ -393,7 +407,9 @@ function AttendanceRow({ record, onSelectDetail }: AttendanceRowProps) {
             minute: "2-digit",
           })
         ) : (
-          <span className="italic text-slate-400 dark:text-slate-500">Chưa có</span>
+          <span className="italic text-slate-400 dark:text-slate-500">
+            {t("attendance.no_data", "Chưa có")}
+          </span>
         )}
       </td>
 
@@ -402,21 +418,21 @@ function AttendanceRow({ record, onSelectDetail }: AttendanceRowProps) {
         {record.is_inactive ? (
           <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
             <AlertTriangle className="h-3 w-3" />
-            Chưa đi tập (Nguy cơ)
+            {t("attendance.status_inactive_risk", "Chưa đi tập (Nguy cơ)")}
           </span>
         ) : record.check_ins_count >= 12 ? (
           <span className="inline-flex items-center gap-1 rounded-md border border-purple-200 bg-purple-50 px-2 py-0.5 text-xs font-semibold text-purple-700 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-300">
             <Flame className="h-3 w-3" />
-            Rất tích cực (≥3 buổi/tuần)
+            {t("attendance.status_very_active", "Rất tích cực (≥3 buổi/tuần)")}
           </span>
         ) : record.check_ins_count >= 4 ? (
           <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
             <CheckCircle2 className="h-3 w-3" />
-            Đều đặn (≥1 buổi/tuần)
+            {t("attendance.status_regular", "Đều đặn (≥1 buổi/tuần)")}
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-300">
-            Ít đi tập (&lt;1 buổi/tuần)
+            {t("attendance.status_occasional", "Ít đi tập (<1 buổi/tuần)")}
           </span>
         )}
       </td>
@@ -427,11 +443,11 @@ function AttendanceRow({ record, onSelectDetail }: AttendanceRowProps) {
           <button
             type="button"
             onClick={() => onSelectDetail(record.membership_id)}
-            title="Xem chi tiết hội viên"
+            title={t("attendance.col_detail", "Xem chi tiết hội viên")}
             className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
           >
             <Eye className="h-3.5 w-3.5 text-slate-500" />
-            <span>Xem</span>
+            <span>{t("common.view", "Xem")}</span>
           </button>
         </td>
       )}

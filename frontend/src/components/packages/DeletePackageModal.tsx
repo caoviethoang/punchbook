@@ -1,4 +1,5 @@
 import { Loader2, Trash2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { PackageItem } from "../../lib/packages"
 import { Modal } from "../ui/Modal"
 
@@ -15,6 +16,8 @@ export function DeletePackageModal({
   onClose,
   onConfirm,
 }: DeletePackageModalProps) {
+  const { t } = useTranslation()
+
   return (
     <Modal isOpen={packageItem !== null} onClose={onClose} maxWidthClass="max-w-md">
       {packageItem && (
@@ -24,16 +27,16 @@ export function DeletePackageModal({
               <Trash2 className="h-6 w-6" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 dark:text-slate-50">
-              Xác nhận xóa gói
+              {t("packages.delete_modal_title", "Xác nhận xóa gói")}
             </h3>
           </div>
 
           <p className="mt-4 text-base text-slate-600 dark:text-slate-300">
-            Bạn có chắc chắn muốn xóa gói dịch vụ{" "}
-            <strong className="text-slate-900 dark:text-slate-100">
-              &ldquo;{packageItem.name}&rdquo;
-            </strong>{" "}
-            không? Các hội viên đang sử dụng gói này sẽ không bị ảnh hưởng.
+            {t(
+              "packages.delete_modal_confirm",
+              `Bạn có chắc chắn muốn xóa gói dịch vụ "${packageItem.name}" không? Các hội viên đang sử dụng gói này sẽ không bị ảnh hưởng.`,
+              { name: packageItem.name },
+            )}
           </p>
 
           <div className="mt-6 flex items-center justify-end gap-3">
@@ -43,7 +46,7 @@ export function DeletePackageModal({
               disabled={loading}
               className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
             >
-              Hủy
+              {t("common.cancel", "Hủy")}
             </button>
             <button
               type="button"
@@ -54,10 +57,10 @@ export function DeletePackageModal({
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Đang xóa...
+                  {t("packages.deleting_btn", "Đang xóa...")}
                 </>
               ) : (
-                "Xóa gói"
+                t("packages.delete_btn", "Xóa gói")
               )}
             </button>
           </div>

@@ -1,4 +1,5 @@
 import { CreditCard } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { MembershipDetail } from "../../lib/memberships"
 import { formatDate, formatVnd } from "../../lib/formatters"
 import { StatusBadge } from "../ui/StatusBadge"
@@ -8,14 +9,18 @@ interface InvoiceHistoryTabProps {
 }
 
 export function InvoiceHistoryTab({ invoices }: InvoiceHistoryTabProps) {
+  const { t } = useTranslation()
+
   if (invoices.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center text-slate-400 dark:text-slate-500">
         <CreditCard className="mb-3 h-10 w-10 stroke-1" />
         <p className="text-base font-semibold text-slate-700 dark:text-slate-300">
-          Chưa có lịch sử Thanh toán
+          {t("member_detail.empty_invoices", "Chưa có lịch sử Thanh toán")}
         </p>
-        <p className="mt-1 text-sm">Hội viên này chưa có hóa đơn giao hạn hoặc tạo mới nào.</p>
+        <p className="mt-1 text-sm">
+          {t("member_detail.empty_invoices_desc", "Hội viên này chưa có hóa đơn giao hạn hoặc tạo mới nào.")}
+        </p>
       </div>
     )
   }
@@ -25,10 +30,10 @@ export function InvoiceHistoryTab({ invoices }: InvoiceHistoryTabProps) {
       <table className="w-full text-left text-sm">
         <thead className="border-b border-slate-100 bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-400">
           <tr>
-            <th className="px-4 py-3">Mã hóa đơn</th>
-            <th className="px-4 py-3">Ngày tạo</th>
-            <th className="px-4 py-3">Số tiền</th>
-            <th className="px-4 py-3">PayOS / Trạng thái</th>
+            <th className="px-4 py-3">{t("member_detail.col_invoice_id", "Mã hóa đơn")}</th>
+            <th className="px-4 py-3">{t("member_detail.col_invoice_date", "Ngày tạo")}</th>
+            <th className="px-4 py-3">{t("member_detail.col_invoice_amount", "Số tiền")}</th>
+            <th className="px-4 py-3">{t("member_detail.col_invoice_status", "PayOS / Trạng thái")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">

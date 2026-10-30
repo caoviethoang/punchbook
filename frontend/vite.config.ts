@@ -128,7 +128,10 @@ self.addEventListener("fetch", (event) => {
 export default defineConfig({
   plugins: [react(), tailwindcss(), punchbookServiceWorker()],
   // @ts-expect-error vitest config not in vite types
-  test: { environment: "jsdom" },
+  test: {
+    environment: "jsdom",
+    setupFiles: ["./src/test/setup.ts"],
+  },
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),
