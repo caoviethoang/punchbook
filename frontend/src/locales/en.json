@@ -184,6 +184,8 @@
     "days_remaining": "{{count}} days left",
     "unlimited_label": "unlimited",
     "already_checked_in": "Checked In",
+    "renew_and_ci": "Renew & CI",
+    "checking_in": "Checking in...",
     "expiring_soon": "Expiring Soon",
     "details_btn": "Details",
     "renew_btn": "Renew",
@@ -196,7 +198,13 @@
     "group_checkin_success": "Check-in successful",
     "group_checkin_failed": "Check-in unsuccessful",
     "print_receipt_for": "Print receipt for {{name}}",
-    "print_receipt_for_aria": "Print receipt for {{name}}"
+    "print_receipt_for_aria": "Print receipt for {{name}}",
+    "view_details_for_aria": "View details for {{name}}",
+    "renew_for_aria": "Renew for {{name}}",
+    "checking_in_for_aria": "Checking in for {{name}}",
+    "already_checked_in_for_aria": "{{name}} already checked in today",
+    "renew_and_ci_for_aria": "Renew and check-in for {{name}}",
+    "checkin_for_aria": "Check in for {{name}}"
   },
   "receipt": {
     "preview_title": "Receipt Preview",
@@ -594,6 +602,38 @@
     "submit_btn": "Import Data",
     "importing_btn": "Importing...",
     "import_another": "Import another file",
-    "complete_btn": "Done"
+    "complete_btn": "Done",
+    "dropzone_title": "Drag & drop files here, or",
+    "dropzone_browse": "browse from your computer",
+    "dropzone_formats": "Supported formats: .xlsx, .xls, .csv",
+    "choose_another_file": "Choose another file",
+    "total_rows": "Total Rows",
+    "failed_rows": "Errors",
+    "all_success": "All member records imported successfully!",
+    "error_details": "Error details ({{count}})",
+    "col_row": "Row",
+    "col_member": "Member",
+    "col_phone": "Phone",
+    "col_error": "Error",
+    "row_number": "Row {{row}}"
+  },
+  "audit_logs": {
+    "title": "Audit Logs",
+    "subtitle": "Staff activity and system operations history",
+    "empty": "No activities recorded yet.",
+    "action_check_in": "Check-in",
+    "action_membership_created": "Add Member",
+    "action_membership_renewed": "Renew Membership",
+    "action_shop_plan_upgraded": "Upgrade Shop Plan",
+    "action_membership_renewal_needed": "Renewal Needed",
+    "detail_check_in": "Member: {{member}} • Package: {{package}} • Remaining: {{remaining}}",
+    "detail_membership_created": "Name: {{name}} • Phone: {{phone}} • Package: {{package}}",
+    "detail_membership_renewed": "Member: {{name}} • Before: {{before}} → After: {{after}}",
+    "detail_shop_plan_upgraded": "Term: {{months}} months • Amount: {{amount}}",
+    "detail_membership_renewal_needed": "Member: {{name}} • Package: {{package}} • {{reason}}",
+    "just_now": "just now",
+    "minutes_ago": "{{count}}m ago",
+    "hours_ago": "{{count}}h ago",
+    "days_ago": "{{count}}d ago"
   }
 }

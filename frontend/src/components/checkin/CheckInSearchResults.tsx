@@ -294,7 +294,10 @@ export function MembershipResultList({
                   type="button"
                   onClick={() => onPrintReceipt(membership)}
                   title={t("checkin.print_receipt_now", "In phiếu check-in (POS)")}
-                  aria-label={`In phiếu check-in cho ${membership.customer_name}`}
+                  aria-label={t("checkin.print_receipt_for_aria", {
+                    defaultValue: `In phiếu check-in cho ${membership.customer_name}`,
+                    name: membership.customer_name,
+                  })}
                   className="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-2xs transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
                   <Printer className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
@@ -304,7 +307,10 @@ export function MembershipResultList({
                 type="button"
                 onClick={() => onViewDetail(membership.id)}
                 title={t("common.details", "Chi tiết & Lịch sử")}
-                aria-label={`Xem chi tiết cho ${membership.customer_name}`}
+                aria-label={t("checkin.view_details_for_aria", {
+                  defaultValue: `Xem chi tiết cho ${membership.customer_name}`,
+                  name: membership.customer_name,
+                })}
                 className="inline-flex h-8 sm:h-9 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:px-3 sm:text-sm"
               >
                 <Eye className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400 sm:h-4 sm:w-4" />
@@ -315,7 +321,10 @@ export function MembershipResultList({
                 type="button"
                 onClick={() => onRenew(membership)}
                 title={t("common.renew", "Gia hạn gói")}
-                aria-label={`Gia hạn cho ${membership.customer_name}`}
+                aria-label={t("checkin.renew_for_aria", {
+                  defaultValue: `Gia hạn cho ${membership.customer_name}`,
+                  name: membership.customer_name,
+                })}
                 className="inline-flex h-8 sm:h-9 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:px-3 sm:text-sm"
               >
                 <RefreshCw className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 sm:h-4 sm:w-4" />
@@ -332,12 +341,24 @@ export function MembershipResultList({
                 aria-disabled={isAlreadyCheckedIn}
                 aria-label={
                   isCheckingIn
-                    ? `Đang check-in cho ${membership.customer_name}`
+                    ? t("checkin.checking_in_for_aria", {
+                        defaultValue: `Đang check-in cho ${membership.customer_name}`,
+                        name: membership.customer_name,
+                      })
                     : isAlreadyCheckedIn
-                      ? `${membership.customer_name} đã check-in hôm nay`
+                      ? t("checkin.already_checked_in_for_aria", {
+                          defaultValue: `${membership.customer_name} đã check-in hôm nay`,
+                          name: membership.customer_name,
+                        })
                       : isExhausted
-                        ? `Gia hạn và check-in cho ${membership.customer_name}`
-                        : `Check-in cho ${membership.customer_name}`
+                        ? t("checkin.renew_and_ci_for_aria", {
+                            defaultValue: `Gia hạn và check-in cho ${membership.customer_name}`,
+                            name: membership.customer_name,
+                          })
+                        : t("checkin.checkin_for_aria", {
+                            defaultValue: `Check-in cho ${membership.customer_name}`,
+                            name: membership.customer_name,
+                          })
                 }
                 className={`inline-flex h-8 sm:h-9 w-28 sm:w-32 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-semibold shadow-2xs transition focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-sm ${
                   isCheckingIn
@@ -352,22 +373,22 @@ export function MembershipResultList({
                 {isCheckingIn ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 animate-spin sm:h-4 sm:w-4" />
-                    <span>Check-in...</span>
+                    <span>{t("checkin.checking_in", "Check-in...")}</span>
                   </>
                 ) : isAlreadyCheckedIn ? (
                   <>
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 sm:h-4 sm:w-4 shrink-0" />
-                    <span className="truncate">Đã Check-in</span>
+                    <span className="truncate">{t("checkin.already_checked_in", "Đã Check-in")}</span>
                   </>
                 ) : isExhausted ? (
                   <>
                     <RefreshCw className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-                    <span className="truncate">Gia hạn & CI</span>
+                    <span className="truncate">{t("checkin.renew_and_ci", "Gia hạn & CI")}</span>
                   </>
                 ) : (
                   <>
                     <UserCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-                    <span>Check-in</span>
+                    <span>{t("common.checkin", "Check-in")}</span>
                   </>
                 )}
               </button>
