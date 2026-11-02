@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { AlertCircle, CalendarClock, Loader2, Users, Wallet } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { Staff } from "../lib/auth"
 import { AuditLogsPanel } from "./AuditLogsPanel"
 import { useDashboard } from "../hooks/useDashboard"
@@ -10,6 +11,7 @@ import { formatVnd } from "../lib/formatters"
 import { computeMembershipStatus } from "../lib/memberships"
 import { downloadExcelReport } from "../lib/reports"
 import { AnalyticsCharts } from "./AnalyticsCharts"
+import { AttendanceReportSection } from "./dashboard/AttendanceReportSection"
 import { DashboardHeader } from "./dashboard/DashboardHeader"
 import { DashboardMembershipsTable } from "./dashboard/DashboardMembershipsTable"
 import { MetricCard } from "./dashboard/MetricCard"
@@ -22,6 +24,7 @@ interface DashboardScreenProps {
 }
 
 export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
+  const { t } = useTranslation()
   const isAdmin = !currentStaff || currentStaff.role === "admin"
   const { data, loading, error, load } = useDashboard()
   const [selectedMembershipForRenewal, setSelectedMembershipForRenewal] =
@@ -127,13 +130,13 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
       <div className={`grid gap-4 ${isAdmin ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
         {isAdmin && (
           <MetricCard
-            label="Doanh thu tháng"
+            label={t("dashboard.revenue_this_month", "Doanh thu tháng")}
             value={formatVnd(data.revenue_this_month)}
             icon={<Wallet className="h-4 w-4" />}
           />
         )}
         <MetricCard
-          label="Hội viên active"
+          label={t("dashboard.active_members", "Hội viên active")}
           value={String(data.active_memberships_count)}
           icon={<Users className="h-4 w-4" />}
           active={statusFilter === "active"}
@@ -143,7 +146,7 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
           }}
         />
         <MetricCard
-          label="Sắp hết hạn (<= 3 buổi / 7 ngày)"
+          label={t("dashboard.expiring_soon", "Sắp hết hạn (<= 3 buổi / 7 ngày)")}
           value={String(data.expiring_within_7_days_count)}
           icon={<CalendarClock className="h-4 w-4" />}
           active={statusFilter === "expiring"}
@@ -156,12 +159,17 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
 
       {/* Analytics Charts (30-day Revenue, Package Revenue & 24h Check-in Frequency) */}
       {!currentStaff || currentStaff.role === "admin" ? (
-        <AnalyticsCharts
-          dailyRevenue={data.daily_revenue_30_days}
-          checkInFrequency={data.check_in_frequency_by_hour}
-          peakHour={data.peak_check_in_hour}
-          packageRevenue={data.revenue_by_package}
-        />
+        <>
+          <AnalyticsCharts
+            dailyRevenue={data.daily_revenue_30_days}
+            checkInFrequency={data.check_in_frequency_by_hour}
+            peakHour={data.peak_check_in_hour}
+            packageRevenue={data.revenue_by_package}
+          />
+          <AttendanceReportSection
+            onSelectDetail={setSelectedMembershipIdForDetail}
+          />
+        </>
       ) : null}
 
       {/* Memberships Table with search & pagination */}

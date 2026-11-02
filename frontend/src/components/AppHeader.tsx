@@ -1,20 +1,23 @@
+import { useTranslation } from "react-i18next"
 import type { Shop, Staff } from "../lib/auth"
+import { LanguageToggle } from "./ui/LanguageToggle"
 import { ThemeToggle } from "./ui/ThemeToggle"
 
 export type AppView = "dashboard" | "checkin" | "packages" | "members" | "settings"
 
-interface NavItem {
+interface NavItemConfig {
   view: AppView
-  label: string
+  labelKey: string
+  defaultLabel: string
   adminOnly?: boolean
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { view: "dashboard", label: "Dashboard", adminOnly: true },
-  { view: "checkin", label: "Check-in" },
-  { view: "members", label: "Hội viên" },
-  { view: "packages", label: "Gói dịch vụ", adminOnly: true },
-  { view: "settings", label: "Cài đặt", adminOnly: true },
+const NAV_ITEMS_CONFIG: NavItemConfig[] = [
+  { view: "dashboard", labelKey: "nav.dashboard", defaultLabel: "Dashboard", adminOnly: true },
+  { view: "checkin", labelKey: "nav.checkin", defaultLabel: "Check-in" },
+  { view: "members", labelKey: "nav.members", defaultLabel: "Hội viên" },
+  { view: "packages", labelKey: "nav.packages", defaultLabel: "Gói dịch vụ", adminOnly: true },
+  { view: "settings", labelKey: "nav.settings", defaultLabel: "Cài đặt", adminOnly: true },
 ]
 
 interface AppHeaderProps {
@@ -25,6 +28,19 @@ interface AppHeaderProps {
   onLogout: () => void
 }
 
+function formatPlanLabel(plan: string, planDetails: string | undefined, t: (k: string, d: string) => string): string {
+  if (planDetails) {
+    if (planDetails.includes("1 năm") || planDetails.includes("1 year")) {
+      return t("common.premium_1_year", "Premium 1 năm")
+    }
+    if (planDetails.includes("1 tháng") || planDetails.includes("1 month")) {
+      return t("common.premium_1_month", "Premium 1 tháng")
+    }
+    return planDetails
+  }
+  return plan === "paid" ? t("common.premium", "Premium") : t("common.free", "Free")
+}
+
 export function AppHeader({
   shop,
   staff,
@@ -32,8 +48,9 @@ export function AppHeader({
   onSelectView,
   onLogout,
 }: AppHeaderProps) {
+  const { t } = useTranslation()
   const isAdmin = !staff || staff.role === "admin"
-  const visibleNavItems = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin)
+  const visibleNavItems = NAV_ITEMS_CONFIG.filter((item) => !item.adminOnly || isAdmin)
 
   return (
     <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
@@ -44,14 +61,14 @@ export function AppHeader({
           </h1>
           {staff && (
             <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-              {staff.role === "admin" ? "Admin" : "Lễ tân"}
+              {staff.role === "admin" ? t("nav.admin", "Admin") : t("nav.staff", "Lễ tân")}
             </span>
           )}
         </div>
 
         <div className="flex items-center gap-2 text-xs sm:gap-2.5 sm:text-sm md:gap-3 dark:text-slate-400">
           <nav className="flex items-center rounded-xl border border-slate-200 p-0.5 sm:p-1 dark:border-slate-700">
-            {visibleNavItems.map(({ view: v, label }) => (
+            {visibleNavItems.map(({ view: v, labelKey, defaultLabel }) => (
               <button
                 key={v}
                 type="button"
@@ -62,12 +79,12 @@ export function AppHeader({
                     : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                 }`}
               >
-                {label}
+                {t(labelKey, defaultLabel)}
               </button>
             ))}
           </nav>
           <span className="shrink-0 whitespace-nowrap">
-            <span className="hidden sm:inline">Plan: </span>
+            <span className="hidden sm:inline">{t("common.plan", "Plan")}: </span>
             <strong
               className={`font-bold ${
                 shop.plan === "paid"
@@ -75,16 +92,17 @@ export function AppHeader({
                   : "text-slate-700 dark:text-slate-200"
               }`}
             >
-              {shop.plan_details || (shop.plan === "paid" ? "Premium" : "Free")}
+              {formatPlanLabel(shop.plan, shop.plan_details, t)}
             </strong>
           </span>
+          <LanguageToggle className="shrink-0" />
           <ThemeToggle className="shrink-0" />
           <button
             type="button"
             onClick={onLogout}
             className="shrink-0 whitespace-nowrap rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 sm:px-3 sm:py-1.5 sm:text-sm dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
-            Sign out
+            {t("nav.logout", "Sign out")}
           </button>
         </div>
       </div>

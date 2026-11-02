@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { AlertCircle, Camera, Keyboard, QrCode, Upload } from "lucide-react"
 import { Html5Qrcode } from "html5-qrcode"
+import { useTranslation } from "react-i18next"
 import { Modal } from "./ui/Modal"
 
 interface QRScannerModalProps {
@@ -10,6 +11,7 @@ interface QRScannerModalProps {
 }
 
 export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModalProps) {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<"camera" | "upload" | "manual">("camera")
   const [manualInput, setManualInput] = useState("")
   const [error, setError] = useState<string | null>(null)
@@ -137,10 +139,10 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
           </div>
           <div>
             <h3 className="text-xl font-bold text-slate-900 dark:text-slate-50">
-              Quét mã QR Hội viên
+              {t("scanner.title", "Quét mã QR Hội viên")}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Quét qua camera, chọn tệp ảnh hoặc nhập mã
+              {t("scanner.subtitle", "Quét qua camera, chọn tệp ảnh hoặc nhập mã")}
             </p>
           </div>
         </div>
@@ -158,7 +160,7 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
           }`}
         >
           <Camera className="h-4 w-4" />
-          <span>Camera</span>
+          <span>{t("scanner.tab_camera", "Camera")}</span>
         </button>
         <button
           type="button"
@@ -170,7 +172,7 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
           }`}
         >
           <Upload className="h-4 w-4" />
-          <span>Tải ảnh QR</span>
+          <span>{t("scanner.tab_upload", "Tải ảnh QR")}</span>
         </button>
         <button
           type="button"
@@ -182,7 +184,7 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
           }`}
         >
           <Keyboard className="h-4 w-4" />
-          <span>Nhập mã</span>
+          <span>{t("scanner.tab_manual", "Nhập mã")}</span>
         </button>
       </div>
 
@@ -202,12 +204,12 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
               {cameraPermissionError && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-white">
                   <Camera className="mb-2 h-10 w-10 text-slate-400" />
-                  <p className="text-sm">Không thể kết nối camera</p>
+                  <p className="text-sm">{t("scanner.camera_error", "Không thể kết nối camera")}</p>
                 </div>
               )}
             </div>
             <p className="mt-4 text-center text-xs font-medium text-slate-500 dark:text-slate-400">
-              Căn chỉnh mã QR hội viên vào khung để tự động quét
+              {t("scanner.camera_hint", "Căn chỉnh mã QR hội viên vào khung để tự động quét")}
             </p>
           </div>
         )}
@@ -218,10 +220,10 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
             <label className="flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-indigo-200 bg-indigo-50/50 p-8 text-center transition hover:bg-indigo-50 dark:border-indigo-900/60 dark:bg-indigo-950/20 dark:hover:bg-indigo-950/40">
               <Upload className="mb-3 h-10 w-10 text-indigo-600 dark:text-indigo-400" />
               <span className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                Nhấp để tải ảnh QR
+                {t("scanner.upload_btn", "Nhấp để tải ảnh QR")}
               </span>
               <span className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Hỗ trợ PNG, JPG, JPEG, WebP
+                {t("scanner.upload_hint", "Hỗ trợ PNG, JPG, JPEG, WebP")}
               </span>
               <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
             </label>
@@ -232,13 +234,13 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
           <form onSubmit={handleManualSubmit} className="space-y-4 py-2">
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                Mã QR / ID Hội viên
+                {t("scanner.manual_label", "Mã QR / ID Hội viên")}
               </label>
               <input
                 type="text"
                 value={manualInput}
                 onChange={(e) => setManualInput(e.target.value)}
-                placeholder="Dán hoặc gõ mã QR hội viên..."
+                placeholder={t("scanner.manual_placeholder", "Dán hoặc gõ mã QR hội viên...")}
                 autoFocus
                 className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
               />
@@ -247,7 +249,7 @@ export function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRScannerModa
               type="submit"
               className="w-full rounded-xl bg-indigo-600 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-indigo-500 active:bg-indigo-700"
             >
-              Xác nhận & Check-in
+              {t("scanner.confirm_checkin", "Xác nhận & Check-in")}
             </button>
           </form>
         )}

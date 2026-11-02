@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_23_043219) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_27_024829) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -35,7 +35,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_043219) do
     t.datetime "checked_in_at"
     t.datetime "created_at", null: false
     t.uuid "membership_id", null: false
-    t.uuid "staff_id", null: false
+    t.uuid "staff_id"
     t.datetime "updated_at", null: false
     t.index ["membership_id"], name: "index_check_ins_on_membership_id"
     t.index ["staff_id"], name: "index_check_ins_on_staff_id"

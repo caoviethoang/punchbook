@@ -1,5 +1,6 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
+import "./i18n.ts"
 import * as membershipsApi from "./lib/memberships"
 import { ThemeProvider } from "./contexts/ThemeProvider"
 import App from "./App.tsx"

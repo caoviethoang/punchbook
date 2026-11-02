@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight, Edit3, Eye, Loader2, QrCode, RefreshCw, RotateCcw, Trash2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { Membership, PaginationMeta, StatusFilterType } from "../../lib/memberships"
 import { computeMembershipStatus, getPaginationRange } from "../../lib/memberships"
 import { StatusBadge } from "../ui/StatusBadge"
@@ -39,6 +40,8 @@ export function MembershipTable({
   onRestore,
   restoringId,
 }: MembershipTableProps) {
+  const { t } = useTranslation()
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -56,7 +59,7 @@ export function MembershipTable({
           onClick={onReload}
           className="mt-3 rounded-xl bg-red-100 px-4 py-2 text-xs font-semibold text-red-800 transition hover:bg-red-200 dark:bg-red-900/60 dark:text-red-200"
         >
-          Thử lại
+          {t("common.retry", "Thử lại")}
         </button>
       </div>
     )
@@ -66,10 +69,10 @@ export function MembershipTable({
     return (
       <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-white p-12 text-center text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
         {status === "deleted"
-          ? "Không có hội viên nào đã bị xóa."
+          ? t("memberships.empty_deleted", "Không có hội viên nào đã bị xóa.")
           : debouncedQuery || status !== "all"
-            ? "Không tìm thấy hội viên khớp với bộ lọc."
-            : "Chưa có hội viên nào trong cửa hàng."}
+            ? t("memberships.empty_filter", "Không tìm thấy hội viên khớp với bộ lọc.")
+            : t("memberships.empty_state", "Chưa có hội viên nào trong cửa hàng.")}
       </div>
     )
   }
@@ -80,11 +83,11 @@ export function MembershipTable({
         <table className="min-w-full text-left text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-400">
             <tr>
-              <th className="px-4 py-3.5 font-semibold">Tên hội viên</th>
-              <th className="px-4 py-3.5 font-semibold">Gói đăng ký</th>
-              <th className="px-4 py-3.5 font-semibold">Thời hạn / Số buổi</th>
-              <th className="px-4 py-3.5 font-semibold">Trạng thái</th>
-              <th className="px-4 py-3.5 font-semibold text-right">Thao tác</th>
+              <th className="px-4 py-3.5 font-semibold">{t("memberships.col_name", "Tên hội viên")}</th>
+              <th className="px-4 py-3.5 font-semibold">{t("memberships.col_package", "Gói đăng ký")}</th>
+              <th className="px-4 py-3.5 font-semibold">{t("memberships.col_remaining", "Thời hạn / Số buổi")}</th>
+              <th className="px-4 py-3.5 font-semibold">{t("memberships.col_status", "Trạng thái")}</th>
+              <th className="px-4 py-3.5 font-semibold text-right">{t("memberships.col_actions", "Thao tác")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -113,7 +116,7 @@ export function MembershipTable({
                   </div>
                 </td>
                 <td className="px-4 py-3.5 font-medium text-slate-800 dark:text-slate-200">
-                  {m.package?.name || "Không rõ"}
+                  {m.package?.name || t("memberships.unknown_package", "Không rõ")}
                 </td>
                 <td className="px-4 py-3.5">
                   <MemberRemainingBadge membership={m} />
@@ -136,28 +139,28 @@ export function MembershipTable({
                         ) : (
                           <RotateCcw className="h-3.5 w-3.5" />
                         )}
-                        <span>Khôi phục</span>
+                        <span>{t("memberships.restore", "Khôi phục")}</span>
                       </button>
                     ) : (
                       <>
                         <button
                           type="button"
                           onClick={() => onOpenDetail(m.id)}
-                          title="Chi tiết & Lịch sử"
+                          title={t("common.details", "Chi tiết & Lịch sử")}
                           className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                         >
                           <Eye className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
-                          <span className="hidden sm:inline">Chi tiết</span>
+                          <span className="hidden sm:inline">{t("common.details", "Chi tiết")}</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => onOpenEdit(m)}
-                          title="Gia hạn / Chỉnh sửa"
+                          title={t("common.renew", "Gia hạn / Chỉnh sửa")}
                           className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                         >
                           <RefreshCw className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                          <span className="hidden sm:inline">Gia hạn</span>
+                          <span className="hidden sm:inline">{t("common.renew", "Gia hạn")}</span>
                         </button>
 
                         <button

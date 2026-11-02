@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import type { DailyRevenueData } from "../../lib/dashboard"
 import { formatDate, formatVnd } from "../../lib/formatters"
 
@@ -7,6 +8,7 @@ interface RevenueBarChartProps {
 }
 
 export function RevenueBarChart({ dailyRevenue }: RevenueBarChartProps) {
+  const { t } = useTranslation()
   const [hoveredRevenueIndex, setHoveredRevenueIndex] = useState<number | null>(null)
 
   const maxRevenue = Math.max(...dailyRevenue.map((d) => d.revenue), 1)
@@ -19,7 +21,7 @@ export function RevenueBarChart({ dailyRevenue }: RevenueBarChartProps) {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="rounded-xl bg-indigo-50/60 p-4 dark:bg-indigo-950/30">
           <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-            Tổng doanh thu 30 ngày
+            {t("dashboard.total_30d_revenue", "Tổng doanh thu 30 ngày")}
           </span>
           <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-50">
             {formatVnd(total30DaysRevenue)}
@@ -27,7 +29,7 @@ export function RevenueBarChart({ dailyRevenue }: RevenueBarChartProps) {
         </div>
         <div className="rounded-xl bg-emerald-50/60 p-4 dark:bg-emerald-950/30">
           <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-            Trung bình ngày
+            {t("dashboard.daily_avg_revenue", "Trung bình ngày")}
           </span>
           <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-50">
             {formatVnd(avgDailyRevenue)}

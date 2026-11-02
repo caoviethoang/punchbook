@@ -1,4 +1,5 @@
 import { FileSpreadsheet, Loader2, Shield, Upload } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 interface DashboardHeaderProps {
   isAdmin: boolean
@@ -15,14 +16,16 @@ export function DashboardHeader({
   onOpenImportModal,
   onExport,
 }: DashboardHeaderProps) {
+  const { t } = useTranslation()
+
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-          Dashboard
+          {t("dashboard.title", "Dashboard")}
         </h2>
         <p className="mt-1 text-base text-slate-500 dark:text-slate-400">
-          Tình hình shop trong tháng này
+          {t("dashboard.subtitle", "Tình hình shop trong tháng này")}
         </p>
       </div>
 
@@ -34,7 +37,7 @@ export function DashboardHeader({
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             <Shield className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            <span>Nhật ký</span>
+            <span>{t("dashboard.audit_logs", "Nhật ký")}</span>
           </button>
 
           <button
@@ -43,7 +46,7 @@ export function DashboardHeader({
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             <Upload className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            <span>Import Excel</span>
+            <span>{t("common.import_excel", "Import Excel")}</span>
           </button>
 
           <button
@@ -57,7 +60,11 @@ export function DashboardHeader({
             ) : (
               <FileSpreadsheet className="h-4 w-4" />
             )}
-            <span>{exporting ? "Đang xuất..." : "Xuất Excel"}</span>
+            <span>
+              {exporting
+                ? t("common.exporting", "Đang xuất...")
+                : t("common.export_excel", "Xuất Excel")}
+            </span>
           </button>
         </div>
       )}

@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { X, UserCheck, Loader2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { updateMembership, type Membership, type MembershipPackage } from "../lib/memberships"
 
 interface MemberEditModalProps {
@@ -15,6 +16,7 @@ export function MemberEditModal({
   onClose,
   onSuccess,
 }: MemberEditModalProps) {
+  const { t } = useTranslation()
   const [customerName, setCustomerName] = useState(membership?.customer_name || "")
   const [phone, setPhone] = useState(membership?.phone || "")
   const [cardNumber, setCardNumber] = useState(membership?.card_number || "")
@@ -36,7 +38,7 @@ export function MemberEditModal({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!customerName.trim() || !phone.trim()) {
-      setError("Vui lòng nhập tên và số điện thoại.")
+      setError(t("memberships.error_name_phone", "Vui lòng nhập tên và số điện thoại."))
       return
     }
 
@@ -56,7 +58,7 @@ export function MemberEditModal({
       onSuccess(updated)
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Cập nhật thất bại.")
+      setError(err instanceof Error ? err.message : t("memberships.update_failed", "Cập nhật thất bại."))
     } finally {
       setLoading(false)
     }
@@ -71,7 +73,7 @@ export function MemberEditModal({
           className="absolute right-4 top-4 rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
         >
           <X className="h-5 w-5" />
-          <span className="sr-only">Đóng</span>
+          <span className="sr-only">{t("common.close", "Đóng")}</span>
         </button>
 
         <div className="flex items-center gap-3">
@@ -80,10 +82,10 @@ export function MemberEditModal({
           </div>
           <div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">
-              Chỉnh sửa hội viên
+              {t("memberships.edit_title", "Chỉnh sửa hội viên")}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Cập nhật thông tin hội viên và gói cước
+              {t("memberships.edit_subtitle", "Cập nhật thông tin hội viên và gói cước")}
             </p>
           </div>
         </div>
@@ -97,7 +99,7 @@ export function MemberEditModal({
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Tên hội viên *
+              {t("memberships.customer_name_label", "Tên hội viên *")}
             </label>
             <input
               type="text"
@@ -110,7 +112,7 @@ export function MemberEditModal({
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Số điện thoại *
+              {t("memberships.phone_label", "Số điện thoại *")}
             </label>
             <input
               type="text"
@@ -123,27 +125,31 @@ export function MemberEditModal({
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Mã thẻ từ / RFID / Mã định danh thiết bị
+              {t("memberships.card_uid_label", "Mã thẻ từ / RFID / Mã định danh thiết bị")}
             </label>
             <input
               type="text"
               value={cardNumber}
               onChange={(e) => setCardNumber(e.target.value)}
-              placeholder="Ví dụ: RFID_123456"
+              placeholder={t("memberships.card_uid_placeholder", "Ví dụ: RFID_123456")}
               className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
             />
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Gói dịch vụ
+              {t("memberships.package_label", "Gói dịch vụ")}
             </label>
             <select
               value={packageId}
               onChange={(e) => setPackageId(e.target.value)}
               className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
             >
-              <option value="">Giữ nguyên ({membership.package.name})</option>
+              <option value="">
+                {t("memberships.keep_package", `Giữ nguyên (${membership.package.name})`, {
+                  name: membership.package.name,
+                })}
+              </option>
               {packages.map((pkg) => (
                 <option key={pkg.id} value={pkg.id}>
                   {pkg.name}
@@ -155,21 +161,21 @@ export function MemberEditModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Số buổi còn lại
+                {t("memberships.sessions_left_label", "Số buổi còn lại")}
               </label>
               <input
                 type="number"
                 min="0"
                 value={sessionsLeft}
                 onChange={(e) => setSessionsLeft(e.target.value)}
-                placeholder="Không giới hạn"
+                placeholder={t("memberships.unlimited_placeholder", "Không giới hạn")}
                 className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Hạn sử dụng
+                {t("memberships.expiry_date_label", "Hạn sử dụng")}
               </label>
               <input
                 type="date"
@@ -182,13 +188,13 @@ export function MemberEditModal({
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Ghi chú nội bộ
+              {t("memberships.internal_notes_label", "Ghi chú nội bộ")}
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              placeholder="Dị ứng, sở thích, lưu ý ca tập..."
+              placeholder={t("memberships.internal_notes_placeholder", "Dị ứng, sở thích, lưu ý ca tập...")}
               className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
             />
           </div>
@@ -200,7 +206,7 @@ export function MemberEditModal({
               disabled={loading}
               className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
             >
-              Hủy
+              {t("common.cancel", "Hủy")}
             </button>
             <button
               type="submit"
@@ -208,7 +214,7 @@ export function MemberEditModal({
               className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:opacity-50 dark:bg-indigo-600 dark:hover:bg-indigo-500"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              <span>Lưu thay đổi</span>
+              <span>{t("common.save", "Lưu thay đổi")}</span>
             </button>
           </div>
         </form>

@@ -1,5 +1,6 @@
 import type { FormEvent } from "react"
 import { Building2, CreditCard } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { FormField, FORM_CONTROL_CLASS } from "../ui/FormField"
 
 const POPULAR_BANKS = [
@@ -51,6 +52,8 @@ export function ShopProfileSection({
   profileLoading,
   onSubmit,
 }: ShopProfileSectionProps) {
+  const { t } = useTranslation()
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-5 flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-slate-800">
@@ -58,35 +61,37 @@ export function ShopProfileSection({
           <Building2 className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="font-semibold text-slate-900 dark:text-slate-100">Thông tin Cửa hàng</h3>
+          <h3 className="font-semibold text-slate-900 dark:text-slate-100">
+            {t("settings.profile.title", "Thông tin Cửa hàng")}
+          </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Cập nhật tên tiệm, số điện thoại và địa chỉ liên hệ.
+            {t("settings.profile.subtitle", "Cập nhật tên tiệm, số điện thoại và địa chỉ liên hệ.")}
           </p>
         </div>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField
-          label="Tên cửa hàng"
+          label={t("settings.profile.shop_name", "Tên cửa hàng")}
           required
           disabled={!isAdmin}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="VD: Lan Spa & Salon"
+          placeholder={t("settings.profile.shop_name_placeholder", "VD: Lan Spa & Salon")}
         />
         <FormField
-          label="Số điện thoại liên hệ"
+          label={t("settings.profile.phone", "Số điện thoại liên hệ")}
           disabled={!isAdmin}
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          placeholder="VD: 0901234567"
+          placeholder={t("settings.profile.phone_placeholder", "VD: 0901234567")}
         />
         <FormField
-          label="Địa chỉ tiệm"
+          label={t("settings.profile.address", "Địa chỉ tiệm")}
           disabled={!isAdmin}
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          placeholder="VD: 123 Đường Nguyễn Trãi, Quận 1, TP.HCM"
+          placeholder={t("settings.profile.address_placeholder", "VD: 123 Đường Nguyễn Trãi, Quận 1, TP.HCM")}
         />
 
         {/* Bank Account Settings for VietQR */}
@@ -94,14 +99,14 @@ export function ShopProfileSection({
           <div className="mb-3 flex items-center gap-2">
             <CreditCard className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
             <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-              Tài khoản Ngân hàng (Xuất QR Chuyển khoản)
+              {t("settings.profile.bank_title", "Tài khoản Ngân hàng (Xuất QR Chuyển khoản)")}
             </h4>
           </div>
 
           <div className="space-y-3">
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-700 dark:text-slate-300">
-                Ngân hàng
+                {t("settings.profile.bank_name", "Ngân hàng")}
               </label>
               <select
                 value={bankName}
@@ -118,21 +123,21 @@ export function ShopProfileSection({
             </div>
 
             <FormField
-              label="Số tài khoản ngân hàng"
+              label={t("settings.profile.bank_account_no", "Số tài khoản ngân hàng")}
               type="text"
               disabled={!isAdmin}
               value={bankAccountNo}
               onChange={(e) => setBankAccountNo(e.target.value.replace(/\s/g, ""))}
-              placeholder="VD: 0123456789"
+              placeholder={t("settings.profile.bank_account_no_placeholder", "VD: 0123456789")}
             />
 
             <FormField
-              label="Tên chủ tài khoản"
+              label={t("settings.profile.bank_account_name", "Tên chủ tài khoản")}
               type="text"
               disabled={!isAdmin}
               value={bankAccountName}
               onChange={(e) => setBankAccountName(e.target.value.toUpperCase())}
-              placeholder="VD: CAO VIET HOANG"
+              placeholder={t("settings.profile.bank_account_name_placeholder", "VD: CAO VIET HOANG")}
             />
           </div>
         </div>
@@ -144,10 +149,10 @@ export function ShopProfileSection({
             className="inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {!isAdmin
-              ? "Chỉ xem (Không có quyền sửa)"
+              ? t("settings.profile.read_only_btn", "Chỉ xem (Không có quyền sửa)")
               : profileLoading
-                ? "Đang lưu..."
-                : "Lưu thông tin tiệm & ngân hàng"}
+                ? t("settings.profile.saving", "Đang lưu...")
+                : t("settings.profile.save_btn", "Lưu thông tin tiệm & ngân hàng")}
           </button>
         </div>
       </form>

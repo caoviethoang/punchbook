@@ -1,4 +1,5 @@
 import { AlertCircle, ChevronLeft, ChevronRight, Loader2, User, UserCheck, Users } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { useCheckInScreen } from "../hooks/useCheckInScreen"
 import { getPaginationRange, type CheckInFilterType } from "../lib/memberships"
 import { CheckInHeader } from "./checkin/CheckInHeader"
@@ -37,6 +38,7 @@ export function CheckInScreen({
   shopAddress,
   shopPhone,
 }: CheckInScreenProps) {
+  const { t } = useTranslation()
   const {
     query,
     setQuery,
@@ -135,12 +137,14 @@ export function CheckInScreen({
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
             <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 sm:text-lg">
-              {query.trim() ? "Kết quả tìm kiếm" : "Danh sách hội viên"}
+              {query.trim()
+                ? t("checkin.search_results_title", "Kết quả tìm kiếm")
+                : t("checkin.member_list_title", "Danh sách hội viên")}
             </h2>
             {isLoading && (
               <span className="inline-flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span>Đang tải...</span>
+                <span>{t("common.loading", "Đang tải...")}</span>
               </span>
             )}
           </div>
@@ -167,7 +171,7 @@ export function CheckInScreen({
                       : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
                   )}
                 >
-                  {tab.label}
+                  {t(`checkin.tab_${tab.key}`, tab.label)}
                 </button>
               )
             })}
@@ -182,7 +186,10 @@ export function CheckInScreen({
               : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
           )}
         >
-          {paginationMeta?.total ?? memberships.length} {query.trim() ? "kết quả" : "hội viên"}
+          {paginationMeta?.total ?? memberships.length}{" "}
+          {query.trim()
+            ? t("checkin.results_count_suffix", "kết quả")
+            : t("checkin.members_count_suffix", "hội viên")}
         </span>
       </div>
 
@@ -211,21 +218,21 @@ export function CheckInScreen({
             </div>
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 sm:text-lg">
               {filter === "not_checked_in"
-                ? "Tất cả hội viên đã check-in hôm nay"
+                ? t("checkin.all_checked_in_today", "Tất cả hội viên đã check-in hôm nay")
                 : filter === "expiring"
-                  ? "Không có hội viên nào sắp hết vé"
+                  ? t("checkin.no_expiring_members", "Không có hội viên nào sắp hết vé")
                   : filter === "expired"
-                    ? "Không có hội viên nào đã hết vé"
-                    : "Chưa có hội viên nào trong hệ thống"}
+                    ? t("checkin.no_expired_members", "Không có hội viên nào đã hết vé")
+                    : t("checkin.empty_members", "Chưa có hội viên nào trong hệ thống")}
             </h3>
             <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
               {filter === "not_checked_in"
-                ? "Không còn hội viên nào đang chờ check-in trong ca trực."
+                ? t("checkin.no_pending_checkin", "Không còn hội viên nào đang chờ check-in trong ca trực.")
                 : filter === "expiring"
-                  ? "Hiện tại không có hội viên nào sắp hết hạn hoặc còn ít buổi."
+                  ? t("checkin.no_expiring_hint", "Hiện tại không có hội viên nào sắp hết hạn hoặc còn ít buổi.")
                   : filter === "expired"
-                    ? "Hiện tại không có hội viên nào hết hạn thẻ hoặc hết số buổi."
-                    : "Các hội viên đăng ký gói tập sẽ xuất hiện tại đây để điểm danh nhanh."}
+                    ? t("checkin.no_expired_hint", "Hiện tại không có hội viên nào hết hạn thẻ hoặc hết số buổi.")
+                    : t("checkin.empty_members_desc", "Các hội viên đăng ký gói tập sẽ xuất hiện tại đây để điểm danh nhanh.")}
             </p>
           </div>
         ) : (
@@ -234,7 +241,7 @@ export function CheckInScreen({
               <User className="h-6 w-6" />
             </div>
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 sm:text-lg">
-              Không tìm thấy hội viên phù hợp
+              {t("checkin.empty_search", "Không tìm thấy hội viên phù hợp")}
             </h3>
             <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
               Không có kết quả nào cho từ khóa &ldquo;

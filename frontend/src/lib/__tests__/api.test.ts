@@ -82,10 +82,11 @@ describe("api library", () => {
     expect(fetchSpy).toHaveBeenCalledWith(
       `${apiBaseUrl}/dashboard`,
       expect.objectContaining({
-        headers: {
+        headers: expect.objectContaining({
           Authorization: "Bearer jwt_token_123",
           "Content-Type": "application/json",
-        },
+          "Accept-Language": "vi",
+        }),
       })
     )
   })

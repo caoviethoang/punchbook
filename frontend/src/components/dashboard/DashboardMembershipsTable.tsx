@@ -1,4 +1,5 @@
 import { Eye, Loader2, RefreshCw, Search } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { DashboardMembership } from "../../lib/dashboard"
 import {
   computeMembershipStatus,
@@ -42,11 +43,13 @@ export function DashboardMembershipsTable({
   onSelectDetail,
   onSelectRenewal,
 }: DashboardMembershipsTableProps) {
+  const { t } = useTranslation()
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
-          Danh sách Hội viên
+          {t("dashboard.memberships_list", "Danh sách Hội viên")}
         </h3>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -54,7 +57,7 @@ export function DashboardMembershipsTable({
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Tìm tên hoặc sđt..."
+              placeholder={t("dashboard.search_members_placeholder", "Tìm tên hoặc sđt...")}
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               className="w-48 sm:w-60 rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
@@ -73,7 +76,7 @@ export function DashboardMembershipsTable({
                     : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
                 }`}
               >
-                {tab.label}
+                {t(`dashboard.status_${tab.key}`, tab.label)}
               </button>
             ))}
           </div>
@@ -86,18 +89,18 @@ export function DashboardMembershipsTable({
         </div>
       ) : memberships.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-10 text-center text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-          Không tìm thấy hội viên nào.
+          {t("dashboard.empty_memberships", "Không tìm thấy hội viên nào.")}
         </div>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-400">
               <tr>
-                <th className="px-4 py-3 font-semibold">Tên</th>
-                <th className="px-4 py-3 font-semibold">Gói</th>
-                <th className="px-4 py-3 font-semibold">Còn lại</th>
-                <th className="px-4 py-3 font-semibold">Trạng thái</th>
-                <th className="px-4 py-3 font-semibold text-right">Thao tác</th>
+                <th className="px-4 py-3 font-semibold">{t("dashboard.col_name", "Tên")}</th>
+                <th className="px-4 py-3 font-semibold">{t("dashboard.col_package", "Gói")}</th>
+                <th className="px-4 py-3 font-semibold">{t("dashboard.col_remaining", "Còn lại")}</th>
+                <th className="px-4 py-3 font-semibold">{t("dashboard.col_status", "Trạng thái")}</th>
+                <th className="px-4 py-3 font-semibold text-right">{t("dashboard.col_actions", "Thao tác")}</th>
               </tr>
             </thead>
             <tbody>

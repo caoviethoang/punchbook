@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import { Printer, X } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { formatDateTime } from "../lib/formatters"
 import { Modal } from "./ui/Modal"
 
@@ -22,6 +23,8 @@ interface ThermalReceiptModalProps {
 }
 
 export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalProps) {
+  const { t } = useTranslation()
+
   const handlePrint = () => {
     window.print()
   }
@@ -35,14 +38,14 @@ export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalPro
   }, [])
 
   return (
-    <Modal isOpen={true} onClose={onClose} maxWidthClass="max-w-md">
+    <Modal isOpen={true} onClose={onClose} maxWidthClass="max-w-md" hideCloseButton>
       <div className="flex flex-col">
         {/* Top Header - Screen Only */}
         <div className="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-800 print:hidden">
           <div className="flex items-center gap-2">
             <Printer className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-              Xem trước phiếu in
+              {t("receipt.preview_title", "Xem trước phiếu in")}
             </h3>
           </div>
           <div className="flex items-center gap-2">
@@ -52,12 +55,13 @@ export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalPro
               className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500"
             >
               <Printer className="h-4 w-4" />
-              In ngay
+              {t("receipt.print_now", "In ngay")}
             </button>
             <button
               type="button"
               onClick={onClose}
               className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+              aria-label={t("receipt.close", "Đóng")}
             >
               <X className="h-5 w-5" />
             </button>
@@ -111,30 +115,30 @@ export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalPro
               )}
               {receipt.shopPhone && (
                 <p className="text-[11px] text-slate-600 dark:text-slate-400">
-                  SĐT: {receipt.shopPhone}
+                  {t("receipt.phone", "SĐT:")} {receipt.shopPhone}
                 </p>
               )}
               <div className="mt-2 text-sm font-bold uppercase tracking-wider">
-                PHIẾU XÁC NHẬN CHECK-IN
+                {t("receipt.checkin_confirmation", "PHIẾU XÁC NHẬN CHECK-IN")}
               </div>
             </div>
 
             {/* Content Details */}
             <div className="py-3 space-y-1.5">
               <div className="flex justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Thời gian:</span>
+                <span className="text-slate-500 dark:text-slate-400">{t("receipt.time", "Thời gian:")}</span>
                 <span className="font-bold">{formatDateTime(receipt.checkedInAt)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Hội viên:</span>
+                <span className="text-slate-500 dark:text-slate-400">{t("receipt.member", "Hội viên:")}</span>
                 <span className="font-bold">{receipt.customerName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500 dark:text-slate-400">SĐT:</span>
+                <span className="text-slate-500 dark:text-slate-400">{t("receipt.phone", "SĐT:")}</span>
                 <span>{receipt.customerPhone}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Gói cước:</span>
+                <span className="text-slate-500 dark:text-slate-400">{t("receipt.package", "Gói cước:")}</span>
                 <span className="font-semibold text-right max-w-[150px] truncate">
                   {receipt.packageName}
                 </span>
@@ -143,17 +147,17 @@ export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalPro
               <div className="my-2 border-t border-dashed border-slate-300 dark:border-slate-700" />
 
               <div className="flex justify-between text-sm font-bold">
-                <span>Buổi còn lại:</span>
+                <span>{t("receipt.remaining", "Buổi còn lại:")}</span>
                 <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">
                   {receipt.sessionsLeft !== null
-                    ? `${receipt.sessionsLeft} buổi`
-                    : "Không giới hạn"}
+                    ? `${receipt.sessionsLeft} ${t("receipt.sessions_suffix", "buổi")}`
+                    : t("receipt.unlimited", "Không giới hạn")}
                 </span>
               </div>
 
               {receipt.staffName && (
                 <div className="flex justify-between text-[11px] pt-1">
-                  <span className="text-slate-500 dark:text-slate-400">Thu ngân:</span>
+                  <span className="text-slate-500 dark:text-slate-400">{t("receipt.cashier", "Thu ngân:")}</span>
                   <span>{receipt.staffName}</span>
                 </div>
               )}
@@ -161,8 +165,8 @@ export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalPro
 
             {/* Footer */}
             <div className="mt-3 pt-2 border-t border-dashed border-slate-300 dark:border-slate-700 text-center text-[10px] text-slate-500 dark:text-slate-400">
-              <p>Cảm ơn quý khách!</p>
-              <p>PunchBook - Quản lý hội viên dễ dàng</p>
+              <p>{t("receipt.thank_you", "Cảm ơn quý khách!")}</p>
+              <p>{t("receipt.tagline", "PunchBook - Quản lý hội viên dễ dàng")}</p>
             </div>
           </div>
         </div>
