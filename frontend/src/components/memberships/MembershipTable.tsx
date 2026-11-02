@@ -110,7 +110,7 @@ export function MembershipTable({
             {memberships.map((m) => (
               <tr key={m.id} className="transition hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                 <td className="px-4 py-3.5">
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-max items-center gap-3">
                     <button
                       type="button"
                       onClick={() => onOpenQR(m)}
@@ -119,11 +119,11 @@ export function MembershipTable({
                     >
                       <QrCode className="h-4 w-4" />
                     </button>
-                    <div>
+                    <div className="shrink-0 whitespace-nowrap text-left">
                       <button
                         type="button"
                         onClick={() => onOpenDetail(m.id)}
-                        className="font-semibold text-slate-900 transition hover:text-indigo-600 dark:text-slate-100 dark:hover:text-indigo-400"
+                        className="block text-left font-semibold text-slate-900 transition hover:text-indigo-600 dark:text-slate-100 dark:hover:text-indigo-400"
                       >
                         {m.customer_name}
                       </button>
@@ -138,10 +138,10 @@ export function MembershipTable({
                   <MemberRemainingBadge membership={m} />
                 </td>
                 <td className="px-4 py-3.5">
-                  <StatusBadge status={m.status ?? computeMembershipStatus(m)} type="membership" />
+                  <StatusBadge status={m.status ?? computeMembershipStatus(m)} type="membership" className="whitespace-nowrap" />
                 </td>
-                <td className="px-4 py-3.5 text-right">
-                  <div className="flex items-center justify-end gap-1.5">
+                <td className="w-px whitespace-nowrap px-4 py-3.5 text-right">
+                  <div className="flex min-w-max items-center justify-end gap-1.5 [&>button]:h-8 [&>button]:shrink-0 [&>button]:whitespace-nowrap [&_svg]:shrink-0">
                     {status === "deleted" || m.status === "deleted" ? (
                       <button
                         type="button"

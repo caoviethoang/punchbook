@@ -31,17 +31,17 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
   } = useMembershipDetail(membershipId)
 
   const tabClass = (tab: MembershipDetailTab) =>
-    `flex items-center gap-2 border-b-2 py-3.5 px-4 text-sm font-semibold transition ${
+    `flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-3.5 text-sm font-semibold transition sm:px-4 ${
       activeTab === tab
         ? "border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400"
         : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
     }`
 
   return (
-    <Modal isOpen={true} onClose={onClose} maxWidthClass="max-w-2xl">
+    <Modal isOpen={true} onClose={onClose} maxWidthClass="max-w-3xl">
       <div className="flex max-h-[90vh] flex-col overflow-hidden">
         {/* Header */}
-        <div className="border-b border-slate-100 p-6 dark:border-slate-800 sm:p-7">
+        <div className="shrink-0 border-b border-slate-100 p-6 dark:border-slate-800 sm:p-7">
           {loading ? (
             <div className="flex items-center gap-3">
               <Loader2 className="h-6 w-6 animate-spin text-indigo-600 dark:text-indigo-400" />
@@ -71,14 +71,14 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
 
         {/* Tabs */}
         {!loading && !error && detail && (
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <div className="flex border-b border-slate-100 bg-slate-50/50 px-6 dark:border-slate-800 dark:bg-slate-950/40">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="flex shrink-0 overflow-x-auto border-b border-slate-100 bg-slate-50/50 px-3 dark:border-slate-800 dark:bg-slate-950/40 sm:px-6">
               <button
                 type="button"
                 onClick={() => setActiveTab("card")}
                 className={tabClass("card")}
               >
-                <QrCode className="h-4 w-4" />
+                <QrCode className="h-4 w-4 shrink-0" />
                 <span>{t("member_detail.tab_card", "Thẻ hội viên (QR)")}</span>
               </button>
 
@@ -87,7 +87,7 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
                 onClick={() => setActiveTab("check_ins")}
                 className={tabClass("check_ins")}
               >
-                <UserCheck className="h-4 w-4" />
+                <UserCheck className="h-4 w-4 shrink-0" />
                 <span>{t("member_detail.tab_check_ins", "Lịch sử Check-in")}</span>
                 <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                   {detail.check_ins.length}
@@ -99,7 +99,7 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
                 onClick={() => setActiveTab("invoices")}
                 className={tabClass("invoices")}
               >
-                <Receipt className="h-4 w-4" />
+                <Receipt className="h-4 w-4 shrink-0" />
                 <span>{t("member_detail.tab_invoices", "Lịch sử Thanh toán")}</span>
                 <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                   {detail.invoices.length}
@@ -111,7 +111,7 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
                 onClick={() => setActiveTab("freeze")}
                 className={tabClass("freeze")}
               >
-                <PauseCircle className="h-4 w-4" />
+                <PauseCircle className="h-4 w-4 shrink-0" />
                 <span>{t("member_detail.tab_freeze_history", "Bảo lưu")}</span>
                 {detail.freeze_history && detail.freeze_history.length > 0 && (
                   <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
@@ -121,7 +121,7 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
               {activeTab === "card" ? (
                 <DigitalMembershipCard membership={detail} />
               ) : activeTab === "check_ins" ? (
