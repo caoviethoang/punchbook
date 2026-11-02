@@ -146,8 +146,9 @@ describe("AttendanceReportSection", () => {
     const exportBtn = screen.getByRole("button", { name: /Xuất Excel/i })
     fireEvent.click(exportBtn)
 
+    const currentMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`
     await waitFor(() => {
-      expect(exportSpy).toHaveBeenCalledWith("2026-10")
+      expect(exportSpy).toHaveBeenCalledWith(currentMonth)
     })
   })
 
