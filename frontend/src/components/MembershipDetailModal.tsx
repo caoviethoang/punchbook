@@ -1,4 +1,5 @@
 import { AlertCircle, Loader2, QrCode, Receipt, UserCheck } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { useMembershipDetail, type MembershipDetailTab } from "../hooks/useMembershipDetail"
 import { CheckInHistoryTab } from "./membership-detail/CheckInHistoryTab"
 import { InvoiceHistoryTab } from "./membership-detail/InvoiceHistoryTab"
@@ -14,6 +15,7 @@ interface MembershipDetailModalProps {
 }
 
 export function MembershipDetailModal({ membershipId, onClose }: MembershipDetailModalProps) {
+  const { t } = useTranslation()
   const {
     detail,
     loading,
@@ -43,7 +45,7 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
             <div className="flex items-center gap-3">
               <Loader2 className="h-6 w-6 animate-spin text-indigo-600 dark:text-indigo-400" />
               <span className="text-base font-medium text-slate-600 dark:text-slate-400">
-                Đang tải thông tin chi tiết hội viên...
+                {t("member_detail.loading", "Đang tải thông tin chi tiết hội viên...")}
               </span>
             </div>
           ) : error ? (
@@ -76,7 +78,7 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
                 className={tabClass("card")}
               >
                 <QrCode className="h-4 w-4" />
-                <span>Thẻ hội viên (QR)</span>
+                <span>{t("member_detail.tab_card", "Thẻ hội viên (QR)")}</span>
               </button>
 
               <button
@@ -85,7 +87,7 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
                 className={tabClass("check_ins")}
               >
                 <UserCheck className="h-4 w-4" />
-                <span>Lịch sử Check-in</span>
+                <span>{t("member_detail.tab_check_ins", "Lịch sử Check-in")}</span>
                 <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                   {detail.check_ins.length}
                 </span>
@@ -97,7 +99,7 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
                 className={tabClass("invoices")}
               >
                 <Receipt className="h-4 w-4" />
-                <span>Lịch sử Thanh toán</span>
+                <span>{t("member_detail.tab_invoices", "Lịch sử Thanh toán")}</span>
                 <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                   {detail.invoices.length}
                 </span>

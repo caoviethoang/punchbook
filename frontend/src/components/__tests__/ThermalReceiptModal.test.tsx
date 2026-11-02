@@ -87,7 +87,7 @@ describe("ThermalReceiptModal", () => {
     render(<ThermalReceiptModal receipt={mockReceipt} onClose={onCloseMock} />)
 
     // Ensure only one close button is rendered without duplicate X buttons
-    const closeButtons = screen.getAllByRole("button", { name: "Đóng modal" })
+    const closeButtons = screen.getAllByRole("button", { name: /đóng/i })
     expect(closeButtons).toHaveLength(1)
 
     await user.click(closeButtons[0])

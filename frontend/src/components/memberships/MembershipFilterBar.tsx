@@ -1,4 +1,5 @@
 import { Search } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { StatusFilterType } from "../../lib/memberships"
 
 const FILTER_TABS: { key: StatusFilterType; label: string; adminOnly?: boolean }[] = [
@@ -24,6 +25,7 @@ export function MembershipFilterBar({
   onStatusChange,
   isAdmin = false,
 }: MembershipFilterBarProps) {
+  const { t } = useTranslation()
   const visibleTabs = FILTER_TABS.filter((tab) => !tab.adminOnly || isAdmin)
 
   return (
@@ -34,7 +36,7 @@ export function MembershipFilterBar({
           type="text"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
-          placeholder="Tìm theo tên hoặc số điện thoại..."
+          placeholder={t("memberships.search_placeholder", "Tìm theo tên hoặc số điện thoại...")}
           className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
         />
       </div>
@@ -51,7 +53,7 @@ export function MembershipFilterBar({
                 : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
             }`}
           >
-            {tab.label}
+            {t(`memberships.tab_${tab.key}`, tab.label)}
           </button>
         ))}
       </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   deletePackage,
   listPackageCategories,
@@ -12,6 +12,8 @@ export interface ToastState {
   type?: "success" | "error"
 }
 
+export type PackageSortOption = "category" | "name" | "price_asc" | "price_desc"
+
 export function usePackagesScreen() {
   const [packages, setPackages] = useState<PackageItem[]>([])
   const [categories, setCategories] = useState<PackageCategory[]>([])
@@ -19,6 +21,7 @@ export function usePackagesScreen() {
   const [error, setError] = useState<string | null>(null)
 
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all")
+  const [sortBy, setSortBy] = useState<PackageSortOption>("category")
 
   const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -137,12 +140,34 @@ export function usePackagesScreen() {
     }
   }
 
-  // Filter packages based on category tab
-  const filteredPackages = packages.filter((pkg) => {
-    if (selectedCategoryFilter === "all") return true
-    if (selectedCategoryFilter === "uncategorized") return !pkg.package_category_id
-    return pkg.package_category_id === selectedCategoryFilter
-  })
+  // Filter and sort packages based on category tab and sort option
+  const filteredPackages = useMemo(() => {
+    const filtered = packages.filter((pkg) => {
+      if (selectedCategoryFilter === "all") return true
+      if (selectedCategoryFilter === "uncategorized") return !pkg.package_category_id
+      return pkg.package_category_id === selectedCategoryFilter
+    })
+
+    return [...filtered].sort((a, b) => {
+      if (sortBy === "category") {
+        const catA = a.category_name || "\uffff"
+        const catB = b.category_name || "\uffff"
+        const catCompare = catA.localeCompare(catB, "vi")
+        if (catCompare !== 0) return catCompare
+        return a.name.localeCompare(b.name, "vi")
+      }
+      if (sortBy === "name") {
+        return a.name.localeCompare(b.name, "vi")
+      }
+      if (sortBy === "price_asc") {
+        return a.price - b.price
+      }
+      if (sortBy === "price_desc") {
+        return b.price - a.price
+      }
+      return 0
+    })
+  }, [packages, selectedCategoryFilter, sortBy])
 
   return {
     packages,
@@ -151,6 +176,8 @@ export function usePackagesScreen() {
     error,
     selectedCategoryFilter,
     setSelectedCategoryFilter,
+    sortBy,
+    setSortBy,
     isCategoryManagerOpen,
     setIsCategoryManagerOpen,
     isModalOpen,

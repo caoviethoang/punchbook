@@ -56,5 +56,10 @@ module Backend
 
     # Mount Rack::Attack for rate limiting
     config.middleware.use Rack::Attack
+
+    # I18n locales configuration
+    config.i18n.available_locales = %i[en vi]
+    config.i18n.default_locale = :en
+    config.i18n.fallbacks = true
   end
 end

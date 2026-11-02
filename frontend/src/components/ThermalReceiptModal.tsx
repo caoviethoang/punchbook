@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import { createPortal } from "react-dom"
 import { Printer, X } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { formatDateTime } from "../lib/formatters"
 import { Modal } from "./ui/Modal"
 
@@ -23,6 +24,8 @@ interface ThermalReceiptModalProps {
 }
 
 function ThermalReceiptContent({ receipt }: { receipt: ReceiptData }) {
+  const { t } = useTranslation()
+
   return (
     <div className="receipt-container text-xs font-mono leading-relaxed text-slate-900 dark:text-slate-100">
       {/* Shop Header */}
@@ -37,11 +40,11 @@ function ThermalReceiptContent({ receipt }: { receipt: ReceiptData }) {
         )}
         {receipt.shopPhone && (
           <p className="text-[11px] text-slate-600 dark:text-slate-400 receipt-secondary">
-            SĐT: {receipt.shopPhone}
+            {t("receipt.phone", "SĐT:")} {receipt.shopPhone}
           </p>
         )}
         <div className="mt-2 text-xs font-black uppercase tracking-wider receipt-title">
-          PHIẾU XÁC NHẬN CHECK-IN
+          {t("receipt.checkin_confirmation", "PHIẾU XÁC NHẬN CHECK-IN")}
         </div>
       </div>
 
@@ -51,19 +54,27 @@ function ThermalReceiptContent({ receipt }: { receipt: ReceiptData }) {
       {/* Content Details */}
       <div className="py-1 space-y-1.5">
         <div className="flex justify-between items-start gap-2">
-          <span className="text-slate-600 dark:text-slate-400 receipt-secondary shrink-0">Thời gian:</span>
+          <span className="text-slate-600 dark:text-slate-400 receipt-secondary shrink-0">
+            {t("receipt.time", "Thời gian:")}
+          </span>
           <span className="font-bold text-right">{formatDateTime(receipt.checkedInAt)}</span>
         </div>
         <div className="flex justify-between items-start gap-2">
-          <span className="text-slate-600 dark:text-slate-400 receipt-secondary shrink-0">Hội viên:</span>
+          <span className="text-slate-600 dark:text-slate-400 receipt-secondary shrink-0">
+            {t("receipt.member", "Hội viên:")}
+          </span>
           <span className="font-bold text-right">{receipt.customerName}</span>
         </div>
         <div className="flex justify-between items-start gap-2">
-          <span className="text-slate-600 dark:text-slate-400 receipt-secondary shrink-0">Số điện thoại:</span>
+          <span className="text-slate-600 dark:text-slate-400 receipt-secondary shrink-0">
+            {t("receipt.phone", "SĐT:")}
+          </span>
           <span className="text-right font-medium">{receipt.customerPhone}</span>
         </div>
         <div className="flex justify-between items-start gap-2">
-          <span className="text-slate-600 dark:text-slate-400 receipt-secondary shrink-0">Gói dịch vụ:</span>
+          <span className="text-slate-600 dark:text-slate-400 receipt-secondary shrink-0">
+            {t("receipt.package", "Gói cước:")}
+          </span>
           <span className="font-semibold text-right break-words max-w-[65%]">
             {receipt.packageName}
           </span>
@@ -76,17 +87,19 @@ function ThermalReceiptContent({ receipt }: { receipt: ReceiptData }) {
       {/* Summary Highlight */}
       <div className="py-1 space-y-1.5">
         <div className="flex justify-between items-center text-sm font-bold">
-          <span>Buổi còn lại:</span>
+          <span>{t("receipt.remaining", "Buổi còn lại:")}</span>
           <span className="text-indigo-600 dark:text-indigo-400 font-black text-base receipt-highlight">
             {receipt.sessionsLeft !== null
-              ? `${receipt.sessionsLeft} buổi`
-              : "Không giới hạn"}
+              ? `${receipt.sessionsLeft} ${t("receipt.sessions_suffix", "buổi")}`
+              : t("receipt.unlimited", "Không giới hạn")}
           </span>
         </div>
 
         {receipt.staffName && (
           <div className="flex justify-between items-center text-xs">
-            <span className="text-slate-600 dark:text-slate-400 receipt-secondary shrink-0">Thu ngân:</span>
+            <span className="text-slate-600 dark:text-slate-400 receipt-secondary shrink-0">
+              {t("receipt.cashier", "Thu ngân:")}
+            </span>
             <span className="font-medium text-right">{receipt.staffName}</span>
           </div>
         )}
@@ -97,14 +110,16 @@ function ThermalReceiptContent({ receipt }: { receipt: ReceiptData }) {
 
       {/* Footer */}
       <div className="pt-1 text-center text-[10px] text-slate-500 dark:text-slate-400 receipt-secondary space-y-0.5">
-        <p>Cảm ơn quý khách!</p>
-        <p>PunchBook - Quản lý hội viên dễ dàng</p>
+        <p>{t("receipt.thank_you", "Cảm ơn quý khách!")}</p>
+        <p>{t("receipt.tagline", "PunchBook - Quản lý hội viên dễ dàng")}</p>
       </div>
     </div>
   )
 }
 
 export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalProps) {
+  const { t } = useTranslation()
+
   const handlePrint = () => {
     window.print()
   }
@@ -203,7 +218,7 @@ export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalPro
             <div className="flex items-center gap-2">
               <Printer className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Xem trước phiếu in
+                {t("receipt.preview_title", "Xem trước phiếu in")}
               </h3>
             </div>
             <div className="flex items-center gap-2">
@@ -213,12 +228,12 @@ export function ThermalReceiptModal({ receipt, onClose }: ThermalReceiptModalPro
                 className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 cursor-pointer transition-colors"
               >
                 <Printer className="h-4 w-4" />
-                In ngay
+                <span>{t("receipt.print_now", "In ngay")}</span>
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Đóng modal"
+                aria-label={t("receipt.close", "Đóng")}
                 className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300 cursor-pointer transition-colors"
               >
                 <X className="h-5 w-5" />

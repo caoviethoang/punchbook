@@ -1,7 +1,9 @@
 import { Check, Moon, Sun } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { useTheme, type Theme } from "../../hooks/useTheme"
 
 export function AppearanceSection() {
+  const { t } = useTranslation()
   const { theme, setTheme } = useTheme()
 
   const options: {
@@ -12,14 +14,14 @@ export function AppearanceSection() {
   }[] = [
     {
       key: "light",
-      title: "Chế độ Sáng",
-      description: "Giao diện sáng tiêu chuẩn, phù hợp làm việc ban ngày.",
+      title: t("settings.appearance.light_title", "Chế độ Sáng"),
+      description: t("settings.appearance.light_desc", "Giao diện sáng tiêu chuẩn, phù hợp làm việc ban ngày."),
       icon: Sun,
     },
     {
       key: "dark",
-      title: "Chế độ Tối",
-      description: "Giao diện nền tối dịu mắt, giảm mỏi mắt ban đêm.",
+      title: t("settings.appearance.dark_title", "Chế độ Tối"),
+      description: t("settings.appearance.dark_desc", "Giao diện nền tối dịu mắt, giảm mỏi mắt ban đêm."),
       icon: Moon,
     },
   ]
@@ -31,9 +33,11 @@ export function AppearanceSection() {
           {theme === "dark" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
         </div>
         <div>
-          <h3 className="font-semibold text-slate-900 dark:text-slate-100">Giao diện Hiển thị</h3>
+          <h3 className="font-semibold text-slate-900 dark:text-slate-100">
+            {t("settings.appearance.title", "Giao diện Hiển thị")}
+          </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Tùy chỉnh giao diện Sáng hoặc Tối độc lập theo nhu cầu.
+            {t("settings.appearance.subtitle", "Tùy chỉnh giao diện Sáng hoặc Tối độc lập theo nhu cầu.")}
           </p>
         </div>
       </div>

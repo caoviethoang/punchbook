@@ -1,5 +1,6 @@
 import type { FormEvent } from "react"
 import { KeyRound } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { FormField } from "../ui/FormField"
 
 interface SecuritySectionProps {
@@ -25,6 +26,8 @@ export function SecuritySection({
   passwordLoading,
   onSubmit,
 }: SecuritySectionProps) {
+  const { t } = useTranslation()
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-5 flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-slate-800">
@@ -32,16 +35,18 @@ export function SecuritySection({
           <KeyRound className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="font-semibold text-slate-900 dark:text-slate-100">Đổi mật khẩu</h3>
+          <h3 className="font-semibold text-slate-900 dark:text-slate-100">
+            {t("settings.security.title", "Đổi mật khẩu")}
+          </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Bảo vệ tài khoản với mật khẩu mới.
+            {t("settings.security.subtitle", "Bảo vệ tài khoản với mật khẩu mới.")}
           </p>
         </div>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField
-          label="Mật khẩu hiện tại"
+          label={t("settings.security.current_password", "Mật khẩu hiện tại")}
           type="password"
           required
           disabled={!isAdmin}
@@ -50,22 +55,22 @@ export function SecuritySection({
           placeholder="••••••••"
         />
         <FormField
-          label="Mật khẩu mới"
+          label={t("settings.security.new_password", "Mật khẩu mới")}
           type="password"
           required
           disabled={!isAdmin}
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
-          placeholder="Mật khẩu tối thiểu 6 ký tự"
+          placeholder={t("settings.security.new_password_placeholder", "Mật khẩu tối thiểu 6 ký tự")}
         />
         <FormField
-          label="Xác nhận mật khẩu mới"
+          label={t("settings.security.confirm_password", "Xác nhận mật khẩu mới")}
           type="password"
           required
           disabled={!isAdmin}
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          placeholder="Nhập lại mật khẩu mới"
+          placeholder={t("settings.security.confirm_password_placeholder", "Nhập lại mật khẩu mới")}
         />
 
         <div className="pt-2">
@@ -75,10 +80,10 @@ export function SecuritySection({
             className="inline-flex w-full items-center justify-center rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {!isAdmin
-              ? "Chỉ xem (Không có quyền sửa)"
+              ? t("settings.security.read_only_btn", "Chỉ xem (Không có quyền sửa)")
               : passwordLoading
-                ? "Đang xử lý..."
-                : "Cập nhật mật khẩu"}
+                ? t("settings.security.submitting", "Đang xử lý...")
+                : t("settings.security.submit_btn", "Cập nhật mật khẩu")}
           </button>
         </div>
       </form>

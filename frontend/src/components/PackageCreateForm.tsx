@@ -1,10 +1,11 @@
 import { useState } from "react"
-import { createPackage, type PackageItem, type PackageType } from "../lib/packages"
+import { createPackage, type PackageCategory, type PackageItem, type PackageType } from "../lib/packages"
 import { FormField, FORM_CONTROL_CLASS } from "./ui/FormField"
 import { formatVndInput } from "../lib/formatters"
 import { cn } from "../lib/utils"
 
 interface PackageCreateFormProps {
+  categories?: PackageCategory[]
   onSuccess?: (pkg: PackageItem) => void
   onCancel?: () => void
 }
@@ -16,8 +17,9 @@ const typeButtonClass = (active: boolean) =>
       : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700/60"
   }`
 
-export function PackageCreateForm({ onSuccess, onCancel }: PackageCreateFormProps) {
+export function PackageCreateForm({ categories = [], onSuccess, onCancel }: PackageCreateFormProps) {
   const [name, setName] = useState("")
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("")
   const [packageType, setPackageType] = useState<PackageType>("sessions")
   const [sessionsCount, setSessionsCount] = useState<string>("10")
   const [durationDays, setDurationDays] = useState<string>("30")
@@ -74,10 +76,12 @@ export function PackageCreateForm({ onSuccess, onCancel }: PackageCreateFormProp
         price: parsedPrice,
         sessions_count: payloadSessions,
         duration_days: payloadDays,
+        package_category_id: selectedCategoryId || null,
       })
 
       setCreatedPackage(pkg)
       setName("")
+      setSelectedCategoryId("")
       setPrice("")
       onSuccess?.(pkg)
     } catch (err) {
@@ -134,6 +138,26 @@ export function PackageCreateForm({ onSuccess, onCancel }: PackageCreateFormProp
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {categories.length > 0 && (
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Danh mục gói
+            </label>
+            <select
+              value={selectedCategoryId}
+              onChange={(e) => setSelectedCategoryId(e.target.value)}
+              className={FORM_CONTROL_CLASS}
+            >
+              <option value="">-- Chọn danh mục --</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <FormField
           label="Tên gói"
           required

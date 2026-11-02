@@ -1,0 +1,23 @@
+vi:
+  errors:
+    unauthorized: "Không có quyền truy cập. Vui lòng đăng nhập."
+    forbidden: "Truy cập bị từ chối. Bạn không có quyền thực hiện hành động này."
+    not_found: "Không tìm thấy dữ liệu yêu cầu."
+    plan_upgrade_required: "Gói Free không hỗ trợ xuất báo cáo Excel. Vui lòng nâng cấp gói trả phí để sử dụng tính năng này."
+    invalid_credentials: "Tên đăng nhập, email, thông tin cửa hàng hoặc mật khẩu không chính xác."
+    validation_error: "Dữ liệu không hợp lệ."
+    parameter_missing: "Thiếu tham số bắt buộc: %{param}"
+    membership:
+      no_sessions_left: "Hội viên đã hết số buổi tập."
+      expired: "Gói tập của hội viên đã hết hạn."
+      invalid_package: "Gói tập không hợp lệ hoặc đã bị vô hiệu hóa."
+      file_missing: "Vui lòng chọn file để import."
+    hardware:
+      api_key_missing: "Thiếu Device API Key."
+      api_key_invalid: "Device API Key không hợp lệ."
+      identifier_missing: "Vui lòng cung cấp mã định danh hội viên."
+      membership_not_found: "Không tìm thấy hội viên phù hợp."
+    webhook:
+      not_retryable: "Webhook event không ở trạng thái có thể thử lại."
+      invalid_signature: "Chữ ký webhook không hợp lệ."
+      failed: "Xử lý webhook thất bại."

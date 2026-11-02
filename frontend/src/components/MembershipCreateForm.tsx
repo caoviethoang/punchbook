@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { FileSpreadsheet, QrCode } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { Shop } from "../lib/auth"
 import { createMembership, type Membership } from "../lib/memberships"
 import { listPackages, type PackageItem } from "../lib/packages"
@@ -13,12 +14,8 @@ interface MembershipCreateFormProps {
   onCancel?: () => void
 }
 
-function packageLabel(pkg: PackageItem): string {
-  const detail = pkg.sessions_count ? `${pkg.sessions_count} buổi` : `${pkg.duration_days} ngày`
-  return `${pkg.name} (${detail})`
-}
-
 export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCreateFormProps) {
+  const { t } = useTranslation()
   const [customerName, setCustomerName] = useState("")
   const [phone, setPhone] = useState("")
   const [cardNumber, setCardNumber] = useState("")
@@ -31,6 +28,13 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
   const [created, setCreated] = useState<Membership | null>(null)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [isQrModalOpen, setIsQrModalOpen] = useState(false)
+
+  function packageLabel(pkg: PackageItem): string {
+    const detail = pkg.sessions_count
+      ? t("common.sessions_count", `${pkg.sessions_count} buổi`, { count: pkg.sessions_count })
+      : t("common.days_count", `${pkg.duration_days} ngày`, { count: pkg.duration_days ?? 0 })
+    return `${pkg.name} (${detail})`
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -45,7 +49,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
       })
       .catch((err) => {
         if (cancelled) return
-        setError(err instanceof Error ? err.message : "Không tải được danh sách gói")
+        setError(err instanceof Error ? err.message : t("memberships.load_packages_failed", "Không tải được danh sách gói"))
       })
       .finally(() => {
         if (!cancelled) setPackagesLoading(false)
@@ -54,7 +58,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [t])
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -64,15 +68,15 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
     const name = customerName.trim()
     const phoneValue = phone.trim()
     if (!name) {
-      setError("Vui lòng nhập tên hội viên")
+      setError(t("memberships.error_name_required", "Vui lòng nhập tên hội viên"))
       return
     }
     if (!phoneValue) {
-      setError("Vui lòng nhập số điện thoại")
+      setError(t("memberships.error_phone_required", "Vui lòng nhập số điện thoại"))
       return
     }
     if (!packageId) {
-      setError("Vui lòng chọn gói dịch vụ")
+      setError(t("memberships.error_package_required", "Vui lòng chọn gói dịch vụ"))
       return
     }
 
@@ -93,7 +97,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
       setNotes("")
       onSuccess?.(membership)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Thêm hội viên thất bại")
+      setError(err instanceof Error ? err.message : t("memberships.create_failed", "Thêm hội viên thất bại"))
     } finally {
       setLoading(false)
     }
@@ -104,9 +108,11 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
   return (
     <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-5">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Thêm hội viên</h2>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+          {t("memberships.create_title", "Thêm hội viên")}
+        </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          Nhập tên, SĐT và chọn gói — sau đó có thể tìm ở màn Check-in
+          {t("memberships.create_subtitle", "Nhập tên, SĐT và chọn gói — sau đó có thể tìm ở màn Check-in")}
         </p>
       </div>
 
@@ -115,14 +121,14 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="font-semibold text-emerald-900 dark:text-emerald-300">
-                ✓ Thêm hội viên thành công!
+                {t("memberships.create_success", "✓ Thêm hội viên thành công!")}
               </p>
               <p className="mt-1 text-sm text-emerald-800 dark:text-emerald-400">
                 <strong>{created.customer_name}</strong> · {created.phone} · {created.package.name}
                 {created.sessions_left !== null
-                  ? ` · ${created.sessions_left} buổi`
+                  ? ` · ${t("common.sessions_count", `${created.sessions_left} buổi`, { count: created.sessions_left })}`
                   : created.expires_at
-                    ? ` · hết hạn ${created.expires_at}`
+                    ? ` · ${t("memberships.expires_at_label", `hết hạn ${created.expires_at}`, { date: created.expires_at })}`
                     : ""}
               </p>
 
@@ -132,7 +138,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
                 className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700"
               >
                 <QrCode className="h-3.5 w-3.5" />
-                <span>Xem mã QR Chuyển khoản</span>
+                <span>{t("memberships.view_transfer_qr", "Xem mã QR Chuyển khoản")}</span>
               </button>
             </div>
             <button
@@ -140,7 +146,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
               onClick={() => setCreated(null)}
               className="text-xs text-emerald-700 hover:underline dark:text-emerald-400"
             >
-              Đóng
+              {t("common.close", "Đóng")}
             </button>
           </div>
         </div>
@@ -154,16 +160,16 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <FormField
-          label="Tên hội viên"
+          label={t("memberships.customer_name_label", "Tên hội viên")}
           required
           type="text"
           value={customerName}
           onChange={(e) => setCustomerName(e.target.value)}
-          placeholder="Ví dụ: Hoa Nguyen"
+          placeholder={t("memberships.customer_name_placeholder", "Ví dụ: Hoa Nguyen")}
         />
 
         <FormField
-          label="Số điện thoại"
+          label={t("memberships.phone_label", "Số điện thoại")}
           required
           type="tel"
           value={phone}
@@ -172,16 +178,16 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
         />
 
         <FormField
-          label="Mã thẻ từ / RFID / Mã định danh thiết bị (tùy chọn)"
+          label={t("memberships.card_uid_label", "Mã thẻ từ / RFID / Mã định danh thiết bị (tùy chọn)")}
           type="text"
           value={cardNumber}
           onChange={(e) => setCardNumber(e.target.value)}
-          placeholder="Ví dụ: RFID_123456 hoặc quẹt thẻ vào đây"
+          placeholder={t("memberships.card_uid_placeholder", "Ví dụ: RFID_123456 hoặc quẹt thẻ vào đây")}
         />
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            Gói dịch vụ <span className="text-rose-500">*</span>
+            {t("memberships.package_label", "Gói dịch vụ")} <span className="text-rose-500">*</span>
           </label>
           <select
             required
@@ -192,10 +198,10 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
           >
             <option value="">
               {packagesLoading
-                ? "Đang tải gói..."
+                ? t("memberships.loading_packages", "Đang tải gói...")
                 : packages.length === 0
-                  ? "Chưa có gói — tạo gói trước"
-                  : "Chọn gói"}
+                  ? t("memberships.empty_packages_create_first", "Chưa có gói — tạo gói trước")
+                  : t("memberships.select_package_placeholder", "Chọn gói")}
             </option>
             {packages.map((pkg) => (
               <option key={pkg.id} value={pkg.id}>
@@ -207,13 +213,13 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
 
         <div>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Ghi chú nội bộ (tùy chọn)
+            {t("memberships.internal_notes_label", "Ghi chú nội bộ (tùy chọn)")}
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
-            placeholder="Dị ứng, sở thích, yêu cầu đặc biệt..."
+            placeholder={t("memberships.internal_notes_placeholder", "Dị ứng, sở thích, yêu cầu đặc biệt...")}
             className={FORM_CONTROL_CLASS}
           />
         </div>
@@ -225,7 +231,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
             className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             <FileSpreadsheet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            <span>Import từ Excel / CSV</span>
+            <span>{t("memberships.import_excel_csv", "Import từ Excel / CSV")}</span>
           </button>
 
           <div className="flex items-center gap-3">
@@ -236,7 +242,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
                 disabled={loading}
                 className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
               >
-                Hủy
+                {t("common.cancel", "Hủy")}
               </button>
             )}
             <button
@@ -247,10 +253,10 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
               {loading ? (
                 <>
                   <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  Đang thêm...
+                  {t("memberships.adding_btn", "Đang thêm...")}
                 </>
               ) : (
-                "Thêm hội viên"
+                t("memberships.create_title", "Thêm hội viên")
               )}
             </button>
           </div>
