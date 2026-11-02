@@ -27,15 +27,23 @@ class UpdateDailyMembershipStatuses
 
   def auto_unfreeze_expired_holds
     unfrozen_count = 0
-    Membership.kept.where(status: 'frozen').where(frozen_until: ..Date.current).find_each do |membership|
+    Membership.kept.where.not(frozen_at: nil).where(frozen_until: ...Date.current).find_each do |membership|
+      unfrozen_count += 1 if unfreeze_if_due(membership)
+    end
+    unfrozen_count
+  end
+
+  def unfreeze_if_due(membership)
+    membership.with_lock do
+      next false unless membership.frozen_at.present? && membership.frozen_until&.<(Date.current)
+
       UnfreezeMembership.call(
         membership: membership,
         staff: nil,
         reason: 'Tự động mở khóa khi hết thời gian bảo lưu'
       )
-      unfrozen_count += 1
+      true
     end
-    unfrozen_count
   end
 
   def update_all_membership_statuses

@@ -82,7 +82,7 @@ RSpec.describe UpdateDailyMembershipStatuses do
       m.update_columns(
         status: 'frozen',
         frozen_at: 5.days.ago,
-        frozen_until: Date.current,
+        frozen_until: Date.yesterday,
         freeze_reason: 'Sick leave'
       )
       # rubocop:enable Rails/SkipsModelValidations

@@ -42,7 +42,7 @@ class FreezeMembership
   end
 
   def validate_eligibility!
-    if membership.status == 'frozen'
+    if membership.frozen_at.present? || membership.status == 'frozen'
       raise IneligibleMembershipError,
             I18n.t('errors.membership.already_frozen', default: 'Thẻ hội viên đã trong trạng thái bảo lưu')
     end
@@ -68,9 +68,10 @@ class FreezeMembership
   end
 
   def validate_freeze_duration!
-    freeze_days = (freeze_until - Date.current).to_i
     max_days = membership.shop.max_freeze_days_per_year || 30
-    return unless freeze_days > max_days
+    return if MembershipFreezeAllowance.new(membership).available?(
+      starts_on: Date.current, ends_on: freeze_until + 1
+    )
 
     raise InvalidFreezeDateError,
           I18n.t('errors.membership.freeze_days_exceeded', max: max_days,

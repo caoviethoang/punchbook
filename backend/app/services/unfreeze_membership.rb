@@ -21,6 +21,8 @@ class UnfreezeMembership
     membership.with_lock do
       validate_frozen!
 
+      @freeze_started_on = membership.frozen_at&.to_date || Date.current
+      @freeze_ended_on = effective_freeze_end
       days_frozen = calculate_frozen_days
       extend_expiry_if_applicable!(days_frozen)
       clear_freeze_state!
@@ -41,14 +43,12 @@ class UnfreezeMembership
   end
 
   def calculate_frozen_days
-    freeze_start = membership.frozen_at ? membership.frozen_at.to_date : Date.current
-    diff = (effective_freeze_end - freeze_start).to_i
-    [diff, 1].max
+    [(@freeze_ended_on - @freeze_started_on).to_i, 0].max
   end
 
   def effective_freeze_end
     end_date = Date.current
-    return membership.frozen_until if membership.frozen_until.present? && end_date > membership.frozen_until
+    return membership.frozen_until + 1 if membership.frozen_until.present? && end_date > membership.frozen_until
 
     end_date
   end
@@ -74,7 +74,9 @@ class UnfreezeMembership
       membership: membership,
       days_extended: days_frozen,
       new_expires_at: membership.expires_at,
-      reason: reason
+      reason: reason,
+      freeze_started_on: @freeze_started_on.to_s,
+      freeze_ended_on: @freeze_ended_on.to_s
     )
   end
 end

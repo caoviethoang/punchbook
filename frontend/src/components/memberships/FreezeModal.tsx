@@ -44,14 +44,14 @@ export function FreezeModal({
 
   const maxDateStr = useMemo(() => {
     const maxDate = new Date(today)
-    maxDate.setDate(maxDate.getDate() + maxFreezeDays)
+    maxDate.setDate(maxDate.getDate() + maxFreezeDays - 1)
     return toDateString(maxDate)
   }, [today, maxFreezeDays])
 
   // Default freeze: 14 days or maxFreezeDays
   const defaultUntil = useMemo(() => {
     const target = new Date(today)
-    target.setDate(target.getDate() + Math.min(14, maxFreezeDays))
+    target.setDate(target.getDate() + Math.min(14, maxFreezeDays) - 1)
     return toDateString(target)
   }, [today, maxFreezeDays])
 
@@ -77,7 +77,7 @@ export function FreezeModal({
     const parts = freezeUntil.split("-").map(Number)
     const until = new Date(parts[0], parts[1] - 1, parts[2])
     const diffTime = until.getTime() - today.getTime()
-    return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)))
+    return Math.max(0, Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1)
   }, [freezeUntil, today])
 
   const projectedExpiry = useMemo(() => {
@@ -89,7 +89,7 @@ export function FreezeModal({
 
   const handleQuickDays = (days: number) => {
     const d = new Date(today)
-    d.setDate(d.getDate() + days)
+    d.setDate(d.getDate() + days - 1)
     setFreezeUntil(toDateString(d))
   }
 
@@ -100,7 +100,7 @@ export function FreezeModal({
       return
     }
 
-    if (freezeDays <= 0) {
+    if (freezeDays <= 1) {
       setError(t("memberships.freeze_err_future_date", "Ngày kết thúc bảo lưu phải sau hôm nay"))
       return
     }
