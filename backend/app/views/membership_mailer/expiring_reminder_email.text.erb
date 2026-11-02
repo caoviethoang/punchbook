@@ -1,0 +1,17 @@
+Xin chào <%= @membership.customer_name %>,
+
+Thẻ tập của bạn tại <%= @shop.name %> sắp hết hạn hoặc hết số buổi.
+
+Thông tin thẻ hiện tại:
+- Gói: <%= @package.name %>
+<% if @membership.sessions_left.present? %>- Số buổi còn lại: <%= @membership.sessions_left %> buổi<% end %>
+<% if @membership.expires_at.present? %>- Ngày hết hạn: <%= @membership.expires_at.strftime('%d/%m/%Y') %><% end %>
+
+<% if @payment_url.present? %>
+Gia hạn online qua link sau:
+<%= @payment_url %>
+<% else %>
+Vui lòng liên hệ quầy lễ tân hoặc hotline <%= @shop.phone || @shop.email %> để gia hạn thẻ!
+<% end %>
+
+Cảm ơn bạn!

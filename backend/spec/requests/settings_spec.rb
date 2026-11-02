@@ -72,6 +72,23 @@ RSpec.describe 'Settings API', type: :request do
       expect(body.dig('shop', 'bank_account_name')).to eq('HOANG CAO VIET')
     end
 
+    it 'updates notification channel preferences successfully' do
+      patch '/api/v1/settings/profile',
+            params: {
+              email_notifications_enabled: false,
+              sms_notifications_enabled: true,
+              zalo_notifications_enabled: false
+            },
+            headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body.dig('shop', 'email_notifications_enabled')).to be(false)
+      expect(body.dig('shop', 'sms_notifications_enabled')).to be(true)
+      expect(body.dig('shop', 'zalo_notifications_enabled')).to be(false)
+      expect(shop.reload.sms_notifications_enabled).to be(true)
+    end
+
     it 'forbids non-admin staff from updating profile' do
       patch '/api/v1/settings/profile', params: { name: 'Unauthorized Gym' }, headers: staff_headers
 

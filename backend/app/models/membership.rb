@@ -15,8 +15,10 @@ class Membership < ApplicationRecord
   has_many :check_ins, dependent: :destroy, inverse_of: :membership
   has_many :invoices, dependent: :destroy, inverse_of: :membership
   has_many :membership_reminders, dependent: :destroy, inverse_of: :membership
+  has_many :notification_logs, dependent: :nullify
 
   validates :customer_name, :phone, presence: true
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
   validates :sessions_left, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :card_number, uniqueness: { scope: :shop_id }, allow_blank: true
   validate :validate_free_plan_limit, on: :create

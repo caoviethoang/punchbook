@@ -1,0 +1,11 @@
+Xin chào <%= @membership.customer_name %>,
+
+Chào mừng bạn đã trở thành hội viên tại <%= @shop.name %>!
+
+Thông tin thẻ tập:
+- Gói dịch vụ: <%= @package.name %>
+<% if @membership.sessions_left.present? %>- Số buổi: <%= @membership.sessions_left %> buổi<% end %>
+<% if @membership.expires_at.present? %>- Hạn sử dụng: <%= @membership.expires_at.strftime('%d/%m/%Y') %><% end %>
+- Số điện thoại: <%= @membership.phone %>
+
+Chúc bạn có những trải nghiệm tuyệt vời cùng <%= @shop.name %>!

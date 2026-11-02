@@ -19,6 +19,7 @@ export function MemberEditModal({
   const { t } = useTranslation()
   const [customerName, setCustomerName] = useState(membership?.customer_name || "")
   const [phone, setPhone] = useState(membership?.phone || "")
+  const [email, setEmail] = useState(membership?.email || "")
   const [cardNumber, setCardNumber] = useState(membership?.card_number || "")
   const [packageId, setPackageId] = useState(membership?.package?.id || "")
   const [sessionsLeft, setSessionsLeft] = useState<string>(
@@ -49,6 +50,7 @@ export function MemberEditModal({
       const updated = await updateMembership(membership!.id, {
         customer_name: customerName.trim(),
         phone: phone.trim(),
+        email: email.trim() || null,
         card_number: cardNumber.trim() || null,
         package_id: packageId || undefined,
         sessions_left: sessionsLeft !== "" ? Number(sessionsLeft) : null,
@@ -119,6 +121,19 @@ export function MemberEditModal({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
+              className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+              {t("memberships.email_label", "Email (tùy chọn)")}
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="member@example.com"
               className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
             />
           </div>

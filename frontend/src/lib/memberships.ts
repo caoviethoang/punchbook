@@ -28,6 +28,7 @@ export interface Membership {
   id: string
   customer_name: string
   phone: string
+  email?: string | null
   card_number?: string | null
   sessions_left: number | null
   expires_at: string | null
@@ -240,6 +241,7 @@ export async function searchMemberships(query: string): Promise<Membership[]> {
 export interface CreateMembershipPayload {
   customer_name: string
   phone: string
+  email?: string | null
   package_id: string
   notes?: string | null
   card_number?: string | null
@@ -248,6 +250,7 @@ export interface CreateMembershipPayload {
 export interface UpdateMembershipPayload {
   customer_name?: string
   phone?: string
+  email?: string | null
   package_id?: string
   sessions_left?: number | null
   expires_at?: string | null

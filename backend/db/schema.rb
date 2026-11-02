@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_27_024829) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_154500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -64,28 +64,78 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_024829) do
     t.index ["membership_id"], name: "index_membership_reminders_on_membership_id"
   end
 
+  create_table "membership_transfers", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "days_transferred"
+    t.integer "fee", default: 0, null: false
+    t.uuid "invoice_id"
+    t.string "note"
+    t.integer "sessions_transferred"
+    t.uuid "shop_id", null: false
+    t.uuid "source_membership_id", null: false
+    t.uuid "staff_id"
+    t.uuid "target_membership_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["invoice_id"], name: "index_membership_transfers_on_invoice_id"
+    t.index ["shop_id", "created_at"], name: "index_membership_transfers_on_shop_id_and_created_at"
+    t.index ["shop_id"], name: "index_membership_transfers_on_shop_id"
+    t.index ["source_membership_id"], name: "index_membership_transfers_on_source_membership_id"
+    t.index ["staff_id"], name: "index_membership_transfers_on_staff_id"
+    t.index ["target_membership_id"], name: "index_membership_transfers_on_target_membership_id"
+  end
+
   create_table "memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "card_number"
     t.datetime "created_at", null: false
     t.string "customer_name"
     t.datetime "discarded_at"
+    t.string "email"
     t.date "expires_at"
+    t.string "freeze_reason"
+    t.datetime "frozen_at"
+    t.date "frozen_until"
     t.text "notes"
     t.uuid "package_id", null: false
     t.string "phone"
     t.integer "sessions_left"
     t.uuid "shop_id", null: false
     t.string "status", default: "active", null: false
+    t.datetime "transferred_at"
+    t.uuid "transferred_from_membership_id"
+    t.uuid "transferred_to_membership_id"
     t.datetime "updated_at", null: false
     t.index ["discarded_at"], name: "index_memberships_on_discarded_at"
     t.index ["package_id"], name: "index_memberships_on_package_id"
     t.index ["shop_id", "card_number"], name: "index_memberships_on_shop_id_and_card_number", unique: true, where: "(card_number IS NOT NULL)"
     t.index ["shop_id", "customer_name"], name: "index_memberships_on_shop_id_and_customer_name"
+    t.index ["shop_id", "email"], name: "index_memberships_on_shop_id_and_email"
     t.index ["shop_id", "expires_at"], name: "index_memberships_on_shop_id_and_expires_at"
+    t.index ["shop_id", "frozen_until"], name: "index_memberships_on_shop_id_and_frozen_until"
     t.index ["shop_id", "phone"], name: "index_memberships_on_shop_id_and_phone"
     t.index ["shop_id", "sessions_left"], name: "index_memberships_on_shop_id_and_sessions_left"
     t.index ["shop_id", "status"], name: "index_memberships_on_shop_id_and_status"
     t.index ["shop_id"], name: "index_memberships_on_shop_id"
+    t.index ["transferred_from_membership_id"], name: "index_memberships_on_transferred_from_membership_id"
+    t.index ["transferred_to_membership_id"], name: "index_memberships_on_transferred_to_membership_id"
+  end
+
+  create_table "notification_logs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "channel", null: false
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.string "event_type", null: false
+    t.uuid "membership_id"
+    t.jsonb "metadata", default: {}, null: false
+    t.string "recipient", null: false
+    t.datetime "sent_at"
+    t.uuid "shop_id", null: false
+    t.string "status", default: "sent", null: false
+    t.datetime "updated_at", null: false
+    t.index ["membership_id", "created_at"], name: "index_notification_logs_on_membership_id_and_created_at"
+    t.index ["membership_id"], name: "index_notification_logs_on_membership_id"
+    t.index ["shop_id", "channel", "status"], name: "index_notification_logs_on_shop_id_and_channel_and_status"
+    t.index ["shop_id", "created_at"], name: "index_notification_logs_on_shop_id_and_created_at"
+    t.index ["shop_id"], name: "index_notification_logs_on_shop_id"
   end
 
   create_table "package_categories", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -135,12 +185,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_024829) do
     t.datetime "created_at", null: false
     t.string "device_api_key"
     t.string "email", null: false
+    t.boolean "email_notifications_enabled", default: true, null: false
     t.string "encrypted_password", default: "", null: false
+    t.integer "max_freeze_days_per_year", default: 30, null: false
     t.string "name"
     t.string "phone"
     t.string "plan", default: "free", null: false
     t.datetime "plan_expires_at"
+    t.boolean "sms_notifications_enabled", default: false, null: false
     t.datetime "updated_at", null: false
+    t.boolean "zalo_notifications_enabled", default: true, null: false
     t.index ["device_api_key"], name: "index_shops_on_device_api_key", unique: true
     t.index ["email"], name: "index_shops_on_email", unique: true
   end
@@ -195,8 +249,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_024829) do
   add_foreign_key "check_ins", "staffs"
   add_foreign_key "invoices", "memberships"
   add_foreign_key "membership_reminders", "memberships"
+  add_foreign_key "membership_transfers", "invoices"
+  add_foreign_key "membership_transfers", "memberships", column: "source_membership_id"
+  add_foreign_key "membership_transfers", "memberships", column: "target_membership_id"
+  add_foreign_key "membership_transfers", "shops"
+  add_foreign_key "membership_transfers", "staffs"
+  add_foreign_key "memberships", "memberships", column: "transferred_from_membership_id"
+  add_foreign_key "memberships", "memberships", column: "transferred_to_membership_id"
   add_foreign_key "memberships", "packages"
   add_foreign_key "memberships", "shops"
+  add_foreign_key "notification_logs", "memberships"
+  add_foreign_key "notification_logs", "shops"
   add_foreign_key "package_categories", "shops"
   add_foreign_key "packages", "package_categories"
   add_foreign_key "packages", "shops"

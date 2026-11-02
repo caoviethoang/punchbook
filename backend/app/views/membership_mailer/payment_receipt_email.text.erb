@@ -1,0 +1,13 @@
+Xin chào <%= @membership&.customer_name || 'Quý khách' %>,
+
+Cảm ơn bạn đã thanh toán thành công hóa đơn tại <%= @shop.name %>.
+
+Chi tiết hóa đơn:
+- Mã hóa đơn: #<%= @invoice.id.to_s[0..7] %>
+- Thời gian: <%= @invoice.created_at.strftime('%H:%M - %d/%m/%Y') %>
+<% if @package.present? %>- Gói dịch vụ: <%= @package.name %><% end %>
+- Tổng số tiền: <%= ActiveSupport::NumberHelper.number_to_currency(@invoice.amount, unit: 'đ', precision: 0, format: '%n %u') %>
+- Trạng thái: Đã thanh toán
+<% if @invoice.payos_transaction_id.present? %>- Mã giao dịch: <%= @invoice.payos_transaction_id %><% end %>
+
+Cảm ơn bạn!
