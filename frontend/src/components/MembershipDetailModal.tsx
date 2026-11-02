@@ -1,8 +1,9 @@
-import { AlertCircle, Loader2, QrCode, Receipt, UserCheck } from "lucide-react"
+import { AlertCircle, Loader2, PauseCircle, QrCode, Receipt, UserCheck } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useMembershipDetail, type MembershipDetailTab } from "../hooks/useMembershipDetail"
 import { CheckInHistoryTab } from "./membership-detail/CheckInHistoryTab"
 import { InvoiceHistoryTab } from "./membership-detail/InvoiceHistoryTab"
+import { FreezeHistoryTab } from "./membership-detail/FreezeHistoryTab"
 import { MembershipDetailHeader } from "./membership-detail/MembershipDetailHeader"
 import { MembershipNotesSection } from "./membership-detail/MembershipNotesSection"
 import { DigitalMembershipCard } from "./DigitalMembershipCard"
@@ -104,6 +105,20 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
                   {detail.invoices.length}
                 </span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("freeze")}
+                className={tabClass("freeze")}
+              >
+                <PauseCircle className="h-4 w-4" />
+                <span>{t("member_detail.tab_freeze_history", "Bảo lưu")}</span>
+                {detail.freeze_history && detail.freeze_history.length > 0 && (
+                  <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
+                    {detail.freeze_history.length}
+                  </span>
+                )}
+              </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
@@ -114,8 +129,10 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
                   checkIns={detail.check_ins}
                   onPrintReceipt={handlePrintReceipt}
                 />
-              ) : (
+              ) : activeTab === "invoices" ? (
                 <InvoiceHistoryTab invoices={detail.invoices} />
+              ) : (
+                <FreezeHistoryTab freezeHistory={detail.freeze_history} />
               )}
             </div>
           </div>

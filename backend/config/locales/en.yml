@@ -10,6 +10,13 @@ en:
     membership:
       no_sessions_left: "Membership has no sessions left"
       expired: "Membership has expired"
+      frozen: "Membership is currently frozen (until %{date}). Please unfreeze before check-in."
+      already_frozen: "Membership is already frozen."
+      cannot_freeze_expired: "Cannot freeze an expired or exhausted membership."
+      invalid_freeze_date: "Invalid freeze end date."
+      freeze_date_must_be_future: "Freeze end date must be after today."
+      freeze_days_exceeded: "Maximum freeze duration is %{max} days."
+      not_frozen: "Membership is not frozen."
       invalid_package: "Package is invalid or has been deactivated"
       file_missing: "Please select a file to import"
     hardware:

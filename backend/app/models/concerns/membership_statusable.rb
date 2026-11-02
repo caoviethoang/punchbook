@@ -3,7 +3,7 @@
 module MembershipStatusable
   extend ActiveSupport::Concern
 
-  STATUSES = %w[active expiring expired].freeze
+  STATUSES = %w[active expiring expired frozen].freeze
   EXPIRING_SESSIONS_THRESHOLD = 3
   EXPIRING_DAYS_WINDOW = 7
 
@@ -17,7 +17,7 @@ module MembershipStatusable
     def by_status_query(status)
       case status
       when 'not_checked_in' then not_checked_in_status_query(Date.current)
-      when 'expired', 'expiring', 'active' then where(status: status)
+      when 'expired', 'expiring', 'active', 'frozen' then where(status: status)
       else all
       end
     end
@@ -76,7 +76,7 @@ module MembershipStatusable
   end
 
   def status
-    if new_record? || sessions_left_changed? || expires_at_changed?
+    if new_record? || sessions_left_changed? || expires_at_changed? || frozen_until_changed? || frozen_at_changed?
       calculate_status
     else
       read_attribute(:status).presence || calculate_status
@@ -84,6 +84,7 @@ module MembershipStatusable
   end
 
   def calculate_status
+    return 'frozen' if frozen?
     return 'expired' if status_expired?
     return 'expiring' if status_expiring?
 
@@ -92,6 +93,10 @@ module MembershipStatusable
 
   def sync_status
     self.status = calculate_status if package.present?
+  end
+
+  def frozen?
+    frozen_until.present? && frozen_until >= Date.current
   end
 
   def expired?

@@ -10,18 +10,33 @@ class UpdateDailyMembershipStatuses
   end
 
   def call
+    unfrozen_count = auto_unfreeze_expired_holds
     updated_count = update_all_membership_statuses
     alerted_count = process_expiring_membership_alerts
 
     Rails.logger.info(
-      "[DailyMembershipStatus] Completed: updated #{updated_count} membership statuses, " \
+      "[DailyMembershipStatus] Completed: unfrozen #{unfrozen_count} holds, " \
+      "updated #{updated_count} membership statuses, " \
       "logged #{alerted_count} renewal warnings."
     )
 
-    { updated_count: updated_count, alerted_count: alerted_count }
+    { unfrozen_count: unfrozen_count, updated_count: updated_count, alerted_count: alerted_count }
   end
 
   private
+
+  def auto_unfreeze_expired_holds
+    unfrozen_count = 0
+    Membership.kept.where(status: 'frozen').where(frozen_until: ..Date.current).find_each do |membership|
+      UnfreezeMembership.call(
+        membership: membership,
+        staff: nil,
+        reason: 'Tự động mở khóa khi hết thời gian bảo lưu'
+      )
+      unfrozen_count += 1
+    end
+    unfrozen_count
+  end
 
   def update_all_membership_statuses
     count = 0

@@ -57,6 +57,7 @@ class HardwareCheckInService
     shop.memberships.where("regexp_replace(phone, '\\D', '', 'g') = ?", digits).first
   end
 
+  # rubocop:disable Metrics/MethodLength
   def execute_check_in!(membership)
     check_in = CheckInMembership.call(
       membership: membership,
@@ -69,7 +70,10 @@ class HardwareCheckInService
     raise Error.new(e.message, code: 'NO_SESSIONS_LEFT', membership: membership)
   rescue CheckInMembership::MembershipExpiredError => e
     raise Error.new(e.message, code: 'MEMBERSHIP_EXPIRED', membership: membership)
+  rescue CheckInMembership::MembershipFrozenError => e
+    raise Error.new(e.message, code: 'MEMBERSHIP_FROZEN', membership: membership)
   end
+  # rubocop:enable Metrics/MethodLength
 
   def staff_for_check_in
     shop.staffs.find_by(role: 'admin') || shop.staffs.first

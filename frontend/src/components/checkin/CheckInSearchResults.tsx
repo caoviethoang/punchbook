@@ -5,6 +5,7 @@ import {
   Eye,
   Loader2,
   Package as PackageIcon,
+  PauseCircle,
   Printer,
   RefreshCw,
   UserCheck,
@@ -18,12 +19,24 @@ import { formatDate } from "../../lib/formatters"
 interface RemainingProps {
   sessionsLeft: number | null
   expiresAt: string | null
+  isFrozen?: boolean
 }
 
-export function RemainingIndicator({ sessionsLeft, expiresAt }: RemainingProps) {
+export function RemainingIndicator({ sessionsLeft, expiresAt, isFrozen }: RemainingProps) {
   const { t } = useTranslation()
   const isExpired = expiresAt ? new Date(expiresAt) < new Date() : false
   const hasNoSessions = sessionsLeft === 0
+
+  if (isFrozen) {
+    return (
+      <div className="flex w-24 sm:w-28 shrink-0 h-12 sm:h-13 flex-col items-center justify-center rounded-xl bg-blue-50 px-2 py-1 text-center dark:bg-blue-950/40">
+        <PauseCircle className="h-5 w-5 text-blue-500 dark:text-blue-400" />
+        <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 sm:text-[11px]">
+          {t("common.frozen", "Bảo lưu")}
+        </span>
+      </div>
+    )
+  }
 
   if (hasNoSessions) {
     return (
@@ -179,7 +192,8 @@ export function MembershipResultList({
         const isCheckingIn = checkingInId === membership.id
         const isExhausted = isMembershipExhausted(membership)
         const isAlreadyCheckedIn = Boolean(membership.checked_in_today)
-        const isDisabled = isCheckingIn || isAlreadyCheckedIn
+        const isFrozen = Boolean(membership.is_frozen || membership.status === "frozen")
+        const isDisabled = isCheckingIn || isAlreadyCheckedIn || isFrozen
         const currentMessage = checkInMessage?.id === membership.id ? checkInMessage : null
         const checkInTime = formatCheckInTime(membership.last_checked_in_at)
         const isSelected = selectedIds?.has(membership.id) ?? false
@@ -200,7 +214,7 @@ export function MembershipResultList({
                 <input
                   type="checkbox"
                   checked={isSelected}
-                  disabled={isExhausted || isAlreadyCheckedIn}
+                  disabled={isExhausted || isAlreadyCheckedIn || isFrozen}
                   onChange={() => onToggleSelect?.(membership.id)}
                   aria-label={`Chọn hội viên ${membership.customer_name}`}
                   className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800"
@@ -235,6 +249,12 @@ export function MembershipResultList({
                     <PackageIcon className="h-3 w-3 shrink-0 text-indigo-600 dark:text-indigo-400" />
                     <span>{membership.package.name}</span>
                   </span>
+                  {isFrozen && (
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700 border border-blue-200 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-300">
+                      <PauseCircle className="h-3 w-3 shrink-0 text-blue-600 dark:text-blue-400" />
+                      <span>{t("checkin.frozen_badge", "Đang bảo lưu")}</span>
+                    </span>
+                  )}
                   {membership.checked_in_today && (
                     <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
                       <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
@@ -284,6 +304,7 @@ export function MembershipResultList({
               <RemainingIndicator
                 sessionsLeft={membership.sessions_left}
                 expiresAt={membership.expires_at}
+                isFrozen={isFrozen}
               />
             </div>
 
@@ -345,35 +366,47 @@ export function MembershipResultList({
                         defaultValue: `Đang check-in cho ${membership.customer_name}`,
                         name: membership.customer_name,
                       })
-                    : isAlreadyCheckedIn
-                      ? t("checkin.already_checked_in_for_aria", {
-                          defaultValue: `${membership.customer_name} đã check-in hôm nay`,
+                    : isFrozen
+                      ? t("checkin.frozen_for_aria", {
+                          defaultValue: `${membership.customer_name} đang bảo lưu thẻ`,
                           name: membership.customer_name,
                         })
-                      : isExhausted
-                        ? t("checkin.renew_and_ci_for_aria", {
-                            defaultValue: `Gia hạn và check-in cho ${membership.customer_name}`,
+                      : isAlreadyCheckedIn
+                        ? t("checkin.already_checked_in_for_aria", {
+                            defaultValue: `${membership.customer_name} đã check-in hôm nay`,
                             name: membership.customer_name,
                           })
-                        : t("checkin.checkin_for_aria", {
-                            defaultValue: `Check-in cho ${membership.customer_name}`,
-                            name: membership.customer_name,
-                          })
+                        : isExhausted
+                          ? t("checkin.renew_and_ci_for_aria", {
+                              defaultValue: `Gia hạn và check-in cho ${membership.customer_name}`,
+                              name: membership.customer_name,
+                            })
+                          : t("checkin.checkin_for_aria", {
+                              defaultValue: `Check-in cho ${membership.customer_name}`,
+                              name: membership.customer_name,
+                            })
                 }
                 className={`inline-flex h-8 sm:h-9 w-28 sm:w-32 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-semibold shadow-2xs transition focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-sm ${
                   isCheckingIn
                     ? "bg-indigo-600 text-white opacity-70"
-                    : isAlreadyCheckedIn
-                      ? "cursor-not-allowed bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50"
-                      : isExhausted
-                        ? "bg-amber-600 text-white hover:bg-amber-500 active:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-500"
-                        : "bg-indigo-600 text-white hover:bg-indigo-500 active:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
+                    : isFrozen
+                      ? "cursor-not-allowed bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800/50"
+                      : isAlreadyCheckedIn
+                        ? "cursor-not-allowed bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50"
+                        : isExhausted
+                          ? "bg-amber-600 text-white hover:bg-amber-500 active:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-500"
+                          : "bg-indigo-600 text-white hover:bg-indigo-500 active:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
                 }`}
               >
                 {isCheckingIn ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 animate-spin sm:h-4 sm:w-4" />
                     <span>{t("checkin.checking_in", "Check-in...")}</span>
+                  </>
+                ) : isFrozen ? (
+                  <>
+                    <PauseCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 text-blue-600 dark:text-blue-400" />
+                    <span className="truncate">{t("checkin.frozen_btn", "Đang bảo lưu")}</span>
                   </>
                 ) : isAlreadyCheckedIn ? (
                   <>

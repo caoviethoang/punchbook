@@ -1,6 +1,7 @@
-import { Calendar, Package as PackageIcon, QrCode } from "lucide-react"
+import { Calendar, Package as PackageIcon, PauseCircle, QrCode } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { MembershipDetail } from "../../lib/memberships"
-import { remainingLabel } from "../../lib/formatters"
+import { formatDate, remainingLabel } from "../../lib/formatters"
 import { StatusBadge } from "../ui/StatusBadge"
 
 interface MembershipDetailHeaderProps {
@@ -9,6 +10,9 @@ interface MembershipDetailHeaderProps {
 }
 
 export function MembershipDetailHeader({ detail, onOpenCardTab }: MembershipDetailHeaderProps) {
+  const { t } = useTranslation()
+  const isFrozen = detail.is_frozen || detail.status === "frozen"
+
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3 pr-8">
@@ -22,6 +26,19 @@ export function MembershipDetailHeader({ detail, onOpenCardTab }: MembershipDeta
         </div>
         <StatusBadge status={detail.status} type="membership" />
       </div>
+
+      {isFrozen && (
+        <div className="mt-3 flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50/80 p-3 text-xs text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300">
+          <PauseCircle className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
+          <span>
+            {t("memberships.freeze_banner", {
+              defaultValue: `Thẻ đang được bảo lưu đến ngày ${detail.frozen_until ? formatDate(detail.frozen_until) : "—"}`,
+              date: detail.frozen_until ? formatDate(detail.frozen_until) : "—",
+            })}
+            {detail.freeze_reason ? ` (${detail.freeze_reason})` : ""}
+          </span>
+        </div>
+      )}
 
       <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
         <div className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-1.5 font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">

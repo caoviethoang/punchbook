@@ -63,6 +63,15 @@ RSpec.describe CheckInMembership do
       )
     end
 
+    it 'fails when membership is frozen and does not create a CheckIn' do
+      membership.update!(status: 'frozen', frozen_at: Time.current, frozen_until: 7.days.from_now.to_date)
+
+      expect { described_class.call(membership: membership, staff: staff) }
+        .to raise_error(CheckInMembership::MembershipFrozenError)
+
+      expect(CheckIn.count).to eq(0)
+    end
+
     it 'checks in successfully when still valid and does not change sessions_left' do
       check_in = described_class.call(membership: membership, staff: staff)
 

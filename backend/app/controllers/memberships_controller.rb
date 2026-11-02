@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ClassLength
 class MembershipsController < ApiController
   include Paginatable
 
@@ -75,6 +76,31 @@ class MembershipsController < ApiController
     render json: { membership: membership.reload.as_api_json, check_in: record.as_json(only: %i[id checked_in_at]) }
   end
 
+  def freeze
+    membership = find_shop_membership(params.expect(:id))
+    updated = FreezeMembership.call(
+      membership: membership,
+      staff: current_staff,
+      freeze_until: params[:freeze_until],
+      reason: params[:reason]
+    )
+    render json: { membership: updated.as_detail_json, message: 'Đã bảo lưu thẻ hội viên thành công' }
+  rescue FreezeMembership::Error => e
+    render_business_exception(e)
+  end
+
+  def unfreeze
+    membership = find_shop_membership(params.expect(:id))
+    updated = UnfreezeMembership.call(
+      membership: membership,
+      staff: current_staff,
+      reason: params[:reason]
+    )
+    render json: { membership: updated.as_detail_json, message: 'Đã mở khóa bảo lưu thành công' }
+  rescue UnfreezeMembership::Error => e
+    render_business_exception(e)
+  end
+
   private
 
   def membership_params
@@ -116,3 +142,4 @@ class MembershipsController < ApiController
                     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
   end
 end
+# rubocop:enable Metrics/ClassLength

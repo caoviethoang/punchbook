@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_27_024829) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_103500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -70,6 +70,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_024829) do
     t.string "customer_name"
     t.datetime "discarded_at"
     t.date "expires_at"
+    t.string "freeze_reason"
+    t.datetime "frozen_at"
+    t.date "frozen_until"
     t.text "notes"
     t.uuid "package_id", null: false
     t.string "phone"
@@ -82,6 +85,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_024829) do
     t.index ["shop_id", "card_number"], name: "index_memberships_on_shop_id_and_card_number", unique: true, where: "(card_number IS NOT NULL)"
     t.index ["shop_id", "customer_name"], name: "index_memberships_on_shop_id_and_customer_name"
     t.index ["shop_id", "expires_at"], name: "index_memberships_on_shop_id_and_expires_at"
+    t.index ["shop_id", "frozen_until"], name: "index_memberships_on_shop_id_and_frozen_until"
     t.index ["shop_id", "phone"], name: "index_memberships_on_shop_id_and_phone"
     t.index ["shop_id", "sessions_left"], name: "index_memberships_on_shop_id_and_sessions_left"
     t.index ["shop_id", "status"], name: "index_memberships_on_shop_id_and_status"
@@ -136,6 +140,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_024829) do
     t.string "device_api_key"
     t.string "email", null: false
     t.string "encrypted_password", default: "", null: false
+    t.integer "max_freeze_days_per_year", default: 30, null: false
     t.string "name"
     t.string "phone"
     t.string "plan", default: "free", null: false

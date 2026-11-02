@@ -1,7 +1,7 @@
 import { apiGet } from "./api"
 import type { Membership } from "./memberships"
 
-export type MembershipStatus = "active" | "expiring" | "expired" | "deleted"
+export type MembershipStatus = "active" | "expiring" | "expired" | "deleted" | "frozen"
 
 export interface DashboardMembership extends Membership {
   status: MembershipStatus
@@ -50,6 +50,7 @@ export const STATUS_LABEL: Record<MembershipStatus, string> = {
   expiring: "Sắp hết",
   expired: "Đã hết",
   deleted: "Đã xóa",
+  frozen: "Bảo lưu",
 }
 
 export const STATUS_CLASS: Record<MembershipStatus, string> = {
@@ -57,6 +58,7 @@ export const STATUS_CLASS: Record<MembershipStatus, string> = {
   expiring: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
   expired: "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300",
   deleted: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+  frozen: "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/40",
 }
 
 /** GET /dashboard — shop-scoped stats + membership list with status. */

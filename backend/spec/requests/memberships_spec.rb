@@ -767,4 +767,59 @@ RSpec.describe 'Memberships', type: :request do
       expect(response).to have_http_status(:not_found)
     end
   end
+
+  describe 'POST /memberships/:id/freeze' do
+    it 'freezes an active membership' do
+      freeze_until = 14.days.from_now.to_date.to_s
+      post "/api/v1/memberships/#{hoa.id}/freeze",
+           params: { freeze_until: freeze_until, reason: 'Travel' },
+           headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['membership']['is_frozen']).to be true
+      expect(body['membership']['status']).to eq('frozen')
+      expect(body['membership']['freeze_reason']).to eq('Travel')
+      expect(hoa.reload.status).to eq('frozen')
+    end
+
+    it 'returns 422 if freeze_until is invalid' do
+      post "/api/v1/memberships/#{hoa.id}/freeze",
+           params: { freeze_until: 1.day.ago.to_date.to_s },
+           headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body['error']).to be_present
+    end
+  end
+
+  describe 'POST /memberships/:id/unfreeze' do
+    before do
+      FreezeMembership.call(
+        membership: hoa,
+        freeze_until: 10.days.from_now.to_date,
+        reason: 'Holiday'
+      )
+    end
+
+    it 'unfreezes a frozen membership' do
+      post "/api/v1/memberships/#{hoa.id}/unfreeze",
+           params: { reason: 'Early return' },
+           headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['membership']['is_frozen']).to be false
+      expect(body['membership']['status']).not_to eq('frozen')
+      expect(hoa.reload.frozen?).to be false
+    end
+
+    it 'returns 422 if membership is not frozen' do
+      hoa.update!(status: 'active', frozen_at: nil, frozen_until: nil)
+
+      post "/api/v1/memberships/#{hoa.id}/unfreeze", headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+  end
 end

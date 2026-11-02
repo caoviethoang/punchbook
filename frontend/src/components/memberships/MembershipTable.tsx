@@ -1,4 +1,16 @@
-import { ChevronLeft, ChevronRight, Edit3, Eye, Loader2, QrCode, RefreshCw, RotateCcw, Trash2 } from "lucide-react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  Edit3,
+  Eye,
+  Loader2,
+  PauseCircle,
+  PlayCircle,
+  QrCode,
+  RefreshCw,
+  RotateCcw,
+  Trash2,
+} from "lucide-react"
 import { useTranslation } from "react-i18next"
 import type { Membership, PaginationMeta, StatusFilterType } from "../../lib/memberships"
 import { computeMembershipStatus, getPaginationRange } from "../../lib/memberships"
@@ -19,6 +31,8 @@ interface MembershipTableProps {
   onOpenDetail: (id: string) => void
   onOpenEdit: (m: Membership) => void
   onOpenDelete: (m: Membership) => void
+  onOpenFreeze?: (m: Membership) => void
+  onOpenUnfreeze?: (m: Membership) => void
   onRestore?: (m: Membership) => void
   restoringId?: string | null
 }
@@ -37,6 +51,8 @@ export function MembershipTable({
   onOpenDetail,
   onOpenEdit,
   onOpenDelete,
+  onOpenFreeze,
+  onOpenUnfreeze,
   onRestore,
   restoringId,
 }: MembershipTableProps) {
@@ -162,6 +178,29 @@ export function MembershipTable({
                           <RefreshCw className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
                           <span className="hidden sm:inline">{t("common.renew", "Gia hạn")}</span>
                         </button>
+
+                        {m.is_frozen || m.status === "frozen" ? (
+                          <button
+                            type="button"
+                            onClick={() => onOpenUnfreeze?.(m)}
+                            title={t("memberships.unfreeze", "Mở khóa bảo lưu")}
+                            className="inline-flex items-center gap-1 rounded-xl border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/60"
+                          >
+                            <PlayCircle className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                            <span className="hidden sm:inline">{t("memberships.unfreeze", "Mở khóa")}</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => onOpenFreeze?.(m)}
+                            disabled={m.status === "expired"}
+                            title={t("memberships.freeze", "Bảo lưu thẻ")}
+                            className="inline-flex items-center gap-1 rounded-xl border border-blue-200 bg-blue-50/70 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 disabled:opacity-40 disabled:cursor-not-allowed dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/60"
+                          >
+                            <PauseCircle className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                            <span className="hidden sm:inline">{t("memberships.freeze", "Bảo lưu")}</span>
+                          </button>
+                        )}
 
                         <button
                           type="button"

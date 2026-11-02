@@ -4,6 +4,7 @@ class CheckInMembership
   class Error < StandardError; end
   class InsufficientSessionsError < Error; end
   class MembershipExpiredError < Error; end
+  class MembershipFrozenError < Error; end
 
   def self.call(membership:, staff:, extra_audit_details: {})
     new(membership: membership, staff: staff, extra_audit_details: extra_audit_details).call
@@ -27,14 +28,36 @@ class CheckInMembership
   attr_reader :membership, :staff, :extra_audit_details
 
   def validate_eligibility!
-    if membership.package.session_based?
-      return unless membership.no_sessions_left?
+    validate_frozen_status!
 
-      raise InsufficientSessionsError,
-            I18n.t('errors.membership.no_sessions_left', default: 'Membership has no sessions left')
-    elsif membership.expired? || membership.expires_at.blank?
-      raise MembershipExpiredError, I18n.t('errors.membership.expired', default: 'Membership has expired')
+    if membership.package.session_based?
+      validate_sessions_available!
+    else
+      validate_expiry_date!
     end
+  end
+
+  def validate_frozen_status!
+    return unless membership.status == 'frozen' || membership.frozen?
+
+    date_str = membership.frozen_until&.strftime('%d/%m/%Y') || ''
+    default_msg = "Hội viên đang trong thời gian bảo lưu (đến ngày #{date_str}). " \
+                  'Vui lòng mở khóa trước khi check-in.'
+    msg = I18n.t('errors.membership.frozen', date: date_str, default: default_msg)
+    raise MembershipFrozenError, msg
+  end
+
+  def validate_sessions_available!
+    return unless membership.no_sessions_left?
+
+    raise InsufficientSessionsError,
+          I18n.t('errors.membership.no_sessions_left', default: 'Membership has no sessions left')
+  end
+
+  def validate_expiry_date!
+    return unless membership.expired? || membership.expires_at.blank?
+
+    raise MembershipExpiredError, I18n.t('errors.membership.expired', default: 'Membership has expired')
   end
 
   def process_check_in!

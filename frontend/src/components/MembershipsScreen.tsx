@@ -2,10 +2,12 @@ import { useState } from "react"
 import { AlertCircle } from "lucide-react"
 import { type Shop, type Staff } from "../lib/auth"
 import { toApiError } from "../lib/errors"
-import { exportMemberships } from "../lib/memberships"
+import { exportMemberships, type Membership } from "../lib/memberships"
 import { useMembershipsQuery } from "../hooks/useMembershipsQuery"
 
 import { DeleteMemberModal } from "./memberships/DeleteMemberModal"
+import { FreezeModal } from "./memberships/FreezeModal"
+import { UnfreezeModal } from "./memberships/UnfreezeModal"
 import { MembershipFilterBar } from "./memberships/MembershipFilterBar"
 import { MembershipHeader } from "./memberships/MembershipHeader"
 import { MembershipTable } from "./memberships/MembershipTable"
@@ -25,6 +27,8 @@ export function MembershipsScreen({ shop, currentStaff }: MembershipsScreenProps
   const isAdmin = !currentStaff || currentStaff.role === "admin"
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
+  const [freezingMember, setFreezingMember] = useState<Membership | null>(null)
+  const [unfreezingMember, setUnfreezingMember] = useState<Membership | null>(null)
 
   const {
     memberships,
@@ -121,6 +125,8 @@ export function MembershipsScreen({ shop, currentStaff }: MembershipsScreenProps
         onOpenDetail={setDetailMemberId}
         onOpenEdit={setEditingMember}
         onOpenDelete={setDeletingMember}
+        onOpenFreeze={setFreezingMember}
+        onOpenUnfreeze={setUnfreezingMember}
         onRestore={(m) => void handleRestore(m)}
         restoringId={restoringMemberId}
       />
@@ -183,6 +189,26 @@ export function MembershipsScreen({ shop, currentStaff }: MembershipsScreenProps
           deleting={deleting}
           onCancel={() => setDeletingMember(null)}
           onConfirm={() => void handleDelete()}
+        />
+      )}
+
+      {/* 7. Freeze Membership Modal */}
+      {freezingMember && (
+        <FreezeModal
+          membership={freezingMember}
+          isOpen={true}
+          onClose={() => setFreezingMember(null)}
+          onSuccess={() => void reloadData()}
+        />
+      )}
+
+      {/* 8. Unfreeze Membership Modal */}
+      {unfreezingMember && (
+        <UnfreezeModal
+          membership={unfreezingMember}
+          isOpen={true}
+          onClose={() => setUnfreezingMember(null)}
+          onSuccess={() => void reloadData()}
         />
       )}
     </div>
