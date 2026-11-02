@@ -1,0 +1,12 @@
+Xin chào <%= @membership.customer_name %>,
+
+Bạn vừa thực hiện điểm danh thành công tại <%= @shop.name %>.
+
+Chi tiết phiếu điểm danh:
+- Thời gian: <%= @check_in.checked_in_at.strftime('%H:%M - %d/%m/%Y') %>
+- Gói dịch vụ: <%= @package.name %>
+<% if @membership.sessions_left.present? %>- Số buổi còn lại: <%= @membership.sessions_left %> buổi<% end %>
+<% if @membership.expires_at.present? %>- Hạn sử dụng: <%= @membership.expires_at.strftime('%d/%m/%Y') %><% end %>
+<% if @check_in.staff&.name.present? %>- Nhân viên: <%= @check_in.staff.name %><% end %>
+
+Cảm ơn bạn đã đồng hành cùng <%= @shop.name %>!

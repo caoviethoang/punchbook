@@ -8,6 +8,9 @@ export interface UpdateProfileInput {
   bank_name?: string
   bank_account_no?: string
   bank_account_name?: string
+  email_notifications_enabled?: boolean
+  sms_notifications_enabled?: boolean
+  zalo_notifications_enabled?: boolean
 }
 
 export interface ChangePasswordInput {

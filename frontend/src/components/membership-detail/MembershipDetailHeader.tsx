@@ -22,6 +22,7 @@ export function MembershipDetailHeader({ detail, onOpenCardTab }: MembershipDeta
           </h3>
           <p className="mt-0.5 text-base font-medium text-slate-500 dark:text-slate-400">
             {detail.phone}
+            {detail.email && <span className="ml-2 text-slate-400">· {detail.email}</span>}
           </p>
         </div>
         <StatusBadge status={detail.status} type="membership" />

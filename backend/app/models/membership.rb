@@ -22,8 +22,10 @@ class Membership < ApplicationRecord
                                 dependent: :destroy, inverse_of: :source_membership
   has_many :incoming_transfers, class_name: 'MembershipTransfer', foreign_key: :target_membership_id,
                                 dependent: :destroy, inverse_of: :target_membership
+  has_many :notification_logs, dependent: :nullify
 
   validates :customer_name, :phone, presence: true
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
   validates :sessions_left, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :card_number, uniqueness: { scope: :shop_id }, allow_blank: true
   validate :validate_free_plan_limit, on: :create

@@ -1,0 +1,36 @@
+<p>Xin chào <strong><%= @membership&.customer_name || 'Quý khách' %></strong>,</p>
+
+<p>Cảm ơn bạn đã thanh toán thành công hóa đơn tại <strong><%= @shop.name %></strong>.</p>
+
+<div class="card">
+  <div class="row">
+    <span>Mã hóa đơn:</span>
+    <strong>#<%= @invoice.id.to_s[0..7] %></strong>
+  </div>
+  <div class="row">
+    <span>Thời gian thanh toán:</span>
+    <strong><%= @invoice.created_at.strftime('%H:%M - %d/%m/%Y') %></strong>
+  </div>
+  <% if @package.present? %>
+    <div class="row">
+      <span>Gói dịch vụ:</span>
+      <strong><%= @package.name %></strong>
+    </div>
+  <% end %>
+  <div class="row" style="border-top: 1px dashed #cbd5e1; padding-top: 8px; margin-top: 8px;">
+    <span style="font-size: 16px;">Tổng thanh toán:</span>
+    <strong style="color: #059669; font-size: 18px;"><%= ActiveSupport::NumberHelper.number_to_currency(@invoice.amount, unit: 'đ', precision: 0, format: '%n %u') %></strong>
+  </div>
+  <div class="row">
+    <span>Trạng thái:</span>
+    <strong style="color: #059669;">Đã thanh toán</strong>
+  </div>
+  <% if @invoice.payos_transaction_id.present? %>
+    <div class="row">
+      <span>Mã giao dịch:</span>
+      <span style="font-family: monospace; font-size: 12px;"><%= @invoice.payos_transaction_id %></span>
+    </div>
+  <% end %>
+</div>
+
+<p>Hóa đơn này là biên lai thu tiền điện tử hợp lệ của <%= @shop.name %>.</p>

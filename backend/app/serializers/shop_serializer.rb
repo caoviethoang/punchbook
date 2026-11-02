@@ -4,6 +4,7 @@ class ShopSerializer
   FIELDS = %i[
     id name phone address email plan plan_expires_at
     bank_name bank_account_no bank_account_name device_api_key
+    email_notifications_enabled sms_notifications_enabled zalo_notifications_enabled
   ].freeze
 
   def initialize(shop)

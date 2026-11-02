@@ -21,6 +21,9 @@ export interface Shop {
   bank_account_no?: string | null
   bank_account_name?: string | null
   device_api_key?: string | null
+  email_notifications_enabled?: boolean
+  sms_notifications_enabled?: boolean
+  zalo_notifications_enabled?: boolean
 }
 
 export interface AuthResponse {
