@@ -44,6 +44,7 @@ Rails.application.routes.draw do
         post :restore
         post :freeze
         post :unfreeze
+        post :transfer
       end
       resources :invoices, only: %i[create]
     end

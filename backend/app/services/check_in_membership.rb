@@ -5,6 +5,7 @@ class CheckInMembership
   class InsufficientSessionsError < Error; end
   class MembershipExpiredError < Error; end
   class MembershipFrozenError < Error; end
+  class MembershipTransferredError < Error; end
 
   def self.call(membership:, staff:, extra_audit_details: {})
     new(membership: membership, staff: staff, extra_audit_details: extra_audit_details).call
@@ -29,6 +30,7 @@ class CheckInMembership
 
   def validate_eligibility!
     validate_frozen_status!
+    validate_transferred_status!
 
     if membership.package.session_based?
       validate_sessions_available!
@@ -45,6 +47,14 @@ class CheckInMembership
                   'Vui lòng mở khóa trước khi check-in.'
     msg = I18n.t('errors.membership.frozen', date: date_str, default: default_msg)
     raise MembershipFrozenError, msg
+  end
+
+  def validate_transferred_status!
+    return unless membership.status == 'transferred' || membership.transferred?
+
+    raise MembershipTransferredError,
+          I18n.t('errors.membership.transferred',
+                 default: 'Thẻ hội viên đã được chuyển nhượng, không thể check-in.')
   end
 
   def validate_sessions_available!

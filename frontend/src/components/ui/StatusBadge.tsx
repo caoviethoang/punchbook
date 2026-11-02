@@ -18,6 +18,7 @@ export function StatusBadge({ status, type = "membership", className = "" }: Sta
     else if (memStatus === "expiring") label = t("common.expiring", fallbackLabel)
     else if (memStatus === "expired") label = t("common.expired", fallbackLabel)
     else if (memStatus === "frozen") label = t("common.frozen", fallbackLabel)
+    else if (memStatus === "transferred") label = t("common.transferred", fallbackLabel)
 
     const style =
       STATUS_CLASS[memStatus] || "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"

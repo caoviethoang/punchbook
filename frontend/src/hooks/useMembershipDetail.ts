@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { getMembershipDetail, updateMembership, type MembershipDetail } from "../lib/memberships"
 import type { ReceiptData } from "../components/ThermalReceiptModal"
 
-export type MembershipDetailTab = "card" | "check_ins" | "invoices" | "freeze"
+export type MembershipDetailTab = "card" | "check_ins" | "invoices" | "freeze" | "transfers"
 
 export function useMembershipDetail(
   membershipId: string,

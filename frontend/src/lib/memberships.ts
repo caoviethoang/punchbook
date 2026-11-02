@@ -33,11 +33,15 @@ export interface Membership {
   expires_at: string | null
   package: MembershipPackage
   shop?: MembershipShop
-  status?: "active" | "expiring" | "expired" | "deleted" | "frozen"
+  status?: "active" | "expiring" | "expired" | "deleted" | "frozen" | "transferred"
   is_frozen?: boolean
   frozen_at?: string | null
   frozen_until?: string | null
   freeze_reason?: string | null
+  is_transferred?: boolean
+  transferred_at?: string | null
+  transferred_to_name?: string | null
+  transferred_from_name?: string | null
   discarded_at?: string | null
   checked_in_today?: boolean
   last_checked_in_at?: string | null
@@ -80,12 +84,32 @@ export interface FreezeHistoryItem {
   }
 }
 
+export interface TransferRecord {
+  id: string
+  shop_id: string
+  source_membership_id: string
+  source_customer_name?: string
+  source_phone?: string
+  target_membership_id: string
+  target_customer_name?: string
+  target_phone?: string
+  staff_id?: string | null
+  staff_name?: string | null
+  invoice_id?: string | null
+  sessions_transferred?: number | null
+  days_transferred?: number | null
+  fee: number
+  note?: string | null
+  created_at: string
+}
+
 export interface MembershipDetail extends Membership {
-  status: "active" | "expiring" | "expired" | "frozen"
+  status: "active" | "expiring" | "expired" | "deleted" | "frozen" | "transferred"
   created_at?: string
   check_ins: MembershipDetailCheckIn[]
   invoices: MembershipDetailInvoice[]
   freeze_history?: FreezeHistoryItem[]
+  transfers?: TransferRecord[]
 }
 
 export interface CheckInRecord {
@@ -141,9 +165,11 @@ export function computeMembershipStatus(
     status?: string
     discarded_at?: string | null
     is_frozen?: boolean
+    is_transferred?: boolean
   },
-): "active" | "expiring" | "expired" | "deleted" | "frozen" {
+): "active" | "expiring" | "expired" | "deleted" | "frozen" | "transferred" {
   if (membership.status === "deleted" || membership.discarded_at) return "deleted"
+  if (membership.status === "transferred" || membership.is_transferred) return "transferred"
   if (membership.status === "frozen" || membership.is_frozen) return "frozen"
 
   // Session-based
@@ -206,6 +232,7 @@ export type StatusFilterType =
   | "not_checked_in"
   | "deleted"
   | "frozen"
+  | "transferred"
 
 export type CheckInFilterType = "not_checked_in" | "expiring" | "expired" | "all"
 
@@ -449,4 +476,32 @@ export async function unfreezeMembership(
     `/memberships/${id}/unfreeze`,
     payload || {},
   )
+}
+
+export interface TransferMembershipPayload {
+  target_customer_name: string
+  target_phone: string
+  staff_id?: string
+  transfer_fee?: number
+  note?: string
+}
+
+export interface TransferMembershipResult {
+  source_membership: Membership
+  target_membership: Membership
+  transfer: TransferRecord
+  invoice?: {
+    id: string
+    amount: number
+    status: string
+  } | null
+  message: string
+}
+
+/** POST /memberships/:id/transfer — transfer remaining sessions or days to another member */
+export async function transferMembership(
+  id: string,
+  payload: TransferMembershipPayload,
+): Promise<TransferMembershipResult> {
+  return apiPost<TransferMembershipResult>(`/memberships/${id}/transfer`, payload)
 }

@@ -17,6 +17,13 @@ vi:
       freeze_date_must_be_future: "Ngày kết thúc bảo lưu phải sau ngày hôm nay."
       freeze_days_exceeded: "Thời gian bảo lưu tối đa là %{max} ngày."
       not_frozen: "Thẻ hội viên không trong trạng thái bảo lưu."
+      transferred: "Thẻ hội viên đã được chuyển nhượng, không thể check-in."
+      already_transferred: "Thẻ hội viên đã được chuyển nhượng."
+      no_sessions_to_transfer: "Thẻ đã hết số buổi, không thể chuyển nhượng."
+      cannot_transfer_expired: "Thẻ đã hết hạn, không thể chuyển nhượng."
+      target_name_required: "Vui lòng nhập tên người nhận."
+      target_phone_required: "Vui lòng nhập số điện thoại người nhận."
+      cannot_transfer_to_self: "Không thể chuyển nhượng cho chính mình."
       invalid_package: "Gói tập không hợp lệ hoặc đã bị vô hiệu hóa."
       file_missing: "Vui lòng chọn file để import."
     hardware:

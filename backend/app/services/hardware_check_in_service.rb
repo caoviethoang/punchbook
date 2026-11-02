@@ -72,6 +72,8 @@ class HardwareCheckInService
     raise Error.new(e.message, code: 'MEMBERSHIP_EXPIRED', membership: membership)
   rescue CheckInMembership::MembershipFrozenError => e
     raise Error.new(e.message, code: 'MEMBERSHIP_FROZEN', membership: membership)
+  rescue CheckInMembership::MembershipTransferredError => e
+    raise Error.new(e.message, code: 'MEMBERSHIP_TRANSFERRED', membership: membership)
   end
   # rubocop:enable Metrics/MethodLength
 

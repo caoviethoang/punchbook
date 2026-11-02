@@ -13,9 +13,15 @@ class Membership < ApplicationRecord
   belongs_to :shop, inverse_of: :memberships
   belongs_to :package, -> { with_discarded }, inverse_of: :memberships
   has_many :class_bookings, dependent: :restrict_with_error
+  belongs_to :transferred_to_membership, class_name: 'Membership', optional: true
+  belongs_to :transferred_from_membership, class_name: 'Membership', optional: true
   has_many :check_ins, dependent: :destroy, inverse_of: :membership
   has_many :invoices, dependent: :destroy, inverse_of: :membership
   has_many :membership_reminders, dependent: :destroy, inverse_of: :membership
+  has_many :outgoing_transfers, class_name: 'MembershipTransfer', foreign_key: :source_membership_id,
+                                dependent: :destroy, inverse_of: :source_membership
+  has_many :incoming_transfers, class_name: 'MembershipTransfer', foreign_key: :target_membership_id,
+                                dependent: :destroy, inverse_of: :target_membership
 
   validates :customer_name, :phone, presence: true
   validates :sessions_left, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true

@@ -15,6 +15,7 @@ class Shop < ApplicationRecord
   has_many :check_ins, through: :memberships
   has_many :invoices, through: :memberships
   has_many :audit_logs, dependent: :destroy, inverse_of: :shop
+  has_many :membership_transfers, dependent: :destroy, inverse_of: :shop
   has_many :shop_plan_payments, dependent: :destroy, inverse_of: :shop
   has_many :webhook_events, dependent: :nullify, inverse_of: :shop
 
