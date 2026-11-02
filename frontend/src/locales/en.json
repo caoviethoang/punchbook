@@ -135,6 +135,7 @@
     "col_last_checkin": "Last Check-in",
     "col_evaluation": "Evaluation",
     "col_detail": "Detail",
+    "no_check_in": "No check-ins yet",
     "status_inactive_risk": "Not Attended (Risk)",
     "status_very_active": "Very Active (≥3/week)",
     "status_regular": "Regular (≥1/week)",
