@@ -332,6 +332,25 @@ RSpec.describe 'Memberships', type: :request do
       expect(Membership.find(body['id'])).to have_attributes(shop_id: shop.id, sessions_left: 10)
     end
 
+    it 'creates a membership with optional email and enqueues welcome notification' do
+      payload = {
+        membership: {
+          customer_name: 'Minh Chau',
+          phone: '0905000000',
+          package_id: package.id,
+          email: 'minhchau@example.com'
+        }
+      }
+
+      expect do
+        post '/api/v1/memberships', params: payload, headers: auth_headers(shop)
+      end.to change(Membership, :count).by(1)
+         .and have_enqueued_job(SendNotificationJob).with(:welcome, shop_id: shop.id, membership_id: anything)
+
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body.dig('membership', 'email')).to eq('minhchau@example.com')
+    end
+
     it 'creates a day-based membership with expires_at from package duration' do
       day_package = Package.create!(shop: shop, name: 'Monthly gym', duration_days: 30, price: 500_000)
       payload = {

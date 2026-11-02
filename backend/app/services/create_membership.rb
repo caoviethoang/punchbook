@@ -20,6 +20,7 @@ class CreateMembership
     membership = build_membership(package)
     membership.apply_package_init
     membership.save!
+    SendNotificationJob.perform_later(:welcome, shop_id: shop.id, membership_id: membership.id)
     membership
   end
 
@@ -33,7 +34,8 @@ class CreateMembership
       phone: attrs[:phone],
       package: package,
       notes: attrs[:notes],
-      card_number: attrs[:card_number].presence
+      card_number: attrs[:card_number].presence,
+      email: attrs[:email].presence
     )
   end
 end

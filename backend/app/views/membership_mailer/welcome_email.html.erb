@@ -1,0 +1,30 @@
+<p>Xin chào <strong><%= @membership.customer_name %></strong>,</p>
+
+<p>Chào mừng bạn đã trở thành hội viên tại <strong><%= @shop.name %></strong>!</p>
+
+<div class="card">
+  <div class="row">
+    <span>Gói dịch vụ:</span>
+    <strong><%= @package.name %></strong>
+  </div>
+  <% if @membership.sessions_left.present? %>
+    <div class="row">
+      <span>Số buổi đăng ký:</span>
+      <strong><%= @membership.sessions_left %> buổi</strong>
+    </div>
+  <% end %>
+  <% if @membership.expires_at.present? %>
+    <div class="row">
+      <span>Hạn sử dụng:</span>
+      <strong><%= @membership.expires_at.strftime('%d/%m/%Y') %></strong>
+    </div>
+  <% end %>
+  <div class="row">
+    <span>Số điện thoại:</span>
+    <strong><%= @membership.phone %></strong>
+  </div>
+</div>
+
+<p>Khi đến tập luyện hoặc sử dụng dịch vụ, bạn chỉ cần đọc số điện thoại hoặc quét mã QR thẻ hội viên tại quầy tiếp đón.</p>
+
+<p>Chúc bạn có những trải nghiệm tuyệt vời cùng <%= @shop.name %>!</p>

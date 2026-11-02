@@ -62,7 +62,10 @@ class SettingsController < ApiController
   end
 
   def profile_params
-    params.permit(:name, :phone, :address, :bank_name, :bank_account_no, :bank_account_name)
+    params.permit(
+      :name, :phone, :address, :bank_name, :bank_account_no, :bank_account_name,
+      :email_notifications_enabled, :sms_notifications_enabled, :zalo_notifications_enabled
+    )
   end
 
   def password_params

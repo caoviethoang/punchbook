@@ -1,0 +1,34 @@
+<p>Xin chào <strong><%= @membership.customer_name %></strong>,</p>
+
+<p>Bạn vừa thực hiện điểm danh thành công tại <strong><%= @shop.name %></strong>.</p>
+
+<div class="card">
+  <div class="row">
+    <span>Thời gian check-in:</span>
+    <strong><%= @check_in.checked_in_at.strftime('%H:%M - %d/%m/%Y') %></strong>
+  </div>
+  <div class="row">
+    <span>Gói dịch vụ:</span>
+    <strong><%= @package.name %></strong>
+  </div>
+  <% if @membership.sessions_left.present? %>
+    <div class="row">
+      <span>Số buổi còn lại:</span>
+      <strong style="color: #4f46e5; font-size: 16px;"><%= @membership.sessions_left %> buổi</strong>
+    </div>
+  <% end %>
+  <% if @membership.expires_at.present? %>
+    <div class="row">
+      <span>Hạn sử dụng đến:</span>
+      <strong><%= @membership.expires_at.strftime('%d/%m/%Y') %></strong>
+    </div>
+  <% end %>
+  <% if @check_in.staff&.name.present? %>
+    <div class="row">
+      <span>Nhân viên hỗ trợ:</span>
+      <span><%= @check_in.staff.name %></span>
+    </div>
+  <% end %>
+</div>
+
+<p>Cảm ơn bạn đã đồng hành và rèn luyện cùng <%= @shop.name %>!</p>
