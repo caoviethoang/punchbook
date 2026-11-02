@@ -54,7 +54,10 @@
     "days_count": "{{count}} ngày",
     "print": "In",
     "print_receipt": "In phiếu",
-    "processing": "Đang xử lý..."
+    "processing": "Đang xử lý...",
+    "prev": "Trang trước",
+    "next": "Trang sau",
+    "refresh": "Làm mới"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -89,7 +92,17 @@
     "package_revenue_month": "Doanh thu gói tháng này",
     "empty_package_revenue": "Chưa có dữ liệu doanh thu gói",
     "empty_package_revenue_desc": "Chưa có giao dịch thanh toán gói dịch vụ nào được ghi nhận trong tháng này.",
+    "total_sales": "Tổng lượt bán",
+    "sales_suffix": "lượt",
+    "best_selling_package": "Gói bán chạy nhất",
+    "sales_breakdown": "{{count}} lượt bán • {{amount}}",
+    "revenue_contribution_ratio": "Tỷ lệ đóng góp doanh thu theo gói",
+    "col_package_name": "Tên gói dịch vụ",
+    "col_sales_qty": "Số lượng bán",
+    "col_total_revenue": "Tổng doanh thu",
+    "col_share": "Tỷ trọng",
     "staff_scheduling_tip": "Gợi ý phân bổ nhân sự",
+    "peak_hour_recommendation": "Khung giờ cao điểm: {{time}} ({{count}} lượt). Khuyên dùng: Xếp thêm nhân viên phục vụ.",
     "total_recorded_checkins": "Tổng lượt check-in ghi nhận: {{count}} lượt",
     "hour_slot": "Khung giờ: {{label}}",
     "checkin_count_unit": "{{count}} lượt check-in",
@@ -99,7 +112,8 @@
     "col_remaining": "Còn lại",
     "col_status": "Trạng thái",
     "col_actions": "Thao tác",
-    "empty_memberships": "Không tìm thấy hội viên nào."
+    "empty_memberships": "Không tìm thấy hội viên nào.",
+    "pagination_info": "Trang {{page}} / {{total_pages}} (Tổng {{total}} hội viên)"
   },
   "attendance": {
     "title": "Báo cáo chuyên cần hội viên",
@@ -400,7 +414,16 @@
       "no_expiry": "Không thời hạn",
       "expires_on": "Hạn dùng đến",
       "days_left": "còn {{count}} ngày",
-      "expired": "Đã hết hạn"
+      "expired": "Đã hết hạn",
+      "email_account": "Tài khoản Email",
+      "plan_type": "Loại gói dịch vụ",
+      "plan_type_paid": "Trả phí (Paid)",
+      "plan_type_free": "Miễn phí (Free)",
+      "expiration_date": "Ngày hết hạn gói",
+      "renew_soon": "Sắp hết hạn ({{count}} ngày) - Gia hạn ngay",
+      "upgrade_banner_title": "Nâng cấp lên PunchBook Premium",
+      "upgrade_banner_desc": "Mở khóa không giới hạn hội viên, báo cáo doanh thu chi tiết và tự động nhắc nợ Zalo/SMS.",
+      "upgrade_banner_btn": "Nâng cấp ngay - Chỉ từ 199.000đ/tháng"
     },
     "appearance": {
       "title": "Giao diện Hiển thị",
@@ -413,6 +436,16 @@
     "device": {
       "title": "Tích hợp Thiết bị phần cứng (FaceID / Vân tay / Thẻ từ)",
       "subtitle": "Kết nối đầu đọc thẻ hoặc máy chấm công để check-in tự động.",
+      "endpoint_label": "Endpoint Check-in thiết bị",
+      "endpoint_hint_prefix": "Gửi Header",
+      "endpoint_hint_suffix": "cùng body JSON:",
+      "card_code_or_phone": "Mã thẻ / SĐT",
+      "api_key_label": "Device API Key",
+      "no_api_key": "Chưa tạo API Key",
+      "copy_key": "Sao chép Device API Key",
+      "regenerate_key": "Tạo lại API Key mới",
+      "copy_failed": "Không thể sao chép, vui lòng copy thủ công",
+      "regenerate_failed": "Tạo mới API Key thất bại",
       "copy_btn": "Sao chép API Key",
       "regenerate_btn": "Tạo lại Key mới",
       "regenerating": "Đang tạo lại...",
@@ -435,6 +468,32 @@
     "webhooks": {
       "title": "Quản lý Webhook PayOS & Dead Letter Queue",
       "subtitle": "Giám sát trạng thái sự kiện webhook thanh toán và xử lý lỗi đồng bộ."
+    },
+    "webhook": {
+      "title": "Lịch sử Webhook PayOS & Dead-Letter Queue",
+      "subtitle": "Tự động lưu webhook, hàng đợi thử lại (Sidekiq retry 5 lần) và xử lý lỗi dead-letter.",
+      "filter_all": "Tất cả",
+      "filter_attention": "Cần xử lý (Lỗi / DLQ)",
+      "filter_dead_letter": "Dead-Letter Queue",
+      "filter_success": "Thành công",
+      "col_time": "Thời gian",
+      "col_order_code": "Mã đơn PayOS",
+      "col_status": "Trạng thái",
+      "col_attempts": "Số lần thử",
+      "col_last_error": "Lỗi gần nhất",
+      "col_actions": "Thao tác",
+      "loading": "Đang tải webhook...",
+      "empty": "Không có webhook nào phù hợp bộ lọc.",
+      "status_success": "Thành công",
+      "status_failed": "Thất bại",
+      "status_dead_letter": "Dead Letter (DLQ)",
+      "status_invalid_signature": "Sai chữ ký",
+      "status_processing": "Đang xử lý",
+      "status_pending": "Chờ xử lý",
+      "load_failed": "Không thể tải danh sách webhook",
+      "retry_queued": "Đã đưa đơn #{{order}} vào hàng đợi thử lại.",
+      "retry_failed": "Không thể thử lại webhook",
+      "pagination": "Trang {{page}} / {{totalPages}} (Tổng số: {{totalCount}})"
     }
   },
   "upgrade_modal": {

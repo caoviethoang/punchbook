@@ -138,20 +138,20 @@ export function DashboardMembershipsTable({
                       <button
                         type="button"
                         onClick={() => onSelectDetail(membership.id)}
-                        title="Xem chi tiết & lịch sử"
+                        title={t("common.view_detail", "Xem chi tiết & lịch sử")}
                         className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                       >
                         <Eye className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
-                        <span>Chi tiết</span>
+                        <span>{t("common.details", "Chi tiết")}</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => onSelectRenewal(membership)}
-                        title="Gia hạn gói"
+                        title={t("common.renew", "Gia hạn gói")}
                         className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                       >
                         <RefreshCw className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                        <span>Gia hạn</span>
+                        <span>{t("common.renew", "Gia hạn")}</span>
                       </button>
                     </div>
                   </td>
@@ -165,8 +165,12 @@ export function DashboardMembershipsTable({
       {paginationMeta && paginationMeta.total_pages > 1 && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-1 py-2">
           <span className="text-xs text-slate-500 dark:text-slate-400">
-            Trang {paginationMeta.page} / {paginationMeta.total_pages} (Tổng {paginationMeta.total}{" "}
-            hội viên)
+            {t("dashboard.pagination_info", {
+              defaultValue: "Trang {{page}} / {{total_pages}} (Tổng {{total}} hội viên)",
+              page: paginationMeta.page,
+              total_pages: paginationMeta.total_pages,
+              total: paginationMeta.total,
+            })}
           </span>
           <div className="flex items-center gap-2">
             <button
@@ -175,7 +179,7 @@ export function DashboardMembershipsTable({
               onClick={() => onPageChange(Math.max(1, page - 1))}
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
             >
-              Trang trước
+              {t("common.prev", "Trang trước")}
             </button>
             <button
               type="button"
@@ -183,7 +187,7 @@ export function DashboardMembershipsTable({
               onClick={() => onPageChange(page + 1)}
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
             >
-              Trang sau
+              {t("common.next", "Trang sau")}
             </button>
           </div>
         </div>

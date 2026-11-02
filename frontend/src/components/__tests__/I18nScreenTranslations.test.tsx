@@ -7,7 +7,13 @@ import { PackageGrid } from "../packages/PackageTable"
 import { MemberRemainingBadge } from "../memberships/MemberRemainingBadge"
 import { CheckInHeader } from "../checkin/CheckInHeader"
 import { RemainingIndicator } from "../checkin/CheckInSearchResults"
+import { PackageRevenueChart } from "../analytics/PackageRevenueChart"
+import { CheckInFrequencyChart } from "../analytics/CheckInFrequencyChart"
+import { DashboardMembershipsTable } from "../dashboard/DashboardMembershipsTable"
+import { DeviceIntegrationSection } from "../settings/DeviceIntegrationSection"
+import { SubscriptionSection } from "../settings/SubscriptionSection"
 import { formatPackageDuration, formatPackageTypeBadge, type PackageItem } from "../../lib/packages"
+import type { Shop } from "../../lib/auth"
 
 describe("i18n screen translations when switched to English", () => {
   beforeEach(async () => {
@@ -120,5 +126,126 @@ describe("i18n screen translations when switched to English", () => {
     )
     expect(screen.getByText("10")).toBeInTheDocument()
     expect(screen.getByText(/sessions left/i)).toBeInTheDocument()
+  })
+
+  it("translates PackageRevenueChart and CheckInFrequencyChart into English", () => {
+    render(
+      <PackageRevenueChart
+        packageRevenue={[
+          {
+            package_id: "p-1",
+            package_name: "Pro Package",
+            sales_count: 5,
+            invoices_count: 5,
+            total_revenue: 10000000,
+            percentage: 100,
+          },
+        ]}
+      />,
+    )
+
+    expect(screen.getByText("Package Revenue This Month")).toBeInTheDocument()
+    expect(screen.getByText("Total Sales")).toBeInTheDocument()
+    expect(screen.getByText("Best-Selling Package")).toBeInTheDocument()
+    expect(screen.getByText("Revenue Share by Package")).toBeInTheDocument()
+    expect(screen.getByText("Service Package")).toBeInTheDocument()
+    expect(screen.getByText("Sales Count")).toBeInTheDocument()
+    expect(screen.getByText("Total Revenue")).toBeInTheDocument()
+    expect(screen.getByText("Share")).toBeInTheDocument()
+
+    cleanup()
+
+    render(
+      <CheckInFrequencyChart
+        checkInFrequency={[{ hour: 2, label: "02:00 - 03:00", count: 25 }]}
+        peakHour={{
+          hour: 2,
+          label: "02:00 - 03:00",
+          count: 25,
+          recommendation: "Khung giờ cao điểm: 02:00 - 03:00 (25 lượt). Khuyên dùng: Xếp thêm nhân viên phục vụ.",
+        }}
+      />,
+    )
+
+    expect(screen.getByText("Staff Scheduling Tip")).toBeInTheDocument()
+    expect(
+      screen.getByText(/Peak hours: 02:00 - 03:00 \(25 check-ins\)\. Recommendation: Schedule additional staff\./i),
+    ).toBeInTheDocument()
+  })
+
+  it("translates DashboardMembershipsTable action buttons into English", () => {
+    render(
+      <DashboardMembershipsTable
+        memberships={[
+          {
+            id: "m-1",
+            customer_name: "Charlie Le",
+            phone: "0987654321",
+            status: "active",
+            sessions_left: 10,
+            expires_at: null,
+            package: { id: "p-1", name: "Basic Package", sessions_count: 10 },
+          },
+        ]}
+        paginationMeta={{ page: 1, per_page: 10, total: 1, total_pages: 1 }}
+        searchQuery=""
+        onSearchChange={() => {}}
+        statusFilter="all"
+        onStatusFilterChange={() => {}}
+        page={1}
+        onPageChange={() => {}}
+        listLoading={false}
+        onSelectDetail={() => {}}
+        onSelectRenewal={() => {}}
+      />,
+    )
+
+    expect(screen.getByRole("button", { name: /Details/i })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /Renew/i })).toBeInTheDocument()
+  })
+
+  it("translates DeviceIntegrationSection and SubscriptionSection into English", () => {
+    const mockShop: Shop = {
+      id: "shop-1",
+      name: "PunchBook Studio 1",
+      email: "owner@punchbook.vn",
+      phone: "0901234569",
+      address: "123 Street",
+      bank_name: "TPBank",
+      bank_account_no: "0123456789",
+      bank_account_name: "CAO VIET HOANG",
+      plan: "paid",
+      plan_expires_at: "2026-12-31T23:59:59Z",
+      device_api_key: "dev-key-123",
+    }
+
+    render(
+      <DeviceIntegrationSection
+        shop={mockShop}
+        isAdmin={true}
+        onShopUpdated={() => {}}
+        onToast={() => {}}
+      />,
+    )
+
+    expect(screen.getByText("Device Check-in Endpoint")).toBeInTheDocument()
+    expect(screen.getByText("Device API Key")).toBeInTheDocument()
+
+    cleanup()
+
+    render(
+      <SubscriptionSection
+        shop={mockShop}
+        isAdmin={true}
+        daysLeft={60}
+        showRenewalButton={true}
+        onOpenUpgradeModal={() => {}}
+      />,
+    )
+
+    expect(screen.getByText("Email Account")).toBeInTheDocument()
+    expect(screen.getByText("Service Plan Type")).toBeInTheDocument()
+    expect(screen.getByText("Paid Plan")).toBeInTheDocument()
+    expect(screen.getByText("Plan Expiration Date")).toBeInTheDocument()
   })
 })

@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Calendar, Sparkles } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { HourlyCheckInData, PeakHourData } from "../../lib/dashboard"
 
 interface CheckInFrequencyChartProps {
@@ -8,6 +9,7 @@ interface CheckInFrequencyChartProps {
 }
 
 export function CheckInFrequencyChart({ checkInFrequency, peakHour }: CheckInFrequencyChartProps) {
+  const { t } = useTranslation()
   const [hoveredHourIndex, setHoveredHourIndex] = useState<number | null>(null)
 
   const maxCheckIns = Math.max(...checkInFrequency.map((h) => h.count), 1)
@@ -20,14 +22,29 @@ export function CheckInFrequencyChart({ checkInFrequency, peakHour }: CheckInFre
         <div className="flex items-start gap-3 rounded-xl border border-amber-200/80 bg-amber-50/80 p-4 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
           <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
           <div>
-            <h4 className="text-sm font-bold">Gợi ý phân bổ nhân sự</h4>
-            <p className="mt-0.5 text-xs font-medium leading-relaxed">{peakHour.recommendation}</p>
+            <h4 className="text-sm font-bold">
+              {t("dashboard.staff_scheduling_tip", "Gợi ý phân bổ nhân sự")}
+            </h4>
+            <p className="mt-0.5 text-xs font-medium leading-relaxed">
+              {peakHour.label && peakHour.count > 0
+                ? t("dashboard.peak_hour_recommendation", {
+                    defaultValue: `Khung giờ cao điểm: ${peakHour.label} (${peakHour.count} lượt). Khuyên dùng: Xếp thêm nhân viên phục vụ.`,
+                    time: peakHour.label,
+                    count: peakHour.count,
+                  })
+                : peakHour.recommendation}
+            </p>
           </div>
         </div>
       ) : (
         <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
           <Calendar className="h-4 w-4" />
-          <span>Tổng lượt check-in ghi nhận: {totalCheckIns} lượt</span>
+          <span>
+            {t("dashboard.total_recorded_checkins", {
+              defaultValue: "Tổng lượt check-in ghi nhận: {{count}} lượt",
+              count: totalCheckIns,
+            })}
+          </span>
         </div>
       )}
 
@@ -49,9 +66,17 @@ export function CheckInFrequencyChart({ checkInFrequency, peakHour }: CheckInFre
                 {/* Tooltip */}
                 {isHovered && (
                   <div className="pointer-events-none absolute -top-12 z-20 whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-bold text-white shadow-xl dark:bg-slate-100 dark:text-slate-900">
-                    <div>Khung giờ: {item.label}</div>
+                    <div>
+                      {t("dashboard.hour_slot", {
+                        defaultValue: "Khung giờ: {{label}}",
+                        label: item.label,
+                      })}
+                    </div>
                     <div className="text-amber-400 dark:text-amber-600">
-                      {item.count} lượt check-in
+                      {t("dashboard.checkin_count_unit", {
+                        defaultValue: "{{count}} lượt check-in",
+                        count: item.count,
+                      })}
                     </div>
                   </div>
                 )}

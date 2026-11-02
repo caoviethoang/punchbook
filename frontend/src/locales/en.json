@@ -54,7 +54,10 @@
     "days_count": "{{count}} days",
     "print": "Print",
     "print_receipt": "Print Receipt",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "prev": "Previous",
+    "next": "Next",
+    "refresh": "Refresh"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -89,7 +92,17 @@
     "package_revenue_month": "Package Revenue This Month",
     "empty_package_revenue": "No package revenue data yet",
     "empty_package_revenue_desc": "No package payment transactions recorded for this month.",
+    "total_sales": "Total Sales",
+    "sales_suffix": "sales",
+    "best_selling_package": "Best-Selling Package",
+    "sales_breakdown": "{{count}} sales • {{amount}}",
+    "revenue_contribution_ratio": "Revenue Share by Package",
+    "col_package_name": "Service Package",
+    "col_sales_qty": "Sales Count",
+    "col_total_revenue": "Total Revenue",
+    "col_share": "Share",
     "staff_scheduling_tip": "Staff Scheduling Tip",
+    "peak_hour_recommendation": "Peak hours: {{time}} ({{count}} check-ins). Recommendation: Schedule additional staff.",
     "total_recorded_checkins": "Total recorded check-ins: {{count}}",
     "hour_slot": "Time slot: {{label}}",
     "checkin_count_unit": "{{count}} check-ins",
@@ -99,7 +112,8 @@
     "col_remaining": "Remaining",
     "col_status": "Status",
     "col_actions": "Actions",
-    "empty_memberships": "No members found."
+    "empty_memberships": "No members found.",
+    "pagination_info": "Page {{page}} / {{total_pages}} (Total {{total}} members)"
   },
   "attendance": {
     "title": "Member Attendance Report",
@@ -400,7 +414,16 @@
       "no_expiry": "No Expiration",
       "expires_on": "Expires on",
       "days_left": "{{count}} days left",
-      "expired": "Expired"
+      "expired": "Expired",
+      "email_account": "Email Account",
+      "plan_type": "Service Plan Type",
+      "plan_type_paid": "Paid Plan",
+      "plan_type_free": "Free Plan",
+      "expiration_date": "Plan Expiration Date",
+      "renew_soon": "Expiring soon ({{count}} days) - Renew now",
+      "upgrade_banner_title": "Upgrade to PunchBook Premium",
+      "upgrade_banner_desc": "Unlock unlimited members, detailed revenue reports, and automated Zalo/SMS reminders.",
+      "upgrade_banner_btn": "Upgrade Now - From only 199,000 VND/month"
     },
     "appearance": {
       "title": "Display Appearance",
@@ -413,6 +436,16 @@
     "device": {
       "title": "Hardware Device Integration (FaceID / Fingerprint / RFID)",
       "subtitle": "Connect card readers or biometric terminals for automated check-in.",
+      "endpoint_label": "Device Check-in Endpoint",
+      "endpoint_hint_prefix": "Send Header",
+      "endpoint_hint_suffix": "with JSON body:",
+      "card_code_or_phone": "Card Code / Phone",
+      "api_key_label": "Device API Key",
+      "no_api_key": "No API Key generated",
+      "copy_key": "Copy Device API Key",
+      "regenerate_key": "Regenerate new API Key",
+      "copy_failed": "Cannot copy, please copy manually",
+      "regenerate_failed": "Failed to regenerate API Key",
       "copy_btn": "Copy API Key",
       "regenerate_btn": "Regenerate Key",
       "regenerating": "Regenerating...",
@@ -435,6 +468,32 @@
     "webhooks": {
       "title": "PayOS Webhook Management & Dead Letter Queue",
       "subtitle": "Monitor payment webhook event statuses and troubleshoot sync errors."
+    },
+    "webhook": {
+      "title": "PayOS Webhook History & Dead-Letter Queue",
+      "subtitle": "Automatically log webhooks, retry queue (Sidekiq retry 5 times), and dead-letter handling.",
+      "filter_all": "All",
+      "filter_attention": "Needs Attention (Error / DLQ)",
+      "filter_dead_letter": "Dead-Letter Queue",
+      "filter_success": "Success",
+      "col_time": "Time",
+      "col_order_code": "PayOS Order Code",
+      "col_status": "Status",
+      "col_attempts": "Attempts",
+      "col_last_error": "Last Error",
+      "col_actions": "Actions",
+      "loading": "Loading webhooks...",
+      "empty": "No webhooks match the filter.",
+      "status_success": "Success",
+      "status_failed": "Failed",
+      "status_dead_letter": "Dead Letter (DLQ)",
+      "status_invalid_signature": "Invalid Signature",
+      "status_processing": "Processing",
+      "status_pending": "Pending",
+      "load_failed": "Failed to load webhook events",
+      "retry_queued": "Queued order #{{order}} for retry.",
+      "retry_failed": "Failed to retry webhook",
+      "pagination": "Page {{page}} of {{totalPages}} (Total: {{totalCount}})"
     }
   },
   "upgrade_modal": {
