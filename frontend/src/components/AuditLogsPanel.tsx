@@ -1,4 +1,5 @@
 import { AlertCircle, Shield, X } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { useAuditLogs, ACTION_LABELS } from "../hooks/useAuditLogs"
 import { AuditLogItem } from "./audit-logs/AuditLogItem"
 
@@ -16,6 +17,7 @@ const FILTER_OPTIONS = [
 ]
 
 export function AuditLogsPanel({ shopId, onClose }: AuditLogsPanelProps) {
+  const { t } = useTranslation()
   const { logs, loading, error, filter, handleFilterChange } = useAuditLogs(shopId)
 
   return (
@@ -29,10 +31,10 @@ export function AuditLogsPanel({ shopId, onClose }: AuditLogsPanelProps) {
             </div>
             <div>
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">
-                Nhật ký thao tác
+                {t("audit_logs.title", "Nhật ký thao tác")}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Lịch sử hoạt động của nhân viên
+                {t("audit_logs.subtitle", "Lịch sử hoạt động của nhân viên")}
               </p>
             </div>
           </div>
@@ -59,7 +61,9 @@ export function AuditLogsPanel({ shopId, onClose }: AuditLogsPanelProps) {
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                 }`}
               >
-                {f === "" ? "Tất cả" : ACTION_LABELS[f]?.label || f}
+                {f === ""
+                  ? t("common.all", "Tất cả")
+                  : t(`audit_logs.action_${f}`, ACTION_LABELS[f]?.label || f)}
               </button>
             ))}
           </div>
@@ -70,7 +74,7 @@ export function AuditLogsPanel({ shopId, onClose }: AuditLogsPanelProps) {
           {loading ? (
             <div className="flex flex-col items-center gap-3 py-12">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
-              <p className="text-sm text-slate-500">Đang tải...</p>
+              <p className="text-sm text-slate-500">{t("common.loading", "Đang tải...")}</p>
             </div>
           ) : error ? (
             <div className="flex items-center gap-2 rounded-xl bg-red-50 p-4 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
@@ -79,7 +83,7 @@ export function AuditLogsPanel({ shopId, onClose }: AuditLogsPanelProps) {
             </div>
           ) : logs.length === 0 ? (
             <div className="py-12 text-center text-sm text-slate-500 dark:text-slate-400">
-              Chưa có hoạt động nào.
+              {t("audit_logs.empty", "Chưa có hoạt động nào.")}
             </div>
           ) : (
             <div className="space-y-3">

@@ -6,12 +6,15 @@ import { PackageCategoryFilter } from "../packages/PackageCategoryFilter"
 import { PackageGrid } from "../packages/PackageTable"
 import { MemberRemainingBadge } from "../memberships/MemberRemainingBadge"
 import { CheckInHeader } from "../checkin/CheckInHeader"
-import { RemainingIndicator } from "../checkin/CheckInSearchResults"
+import { RemainingIndicator, MembershipResultList } from "../checkin/CheckInSearchResults"
 import { PackageRevenueChart } from "../analytics/PackageRevenueChart"
 import { CheckInFrequencyChart } from "../analytics/CheckInFrequencyChart"
 import { DashboardMembershipsTable } from "../dashboard/DashboardMembershipsTable"
 import { DeviceIntegrationSection } from "../settings/DeviceIntegrationSection"
 import { SubscriptionSection } from "../settings/SubscriptionSection"
+import { AuditLogItem } from "../audit-logs/AuditLogItem"
+import { FileDropzone } from "../import/FileDropzone"
+import { ImportResultTable } from "../import/ImportResultTable"
 import { formatPackageDuration, formatPackageTypeBadge, type PackageItem } from "../../lib/packages"
 import type { Shop } from "../../lib/auth"
 
@@ -247,5 +250,105 @@ describe("i18n screen translations when switched to English", () => {
     expect(screen.getByText("Service Plan Type")).toBeInTheDocument()
     expect(screen.getByText("Paid Plan")).toBeInTheDocument()
     expect(screen.getByText("Plan Expiration Date")).toBeInTheDocument()
+  })
+
+  it("translates MembershipResultList buttons (Renew & CI, Checked In) into English", () => {
+    render(
+      <MembershipResultList
+        memberships={[
+          {
+            id: "m-1",
+            customer_name: "John Doe",
+            phone: "0123456789",
+            sessions_left: 0,
+            expires_at: null,
+            package: { id: "p-1", name: "Basic", sessions_count: 10 },
+          },
+          {
+            id: "m-2",
+            customer_name: "Jane Doe",
+            phone: "0987654321",
+            sessions_left: 5,
+            expires_at: null,
+            checked_in_today: true,
+            package: { id: "p-1", name: "Basic", sessions_count: 10 },
+          },
+        ]}
+        checkingInId={null}
+        checkInMessage={null}
+        onCheckIn={() => {}}
+        onRenew={() => {}}
+        onViewDetail={() => {}}
+      />,
+    )
+
+    expect(screen.getByRole("button", { name: /Renew and check-in for John Doe/i })).toBeInTheDocument()
+    expect(screen.getByText("Renew & CI")).toBeInTheDocument()
+    expect(screen.getAllByText("Checked In").length).toBeGreaterThanOrEqual(1)
+  })
+
+  it("translates AuditLogItem and audit descriptions into English", () => {
+    render(
+      <AuditLogItem
+        log={{
+          id: "log-1",
+          staff_name: "Alice Nguyen (Admin)",
+          target_type: "Membership",
+          target_id: "m-1",
+          action: "check_in",
+          details: {
+            membership_name: "Edward Hoang",
+            package_name: "Monthly Package (30 days)",
+            sessions_after: 10,
+          },
+          created_at: new Date().toISOString(),
+        }}
+      />,
+    )
+
+    expect(screen.getByText("Check-in")).toBeInTheDocument()
+    expect(
+      screen.getByText(/Member: Edward Hoang • Package: Monthly Package \(30 days\) • Remaining: 10 sessions/i),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/just now/i)).toBeInTheDocument()
+  })
+
+  it("translates FileDropzone and ImportResultTable into English", () => {
+    render(
+      <FileDropzone
+        selectedFile={null}
+        onFileSelect={() => {}}
+        onReset={() => {}}
+      />,
+    )
+
+    expect(screen.getByText(/Drag & drop files here, or/i)).toBeInTheDocument()
+    expect(screen.getByText(/browse from your computer/i)).toBeInTheDocument()
+    expect(screen.getByText(/Supported formats: \.xlsx, \.xls, \.csv/i)).toBeInTheDocument()
+
+    cleanup()
+
+    render(
+      <ImportResultTable
+        importResult={{
+          total_rows: 5,
+          success_count: 3,
+          failed_count: 2,
+          errors: [
+            {
+              row: 2,
+              customer_name: "Invalid User",
+              phone: "abc",
+              error: "Invalid phone number",
+            },
+          ],
+        }}
+      />,
+    )
+
+    expect(screen.getByText("Total Rows")).toBeInTheDocument()
+    expect(screen.getByText("Errors")).toBeInTheDocument()
+    expect(screen.getByText("Error details (2)")).toBeInTheDocument()
+    expect(screen.getByText("Row 2")).toBeInTheDocument()
   })
 })

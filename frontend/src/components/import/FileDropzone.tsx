@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { FileText, Upload } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 interface FileDropzoneProps {
   selectedFile: File | null
@@ -8,6 +9,7 @@ interface FileDropzoneProps {
 }
 
 export function FileDropzone({ selectedFile, onFileSelect, onReset }: FileDropzoneProps) {
+  const { t } = useTranslation()
   const [isDragging, setIsDragging] = useState(false)
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -55,7 +57,7 @@ export function FileDropzone({ selectedFile, onFileSelect, onReset }: FileDropzo
             onClick={onReset}
             className="mt-2 text-xs font-semibold text-rose-600 hover:underline dark:text-rose-400"
           >
-            Chọn file khác
+            {t("import.choose_another_file", "Chọn file khác")}
           </button>
         </div>
       ) : (
@@ -64,9 +66,9 @@ export function FileDropzone({ selectedFile, onFileSelect, onReset }: FileDropzo
             <Upload className="h-6 w-6" />
           </div>
           <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-            Kéo thả file vào đây hoặc{" "}
+            {t("import.dropzone_title", "Kéo thả file vào đây hoặc")}{" "}
             <label className="cursor-pointer text-emerald-600 hover:underline dark:text-emerald-400">
-              tải lên file từ máy tính
+              {t("import.dropzone_browse", "tải lên file từ máy tính")}
               <input
                 type="file"
                 accept=".xlsx,.xls,.csv"
@@ -76,7 +78,7 @@ export function FileDropzone({ selectedFile, onFileSelect, onReset }: FileDropzo
             </label>
           </p>
           <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
-            Hỗ trợ định dạng: .xlsx, .xls, .csv
+            {t("import.dropzone_formats", "Hỗ trợ định dạng: .xlsx, .xls, .csv")}
           </p>
         </>
       )}
