@@ -47,7 +47,7 @@ class FreezeMembership
             I18n.t('errors.membership.already_frozen', default: 'Thẻ hội viên đã trong trạng thái bảo lưu')
     end
 
-    return unless membership.status == 'expired'
+    return unless membership.calculate_status == 'expired'
 
     raise IneligibleMembershipError,
           I18n.t('errors.membership.cannot_freeze_expired',

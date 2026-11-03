@@ -133,11 +133,24 @@ module MembershipStatusable
     save!
   end
 
+  # Keep the pending freeze credit out of stored expiry; unfreeze applies it once.
+  def renewal_base_date
+    pending_days = pending_freeze_days
+    effective_expiry = expires_at && (expires_at + pending_days.days)
+    [effective_expiry || Date.current, Date.current].max - pending_days.days
+  end
+
   private
 
+  def pending_freeze_days
+    return 0 unless frozen_at.present? && frozen_until.present?
+
+    end_date = [Date.current, frozen_until + 1].min
+    [(end_date - frozen_at.to_date).to_i, 0].max
+  end
+
   def calculate_renewal_expires_at
-    base_date = expires_at.present? && expires_at >= Date.current ? expires_at : Date.current
-    base_date + package.duration_days.days
+    renewal_base_date + package.duration_days.days
   end
 
   def status_expired?
