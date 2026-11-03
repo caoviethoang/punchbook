@@ -12,6 +12,7 @@ class Membership < ApplicationRecord
 
   belongs_to :shop, inverse_of: :memberships
   belongs_to :package, -> { with_discarded }, inverse_of: :memberships
+  has_many :class_bookings, dependent: :restrict_with_error
   has_many :check_ins, dependent: :destroy, inverse_of: :membership
   has_many :invoices, dependent: :destroy, inverse_of: :membership
   has_many :membership_reminders, dependent: :destroy, inverse_of: :membership

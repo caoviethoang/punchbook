@@ -3,7 +3,7 @@ import type { Shop, Staff } from "../lib/auth"
 import { LanguageToggle } from "./ui/LanguageToggle"
 import { ThemeToggle } from "./ui/ThemeToggle"
 
-export type AppView = "dashboard" | "checkin" | "packages" | "members" | "settings"
+export type AppView = "dashboard" | "checkin" | "classes" | "packages" | "members" | "settings"
 
 interface NavItemConfig {
   view: AppView
@@ -15,6 +15,7 @@ interface NavItemConfig {
 const NAV_ITEMS_CONFIG: NavItemConfig[] = [
   { view: "dashboard", labelKey: "nav.dashboard", defaultLabel: "Dashboard", adminOnly: true },
   { view: "checkin", labelKey: "nav.checkin", defaultLabel: "Check-in" },
+  { view: "classes", labelKey: "nav.classes", defaultLabel: "Lịch lớp" },
   { view: "members", labelKey: "nav.members", defaultLabel: "Hội viên" },
   { view: "packages", labelKey: "nav.packages", defaultLabel: "Gói dịch vụ", adminOnly: true },
   { view: "settings", labelKey: "nav.settings", defaultLabel: "Cài đặt", adminOnly: true },

@@ -28,3 +28,21 @@ en:
       not_retryable: "Webhook event is not in a retryable state"
       invalid_signature: "Invalid signature"
       failed: "Webhook processing failed"
+
+  classes:
+    errors:
+      instructor_busy: "Instructor already has an overlapping class."
+      capacity_below_bookings: "Capacity cannot be below confirmed attendance."
+      invalid_member: "Membership does not belong to this studio or was deleted."
+      frozen_member: "Unfreeze the membership before booking or checking in."
+      no_credit: "Membership has no remaining sessions."
+      expired_member: "Membership must be valid on the class date."
+      closed: "This class is closed for changes or booking."
+      cannot_cancel: "Only upcoming, unattended bookings can be cancelled."
+      not_booked: "Confirm the booking before check-in."
+      check_in_window: "Check-in opens 30 minutes before class and closes at the end."
+      past_schedule: "New classes must start in the future."
+      invalid_recurrence: "Select weekdays and an end date within 12 weeks."
+      invalid_range: "Select a valid calendar range of up to 93 days."
+      has_bookings: "This class has booking history. Cancel it and create a new class to change times or booking policy."
+      not_ended: "Complete the class after its end time."
