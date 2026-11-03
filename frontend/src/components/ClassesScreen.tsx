@@ -324,110 +324,114 @@ export function ClassesScreen({ currentStaff }: ClassesScreenProps) {
 
       {/* Calendar Body */}
       {view === 'week' ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-7">
-          {days.map((day) => {
-            const k = dateKey(day)
-            const isToday = k === todayKey
-            const daySchedules = schedulesByDate.get(k) || []
+        <div className="overflow-x-auto pb-4 pt-1 -mx-2 px-2">
+          <div className="grid min-w-[770px] grid-cols-7 gap-3 xl:min-w-0">
+            {days.map((day) => {
+              const k = dateKey(day)
+              const isToday = k === todayKey
+              const daySchedules = schedulesByDate.get(k) || []
 
-            return (
-              <div
-                key={k}
-                className={`flex flex-col min-h-[300px] rounded-3xl border p-3 transition ${
-                  isToday
-                    ? 'border-indigo-300 bg-indigo-50/20 dark:border-indigo-900/60 dark:bg-indigo-950/20'
-                    : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
-                }`}
-              >
-                {/* Day Header */}
-                <div className="pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    {day.toLocaleDateString([], { weekday: 'short' })}
-                  </span>
-                  <span
-                    className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
-                      isToday
-                        ? 'bg-indigo-600 text-white'
-                        : 'text-slate-800 dark:text-slate-200'
-                    }`}
-                  >
-                    {day.getDate()}
-                  </span>
-                </div>
+              return (
+                <div
+                  key={k}
+                  className={`flex flex-col min-h-[460px] rounded-3xl border p-3 transition shadow-xs ${
+                    isToday
+                      ? 'border-indigo-400 bg-indigo-50/25 ring-2 ring-indigo-400/20 dark:border-indigo-700/80 dark:bg-indigo-950/25 dark:ring-indigo-700/30'
+                      : 'border-slate-200/90 bg-white dark:border-slate-800 dark:bg-slate-900'
+                  }`}
+                >
+                  {/* Day Header */}
+                  <div className="pb-2.5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      {day.toLocaleDateString([], { weekday: 'short' })}
+                    </span>
+                    <span
+                      className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition ${
+                        isToday
+                          ? 'bg-indigo-600 text-white shadow-sm'
+                          : 'text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      {day.getDate()}
+                    </span>
+                  </div>
 
-                {/* Day Class cards */}
-                <div className="mt-2.5 flex-1 space-y-2 overflow-y-auto">
-                  {daySchedules.length === 0 ? (
-                    <div className="flex h-24 items-center justify-center text-[11px] text-slate-400 italic">
-                      -
-                    </div>
-                  ) : (
-                    daySchedules.map((s) => {
-                      const startTime = new Date(s.starts_at).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
-                      const endTime = new Date(s.ends_at).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
-                      const isFull = s.booked_count >= s.max_capacity
+                  {/* Day Class cards */}
+                  <div className="mt-3 flex-1 space-y-2.5 overflow-y-auto pr-0.5">
+                    {daySchedules.length === 0 ? (
+                      <div className="flex h-32 items-center justify-center text-xs text-slate-400 italic">
+                        -
+                      </div>
+                    ) : (
+                      daySchedules.map((s) => {
+                        const startTime = new Date(s.starts_at).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                        const endTime = new Date(s.ends_at).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                        const isFull = s.booked_count >= s.max_capacity
 
-                      return (
-                        <div
-                          key={s.id}
-                          onClick={() => handleOpenRoster(s.id)}
-                          className="cursor-pointer rounded-2xl border border-slate-100 bg-slate-50 p-2.5 shadow-2xs transition hover:-translate-y-0.5 hover:shadow-xs dark:border-slate-800 dark:bg-slate-800/60"
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className="h-2 w-2 rounded-full shrink-0"
-                              style={{ backgroundColor: s.class_type.color }}
-                            />
-                            <h4 className="font-bold text-xs truncate text-slate-900 dark:text-slate-100">
+                        return (
+                          <div
+                            key={s.id}
+                            onClick={() => handleOpenRoster(s.id)}
+                            style={{ borderLeftColor: s.class_type.color }}
+                            className="group cursor-pointer rounded-2xl border-l-[3.5px] border-y border-r border-slate-200/70 bg-slate-50/60 p-2.5 shadow-xs transition hover:-translate-y-0.5 hover:shadow-md hover:border-slate-300 dark:border-slate-800/80 dark:bg-slate-800/50 dark:hover:border-slate-700 dark:hover:bg-slate-800"
+                          >
+                            <h4
+                              className="font-bold text-xs text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
+                              title={s.class_type.name}
+                            >
                               {s.class_type.name}
                             </h4>
-                          </div>
 
-                          <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                            <Clock className="h-3 w-3 shrink-0" />
-                            <span>
-                              {startTime} - {endTime}
-                            </span>
-                          </div>
-
-                          {s.instructor && (
-                            <div className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                              <User className="h-3 w-3 shrink-0" />
-                              <span className="truncate">{s.instructor.name}</span>
-                            </div>
-                          )}
-
-                          <div className="mt-2 flex items-center justify-between text-[10px]">
-                            <span
-                              className={`rounded-full px-2 py-0.5 font-semibold ${
-                                isFull
-                                  ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
-                                  : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
-                              }`}
-                            >
-                              {s.booked_count}/{s.max_capacity}
-                            </span>
-
-                            {s.waitlisted_count > 0 && (
-                              <span className="text-amber-600 dark:text-amber-400 font-medium">
-                                +{s.waitlisted_count} {t('classes.status_waitlisted', 'chờ')}
+                            <div className="mt-1.5 flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                              <Clock className="h-3 w-3 shrink-0 text-slate-400 dark:text-slate-500" />
+                              <span className="tabular-nums">
+                                {startTime} - {endTime}
                               </span>
+                            </div>
+
+                            {s.instructor && (
+                              <div
+                                className="mt-1 flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400 truncate"
+                                title={s.instructor.name}
+                              >
+                                <User className="h-3 w-3 shrink-0 text-slate-400 dark:text-slate-500" />
+                                <span className="truncate">{s.instructor.name}</span>
+                              </div>
                             )}
+
+                            <div className="mt-2.5 flex items-center justify-between gap-1 border-t border-slate-200/60 pt-1.5 text-[10px] dark:border-slate-700/60">
+                              <span
+                                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold ${
+                                  isFull
+                                    ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
+                                    : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                }`}
+                              >
+                                <Users className="h-2.5 w-2.5 shrink-0" />
+                                {s.booked_count}/{s.max_capacity}
+                              </span>
+
+                              {s.waitlisted_count > 0 && (
+                                <span className="inline-flex items-center rounded-full bg-amber-100/90 px-1.5 py-0.5 font-semibold text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                                  +{s.waitlisted_count} {t('classes.status_waitlisted', 'chờ')}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      )
-                    })
-                  )}
+                        )
+                      })
+                    )}
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
       ) : view === 'day' ? (
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
