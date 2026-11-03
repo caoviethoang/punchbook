@@ -55,7 +55,13 @@ export function AppHeader({
 
   return (
     <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <div
+        className={`mx-auto flex items-center justify-between gap-3 px-4 py-3 sm:px-6 transition-all duration-200 ${
+          activeView === "classes"
+            ? "max-w-7xl 2xl:max-w-[1600px]"
+            : "max-w-5xl"
+        }`}
+      >
         <div className="flex items-center gap-2 shrink-0 sm:gap-2.5">
           <h1 className="text-lg font-extrabold tracking-tight text-indigo-600 sm:text-xl md:text-2xl dark:text-indigo-400">
             {shop.name}

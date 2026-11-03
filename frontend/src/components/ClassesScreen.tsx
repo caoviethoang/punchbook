@@ -47,6 +47,7 @@ export function ClassesScreen({ currentStaff }: ClassesScreenProps) {
   // Modals
   const [isTypeManagerOpen, setIsTypeManagerOpen] = useState(false)
   const [editingSchedule, setEditingSchedule] = useState<ClassSchedule | undefined>(undefined)
+  const [editorInitialDate, setEditorInitialDate] = useState<Date | undefined>(undefined)
   const [isEditorOpen, setIsEditorOpen] = useState(false)
   const [selectedRosterSchedule, setSelectedRosterSchedule] = useState<ClassSchedule | null>(null)
 
@@ -254,13 +255,13 @@ export function ClassesScreen({ currentStaff }: ClassesScreenProps) {
       )}
 
       {/* Calendar Toolbar */}
-      <div className="flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 rounded-3xl border border-slate-200/90 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
         {/* Navigation & Date display */}
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={handleToday}
-            className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700/80 transition"
           >
             {t('classes.today', 'Hôm nay')}
           </button>
@@ -268,14 +269,14 @@ export function ClassesScreen({ currentStaff }: ClassesScreenProps) {
             <button
               type="button"
               onClick={handlePrev}
-              className="rounded-xl p-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="rounded-xl p-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
               type="button"
               onClick={handleNext}
-              className="rounded-xl p-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="rounded-xl p-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -283,16 +284,16 @@ export function ClassesScreen({ currentStaff }: ClassesScreenProps) {
           <span className="text-sm font-bold capitalize text-slate-900 dark:text-slate-100">
             {dateLabel}
           </span>
-          {loading && <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />}
+          {loading && <Loader2 className="h-4 w-4 animate-spin text-indigo-600 dark:text-indigo-400" />}
         </div>
 
-        {/* View Switcher & Filter */}
-        <div className="flex items-center gap-2">
-          {/* Class Type filter */}
+        {/* View Switcher & Dropdown */}
+        <div className="flex items-center gap-2.5">
+          {/* Class Type filter dropdown */}
           <select
             value={selectedTypeId}
             onChange={(e) => setSelectedTypeId(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+            className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 shadow-2xs focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
           >
             <option value="all">{t('classes.all_types', 'Tất cả môn')}</option>
             {types.map((type) => (
@@ -303,15 +304,15 @@ export function ClassesScreen({ currentStaff }: ClassesScreenProps) {
           </select>
 
           {/* Day / Week / Month toggles */}
-          <div className="flex items-center rounded-2xl border border-slate-200 bg-slate-50/50 p-1 dark:border-slate-700 dark:bg-slate-800">
+          <div className="flex items-center rounded-2xl border border-slate-200/80 bg-slate-100/70 p-1 dark:border-slate-700 dark:bg-slate-800/80">
             {(['day', 'week', 'month'] as CalendarView[]).map((v) => (
               <button
                 key={v}
                 type="button"
                 onClick={() => setView(v)}
-                className={`rounded-xl px-2.5 py-1 text-xs font-semibold transition ${
+                className={`rounded-xl px-3 py-1 text-xs font-semibold transition ${
                   view === v
-                    ? 'bg-white text-indigo-600 shadow-xs dark:bg-slate-700 dark:text-indigo-400'
+                    ? 'bg-white text-indigo-600 shadow-xs dark:bg-slate-700 dark:text-indigo-300'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100'
                 }`}
               >
@@ -322,115 +323,272 @@ export function ClassesScreen({ currentStaff }: ClassesScreenProps) {
         </div>
       </div>
 
-      {/* Calendar Body */}
-      {view === 'week' ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-7">
-          {days.map((day) => {
-            const k = dateKey(day)
-            const isToday = k === todayKey
-            const daySchedules = schedulesByDate.get(k) || []
+      {/* Interactive Category Filter Pills */}
+      {types.length > 0 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+          <button
+            type="button"
+            onClick={() => setSelectedTypeId('all')}
+            className={`inline-flex shrink-0 items-center gap-1.5 rounded-2xl px-3 py-1.5 font-semibold transition ${
+              selectedTypeId === 'all'
+                ? 'bg-slate-900 text-white shadow-xs dark:bg-white dark:text-slate-900'
+                : 'border border-slate-200/90 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800'
+            }`}
+          >
+            <span>{t('classes.all_types', 'Tất cả môn')}</span>
+            <span
+              className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
+                selectedTypeId === 'all'
+                  ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900'
+                  : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+              }`}
+            >
+              {schedules.length}
+            </span>
+          </button>
 
+          {types.map((type) => {
+            const isSelected = selectedTypeId === type.id
+            const count = schedules.filter((s) => s.class_type.id === type.id).length
             return (
-              <div
-                key={k}
-                className={`flex flex-col min-h-[300px] rounded-3xl border p-3 transition ${
-                  isToday
-                    ? 'border-indigo-300 bg-indigo-50/20 dark:border-indigo-900/60 dark:bg-indigo-950/20'
-                    : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
+              <button
+                key={type.id}
+                type="button"
+                onClick={() => setSelectedTypeId(type.id)}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-2xl border px-3 py-1.5 font-semibold transition ${
+                  isSelected
+                    ? 'shadow-xs'
+                    : 'border-slate-200/90 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
                 }`}
+                style={
+                  isSelected
+                    ? {
+                        backgroundColor: `${type.color}15`,
+                        color: type.color,
+                        borderColor: type.color,
+                      }
+                    : undefined
+                }
               >
-                {/* Day Header */}
-                <div className="pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    {day.toLocaleDateString([], { weekday: 'short' })}
-                  </span>
-                  <span
-                    className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
-                      isToday
-                        ? 'bg-indigo-600 text-white'
-                        : 'text-slate-800 dark:text-slate-200'
-                    }`}
-                  >
-                    {day.getDate()}
-                  </span>
-                </div>
-
-                {/* Day Class cards */}
-                <div className="mt-2.5 flex-1 space-y-2 overflow-y-auto">
-                  {daySchedules.length === 0 ? (
-                    <div className="flex h-24 items-center justify-center text-[11px] text-slate-400 italic">
-                      -
-                    </div>
-                  ) : (
-                    daySchedules.map((s) => {
-                      const startTime = new Date(s.starts_at).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
-                      const endTime = new Date(s.ends_at).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
-                      const isFull = s.booked_count >= s.max_capacity
-
-                      return (
-                        <div
-                          key={s.id}
-                          onClick={() => handleOpenRoster(s.id)}
-                          className="cursor-pointer rounded-2xl border border-slate-100 bg-slate-50 p-2.5 shadow-2xs transition hover:-translate-y-0.5 hover:shadow-xs dark:border-slate-800 dark:bg-slate-800/60"
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className="h-2 w-2 rounded-full shrink-0"
-                              style={{ backgroundColor: s.class_type.color }}
-                            />
-                            <h4 className="font-bold text-xs truncate text-slate-900 dark:text-slate-100">
-                              {s.class_type.name}
-                            </h4>
-                          </div>
-
-                          <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                            <Clock className="h-3 w-3 shrink-0" />
-                            <span>
-                              {startTime} - {endTime}
-                            </span>
-                          </div>
-
-                          {s.instructor && (
-                            <div className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                              <User className="h-3 w-3 shrink-0" />
-                              <span className="truncate">{s.instructor.name}</span>
-                            </div>
-                          )}
-
-                          <div className="mt-2 flex items-center justify-between text-[10px]">
-                            <span
-                              className={`rounded-full px-2 py-0.5 font-semibold ${
-                                isFull
-                                  ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
-                                  : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
-                              }`}
-                            >
-                              {s.booked_count}/{s.max_capacity}
-                            </span>
-
-                            {s.waitlisted_count > 0 && (
-                              <span className="text-amber-600 dark:text-amber-400 font-medium">
-                                +{s.waitlisted_count} {t('classes.status_waitlisted', 'chờ')}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })
-                  )}
-                </div>
-              </div>
+                <span
+                  className="h-2 w-2 rounded-full shrink-0"
+                  style={{ backgroundColor: type.color }}
+                />
+                <span>
+                  {type.name} ({count})
+                </span>
+              </button>
             )
           })}
         </div>
+      )}
+
+      {/* Calendar Body */}
+      {view === 'week' ? (
+        <div className="overflow-x-auto pb-4 pt-1 -mx-2 px-2">
+          <div className="grid min-w-[770px] grid-cols-7 gap-3 xl:min-w-0">
+            {days.map((day) => {
+              const k = dateKey(day)
+              const isToday = k === todayKey
+              const daySchedules = schedulesByDate.get(k) || []
+              const dayName = day.toLocaleDateString([], { weekday: 'short' })
+
+              return (
+                <div
+                  key={k}
+                  className={`flex flex-col min-h-[480px] rounded-3xl border transition shadow-xs ${
+                    isToday
+                      ? 'border-indigo-400/80 bg-gradient-to-b from-indigo-50/40 via-indigo-50/10 to-transparent dark:border-indigo-600/60 dark:from-indigo-950/40 dark:via-transparent ring-1 ring-indigo-400/30'
+                      : 'border-slate-200/90 bg-white/80 dark:border-slate-800/90 dark:bg-slate-900/80'
+                  }`}
+                >
+                  {/* Day Header */}
+                  <div
+                    className={`p-3 pb-2.5 border-b flex items-center justify-between ${
+                      isToday
+                        ? 'border-indigo-100 dark:border-indigo-900/50'
+                        : 'border-slate-100 dark:border-slate-800/80'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition ${
+                          isToday
+                            ? 'bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-sm ring-2 ring-indigo-400/40'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold'
+                        }`}
+                      >
+                        {day.getDate()}
+                      </span>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                            {dayName}
+                          </span>
+                          {isToday && (
+                            <span className="inline-flex items-center rounded-full bg-indigo-100 px-1.5 py-0.2 text-[9px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                              {t('classes.today', 'Hôm nay')}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                          {daySchedules.length} {t('classes.sessions', 'ca')}
+                        </span>
+                      </div>
+                    </div>
+
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        title={t('classes.new_class', 'Lên lịch lớp mới')}
+                        onClick={() => {
+                          const d = new Date(day)
+                          d.setHours(8, 0, 0, 0)
+                          setEditorInitialDate(d)
+                          setEditingSchedule(undefined)
+                          setIsEditorOpen(true)
+                        }}
+                        className="flex h-6 w-6 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Day Class cards */}
+                  <div className="p-2.5 flex-1 space-y-2.5 overflow-y-auto">
+                    {daySchedules.length === 0 ? (
+                      <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/80 p-4 text-center dark:border-slate-800/80 min-h-[140px]">
+                        <CalendarDays className="h-5 w-5 text-slate-300 dark:text-slate-600 mb-1" />
+                        <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                          {t('classes.no_classes', 'Chưa có lớp')}
+                        </p>
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const d = new Date(day)
+                              d.setHours(8, 0, 0, 0)
+                              setEditorInitialDate(d)
+                              setEditingSchedule(undefined)
+                              setIsEditorOpen(true)
+                            }}
+                            className="mt-2 text-[10px] font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition"
+                          >
+                            + {t('classes.new_class', 'Lên lịch lớp mới')}
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      daySchedules.map((s) => {
+                        const startTime = new Date(s.starts_at).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                        const endTime = new Date(s.ends_at).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                        const isFull = s.booked_count >= s.max_capacity
+                        const durationMin = Math.round(
+                          (new Date(s.ends_at).getTime() - new Date(s.starts_at).getTime()) / 60000
+                        )
+                        const fillPct = s.max_capacity > 0 ? (s.booked_count / s.max_capacity) * 100 : 0
+
+                        return (
+                          <div
+                            key={s.id}
+                            onClick={() => handleOpenRoster(s.id)}
+                            className="group relative cursor-pointer overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-3 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md dark:border-slate-800/90 dark:bg-slate-800/90 dark:hover:border-slate-700 dark:hover:bg-slate-800 active:scale-[0.98]"
+                          >
+                            {/* Top color indicator bar */}
+                            <div
+                              className="absolute top-0 left-0 right-0 h-1 transition-all group-hover:h-1.5"
+                              style={{ backgroundColor: s.class_type.color }}
+                            />
+
+                            {/* Time & Duration row */}
+                            <div className="flex items-center justify-between text-[11px] font-medium pt-0.5">
+                              <span className="inline-flex items-center gap-1 font-mono font-semibold tabular-nums text-slate-700 dark:text-slate-200 bg-slate-100/90 dark:bg-slate-700/60 px-1.5 py-0.5 rounded-md">
+                                <Clock className="h-3 w-3 text-slate-400" />
+                                {startTime} - {endTime}
+                              </span>
+                              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">
+                                {durationMin}p
+                              </span>
+                            </div>
+
+                            {/* Class Title */}
+                            <h4
+                              className="mt-2 font-bold text-xs text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
+                              title={s.class_type.name}
+                            >
+                              {s.class_type.name}
+                            </h4>
+
+                            {/* Instructor with Avatar circle */}
+                            {s.instructor && (
+                              <div
+                                className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400 truncate"
+                                title={s.instructor.name}
+                              >
+                                <span
+                                  className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-white shadow-2xs"
+                                  style={{ backgroundColor: s.class_type.color }}
+                                >
+                                  {s.instructor.name.trim().charAt(0).toUpperCase()}
+                                </span>
+                                <span className="truncate">{s.instructor.name}</span>
+                              </div>
+                            )}
+
+                            {/* Capacity & Progress */}
+                            <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                              <div className="flex items-center justify-between text-[10px]">
+                                <span
+                                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold ${
+                                    isFull
+                                      ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
+                                      : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                  }`}
+                                >
+                                  <Users className="h-2.5 w-2.5 shrink-0" />
+                                  {s.booked_count}/{s.max_capacity}
+                                </span>
+
+                                {s.waitlisted_count > 0 && (
+                                  <span className="inline-flex items-center rounded-full bg-amber-100/90 px-1.5 py-0.5 font-semibold text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                                    +{s.waitlisted_count} {t('classes.status_waitlisted', 'chờ')}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Occupancy bar */}
+                              <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700/60">
+                                <div
+                                  className={`h-full rounded-full transition-all duration-300 ${
+                                    isFull
+                                      ? 'bg-rose-500'
+                                      : fillPct >= 80
+                                      ? 'bg-amber-500'
+                                      : 'bg-emerald-500'
+                                  }`}
+                                  style={{ width: `${Math.min(100, fillPct)}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
       ) : view === 'day' ? (
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
           <div className="space-y-3">
             {filteredSchedules.length === 0 ? (
               <div className="py-16 text-center text-xs text-slate-400">
@@ -448,50 +606,75 @@ export function ClassesScreen({ currentStaff }: ClassesScreenProps) {
                   minute: '2-digit',
                 })
                 const isFull = s.booked_count >= s.max_capacity
+                const durationMin = Math.round(
+                  (new Date(s.ends_at).getTime() - new Date(s.starts_at).getTime()) / 60000
+                )
+                const fillPct = s.max_capacity > 0 ? (s.booked_count / s.max_capacity) * 100 : 0
 
                 return (
                   <div
                     key={s.id}
                     onClick={() => handleOpenRoster(s.id)}
-                    className="flex cursor-pointer flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:bg-slate-100/70 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-800/40 dark:hover:bg-slate-800/80"
+                    className="group relative flex cursor-pointer flex-col gap-4 overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md sm:flex-row sm:items-center sm:justify-between dark:border-slate-800/90 dark:bg-slate-800/80 dark:hover:border-slate-700"
                   >
-                    <div className="flex items-center gap-3">
+                    <div
+                      className="absolute top-0 bottom-0 left-0 w-1.5 transition-all group-hover:w-2"
+                      style={{ backgroundColor: s.class_type.color }}
+                    />
+
+                    <div className="flex items-center gap-3.5 pl-2">
                       <span
-                        className="h-3.5 w-3.5 shrink-0 rounded-full"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-xs font-bold text-white shadow-xs"
                         style={{ backgroundColor: s.class_type.color }}
-                      />
+                      >
+                        {s.class_type.name.slice(0, 2).toUpperCase()}
+                      </span>
                       <div>
-                        <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                        <h4 className="font-bold text-sm text-slate-900 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400 transition-colors">
                           {s.class_type.name}
                         </h4>
-                        <div className="mt-0.5 flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-                          <span className="flex items-center gap-1 font-medium">
-                            <Clock className="h-3 w-3" />
-                            {startTime} - {endTime}
+                        <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                          <span className="flex items-center gap-1 font-mono font-semibold tabular-nums text-slate-700 dark:text-slate-300">
+                            <Clock className="h-3.5 w-3.5 text-slate-400" />
+                            {startTime} - {endTime} ({durationMin}p)
                           </span>
                           <span className="flex items-center gap-1">
-                            <User className="h-3 w-3" />
+                            <User className="h-3.5 w-3.5 text-slate-400" />
                             {s.instructor?.name || t('classes.unassigned', 'Chưa phân công')}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 text-xs">
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3.5 w-3.5 text-slate-400" />
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">
-                          {s.booked_count}/{s.max_capacity} {t('classes.spots', 'chỗ')}
-                        </span>
-                        {isFull && (
-                          <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
-                            {t('classes.full_badge', 'Đủ chỗ')}
+                    <div className="flex items-center gap-4 text-xs pl-2 sm:pl-0">
+                      <div className="w-36">
+                        <div className="flex items-center justify-between text-[11px] mb-1 font-medium">
+                          <span className="flex items-center gap-1 text-slate-700 dark:text-slate-300 font-semibold">
+                            <Users className="h-3 w-3 text-slate-400" />
+                            {s.booked_count}/{s.max_capacity} {t('classes.spots', 'chỗ')}
                           </span>
-                        )}
-                      </span>
+                          {isFull && (
+                            <span className="rounded-full bg-rose-100 px-2 py-0.2 text-[10px] font-bold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+                              {t('classes.full_badge', 'Đủ chỗ')}
+                            </span>
+                          )}
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700/60">
+                          <div
+                            className={`h-full rounded-full transition-all duration-300 ${
+                              isFull
+                                ? 'bg-rose-500'
+                                : fillPct >= 80
+                                ? 'bg-amber-500'
+                                : 'bg-emerald-500'
+                            }`}
+                            style={{ width: `${Math.min(100, fillPct)}%` }}
+                          />
+                        </div>
+                      </div>
 
                       {s.waitlisted_count > 0 && (
-                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
+                        <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
                           {s.waitlisted_count} {t('classes.status_waitlisted', 'chờ')}
                         </span>
                       )}
@@ -583,9 +766,11 @@ export function ClassesScreen({ currentStaff }: ClassesScreenProps) {
         <ScheduleEditor
           types={types}
           schedule={editingSchedule}
+          initialDate={editorInitialDate}
           onClose={() => {
             setIsEditorOpen(false)
             setEditingSchedule(undefined)
+            setEditorInitialDate(undefined)
           }}
           onSaved={loadSchedules}
         />
