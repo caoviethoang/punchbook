@@ -5,6 +5,9 @@ class Shop < ApplicationRecord
 
   devise :database_authenticatable, :registerable, :validatable
 
+  has_many :class_types, dependent: :restrict_with_error
+  has_many :class_schedules, dependent: :restrict_with_error
+
   has_many :staffs, dependent: :destroy, inverse_of: :shop
   has_many :package_categories, dependent: :destroy, inverse_of: :shop
   has_many :packages, dependent: :destroy, inverse_of: :shop

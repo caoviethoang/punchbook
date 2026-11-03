@@ -21,6 +21,15 @@ Rails.application.routes.draw do
 
     post '/hardware/check_in', to: 'hardware_check_ins#create'
 
+    resources :class_types, only: %i[index show create update destroy]
+    resources :class_schedules, only: %i[index show create update destroy] do
+      member do
+        post :book
+        post :cancel_booking
+        post :check_in_member
+      end
+    end
+
     resources :package_categories, only: %i[index create update destroy]
     resources :packages, only: %i[index create update destroy]
     resources :staffs, only: %i[index create destroy]
