@@ -3,7 +3,7 @@ import { AppHeader, type AppView } from "./components/AppHeader"
 import { LoginScreen } from "./components/LoginScreen"
 import { useAppAuth } from "./hooks/useAppAuth"
 
-const VALID_VIEWS: AppView[] = ["dashboard", "checkin", "packages", "members", "settings"]
+const VALID_VIEWS: AppView[] = ["dashboard", "checkin", "classes", "packages", "members", "settings"]
 
 function getInitialView(): AppView {
   if (typeof window !== "undefined") {
@@ -24,6 +24,9 @@ const DashboardScreen = lazy(() =>
 )
 const CheckInScreen = lazy(() =>
   import("./components/CheckInScreen").then((m) => ({ default: m.CheckInScreen })),
+)
+const ClassesScreen = lazy(() =>
+  import("./components/ClassesScreen").then((m) => ({ default: m.ClassesScreen })),
 )
 const MembershipsScreen = lazy(() =>
   import("./components/MembershipsScreen").then((m) => ({ default: m.MembershipsScreen })),
@@ -124,6 +127,8 @@ function App() {
               shopAddress={shop.address}
               shopPhone={shop.phone}
             />
+          ) : activeView === "classes" ? (
+            <ClassesScreen currentStaff={staff} />
           ) : activeView === "members" ? (
             <MembershipsScreen shop={shop} currentStaff={staff} />
           ) : activeView === "packages" ? (

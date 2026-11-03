@@ -21,3 +21,21 @@ vi:
       not_retryable: "Webhook event không ở trạng thái có thể thử lại."
       invalid_signature: "Chữ ký webhook không hợp lệ."
       failed: "Xử lý webhook thất bại."
+
+  classes:
+    errors:
+      instructor_busy: "Huấn luyện viên đã có lớp trùng giờ."
+      capacity_below_bookings: "Sức chứa không thể thấp hơn số chỗ đã xác nhận."
+      invalid_member: "Hội viên không thuộc cơ sở hoặc đã bị xóa."
+      frozen_member: "Vui lòng mở bảo lưu trước khi đặt lớp hoặc điểm danh."
+      no_credit: "Hội viên đã hết buổi."
+      expired_member: "Thẻ hội viên phải còn hạn vào ngày học."
+      closed: "Lớp đã đóng đăng ký hoặc không thể thay đổi."
+      cannot_cancel: "Chỉ có thể hủy chỗ chưa điểm danh trước giờ học."
+      not_booked: "Cần có chỗ đã xác nhận trước khi điểm danh."
+      check_in_window: "Điểm danh từ 30 phút trước lớp đến khi lớp kết thúc."
+      past_schedule: "Lớp mới phải bắt đầu trong tương lai."
+      invalid_recurrence: "Chọn ngày trong tuần và ngày kết thúc trong vòng 12 tuần."
+      invalid_range: "Chọn khoảng lịch hợp lệ tối đa 93 ngày."
+      has_bookings: "Lớp đã có lịch sử đặt chỗ. Hãy hủy lớp và tạo lớp mới để đổi giờ hoặc chính sách."
+      not_ended: "Chỉ hoàn thành lớp sau giờ kết thúc."
