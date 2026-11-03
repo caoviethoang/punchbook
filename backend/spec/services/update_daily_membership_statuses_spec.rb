@@ -75,5 +75,22 @@ RSpec.describe UpdateDailyMembershipStatuses do
         described_class.call
       end.not_to change(AuditLog, :count)
     end
+
+    it 'automatically unfreezes memberships whose frozen_until date has passed' do
+      m = create_member(package: day_pkg, customer_name: 'Frozen Member', expires_at: Date.current + 10.days)
+      # rubocop:disable Rails/SkipsModelValidations
+      m.update_columns(
+        status: 'frozen',
+        frozen_at: 5.days.ago,
+        frozen_until: Date.yesterday,
+        freeze_reason: 'Sick leave'
+      )
+      # rubocop:enable Rails/SkipsModelValidations
+
+      described_class.call
+
+      expect(m.reload.status).to eq('active')
+      expect(m.frozen_until).to be_nil
+    end
   end
 end

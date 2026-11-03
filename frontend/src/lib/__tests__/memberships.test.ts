@@ -101,6 +101,17 @@ describe("computeMembershipStatus", () => {
     })
   })
 
+  describe("frozen memberships", () => {
+    it("returns frozen when status is frozen or is_frozen is true", () => {
+      expect(
+        computeMembershipStatus({ sessions_left: 5, expires_at: null, status: "frozen" }),
+      ).toBe("frozen")
+      expect(
+        computeMembershipStatus({ sessions_left: 5, expires_at: null, is_frozen: true }),
+      ).toBe("frozen")
+    })
+  })
+
   describe("unlimited memberships", () => {
     it("returns active when neither sessions_left nor expires_at is specified", () => {
       expect(

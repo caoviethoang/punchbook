@@ -20,7 +20,7 @@ class ExpiringMembershipsQuery
     today = Date.current
     end_date = today + days.days
 
-    relation.joins(:package).where(
+    relation.where(frozen_at: nil).joins(:package).where(
       query_conditions,
       threshold: sessions, today: today, end_date: end_date
     )

@@ -211,8 +211,8 @@ export function AttendanceReportSection({
       )}
 
       {/* Filter Tabs & Search Bar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800/80">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1 dark:bg-slate-800/80">
           <FilterTabButton
             active={filterTab === "all"}
             label={t("attendance.tab_all", "Tất cả")}
@@ -270,7 +270,7 @@ export function AttendanceReportSection({
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full min-w-[960px] whitespace-nowrap text-left text-sm">
             <thead className="border-b border-slate-200 text-xs font-semibold uppercase text-slate-500 dark:border-slate-800 dark:text-slate-400">
               <tr>
                 <th className="py-2.5 pl-2 pr-3">{t("attendance.col_rank", "Xếp hạng")}</th>
@@ -323,7 +323,7 @@ function FilterTabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+      className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
         active
           ? variant === "danger"
             ? "bg-rose-600 text-white shadow-sm"
@@ -368,7 +368,7 @@ function AttendanceRow({ record, onSelectDetail }: AttendanceRowProps) {
       </td>
 
       {/* Member column */}
-      <td className="px-3 py-3">
+      <td className="min-w-[180px] px-3 py-3">
         <div className="font-semibold text-slate-900 dark:text-slate-100">
           {record.customer_name}
         </div>
@@ -408,7 +408,7 @@ function AttendanceRow({ record, onSelectDetail }: AttendanceRowProps) {
           })
         ) : (
           <span className="italic text-slate-400 dark:text-slate-500">
-            {t("attendance.no_data", "Chưa có")}
+            {t("attendance.no_check_in", "Chưa check-in")}
           </span>
         )}
       </td>
@@ -417,17 +417,17 @@ function AttendanceRow({ record, onSelectDetail }: AttendanceRowProps) {
       <td className="px-3 py-3">
         {record.is_inactive ? (
           <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
-            <AlertTriangle className="h-3 w-3" />
+            <AlertTriangle className="h-3 w-3 shrink-0" />
             {t("attendance.status_inactive_risk", "Chưa đi tập (Nguy cơ)")}
           </span>
         ) : record.check_ins_count >= 12 ? (
           <span className="inline-flex items-center gap-1 rounded-md border border-purple-200 bg-purple-50 px-2 py-0.5 text-xs font-semibold text-purple-700 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-300">
-            <Flame className="h-3 w-3" />
+            <Flame className="h-3 w-3 shrink-0" />
             {t("attendance.status_very_active", "Rất tích cực (≥3 buổi/tuần)")}
           </span>
         ) : record.check_ins_count >= 4 ? (
           <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
-            <CheckCircle2 className="h-3 w-3" />
+            <CheckCircle2 className="h-3 w-3 shrink-0" />
             {t("attendance.status_regular", "Đều đặn (≥1 buổi/tuần)")}
           </span>
         ) : (

@@ -133,4 +133,36 @@ describe("MembershipTable Pagination", () => {
 
     expect(screen.getByText("Không có hội viên nào đã bị xóa.")).toBeInTheDocument()
   })
+
+  it("renders 'Bảo lưu' button for active member and triggers onOpenFreeze", () => {
+    const onOpenFreeze = vi.fn()
+    render(<MembershipTable {...baseProps} onOpenFreeze={onOpenFreeze} />)
+
+    const freezeBtn = screen.getByRole("button", { name: /Bảo lưu/i })
+    expect(freezeBtn).toBeInTheDocument()
+    fireEvent.click(freezeBtn)
+    expect(onOpenFreeze).toHaveBeenCalledWith(dummyMember)
+  })
+
+  it("renders 'Mở khóa' button for frozen member and triggers onOpenUnfreeze", () => {
+    const onOpenUnfreeze = vi.fn()
+    const frozenMember: Membership = {
+      ...dummyMember,
+      status: "frozen",
+      is_frozen: true,
+      frozen_until: "2026-11-20",
+    }
+    render(
+      <MembershipTable
+        {...baseProps}
+        memberships={[frozenMember]}
+        onOpenUnfreeze={onOpenUnfreeze}
+      />,
+    )
+
+    const unfreezeBtn = screen.getByRole("button", { name: /Mở khóa/i })
+    expect(unfreezeBtn).toBeInTheDocument()
+    fireEvent.click(unfreezeBtn)
+    expect(onOpenUnfreeze).toHaveBeenCalledWith(frozenMember)
+  })
 })

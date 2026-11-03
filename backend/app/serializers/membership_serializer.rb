@@ -2,6 +2,7 @@
 
 # Responsible for converting a Membership into JSON-safe hashes.
 # Keeps the model free of presentation concerns.
+# rubocop:disable Metrics/ClassLength
 class MembershipSerializer
   ASSOCIATION_INCLUDES = {
     package: { only: %i[id name price sessions_count duration_days] },
@@ -55,7 +56,8 @@ class MembershipSerializer
   # Used by MembershipsController (index, create, check_in) and InvoicesController.
   def as_api_json
     membership.as_json(
-      only: %i[id customer_name phone card_number sessions_left expires_at discarded_at notes],
+      only: %i[id customer_name phone card_number sessions_left expires_at discarded_at notes
+               frozen_at frozen_until freeze_reason],
       include: ASSOCIATION_INCLUDES
     ).merge(status_and_qr_hash)
   end
@@ -68,7 +70,8 @@ class MembershipSerializer
   # Used by MembershipsController#show — detailed view with check_ins and invoices.
   def as_detail_json
     base = membership.as_json(
-      only: %i[id customer_name phone card_number sessions_left expires_at created_at notes],
+      only: %i[id customer_name phone card_number sessions_left expires_at created_at notes
+               frozen_at frozen_until freeze_reason],
       include: ASSOCIATION_INCLUDES
     )
     base.merge(extra_detail_hash)
@@ -86,6 +89,15 @@ class MembershipSerializer
       'checked_in_today' => checked_in_today_value,
       'last_checked_in_at' => last_checked_in_at_value,
       'qr_code_value' => "PUNCHBOOK:#{membership.id}"
+    }.merge(freeze_attributes_hash)
+  end
+
+  def freeze_attributes_hash
+    {
+      'is_frozen' => membership.frozen?,
+      'frozen_at' => membership.frozen_at&.iso8601,
+      'frozen_until' => membership.frozen_until&.to_s,
+      'freeze_reason' => membership.freeze_reason
     }
   end
 
@@ -104,8 +116,29 @@ class MembershipSerializer
   def extra_detail_hash
     status_and_qr_hash.merge(
       'check_ins' => serialized_check_ins,
-      'invoices' => serialized_invoices
+      'invoices' => serialized_invoices,
+      'freeze_history' => serialized_freeze_history
     )
+  end
+
+  def serialized_freeze_history
+    freeze_audit_logs.map do |log|
+      {
+        'id' => log.id,
+        'action' => log.action,
+        'created_at' => log.created_at&.iso8601,
+        'staff_name' => log.staff&.name || 'Hệ thống',
+        'details' => log.details
+      }
+    end
+  end
+
+  def freeze_audit_logs
+    membership.shop.audit_logs
+              .where(target_type: 'Membership', target_id: membership.id,
+                     action: %w[membership_frozen membership_unfrozen])
+              .includes(:staff)
+              .order(created_at: :desc)
   end
 
   def serialized_check_ins
@@ -128,3 +161,4 @@ class MembershipSerializer
     membership.invoices.order(created_at: :desc).map(&:as_api_json)
   end
 end
+# rubocop:enable Metrics/ClassLength

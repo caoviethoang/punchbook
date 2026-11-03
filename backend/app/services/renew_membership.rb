@@ -63,17 +63,9 @@ class RenewMembership
   end
 
   def renew_day_package!
-    base_date = renewal_base_date
+    base_date = membership.renewal_base_date
     membership.expires_at = base_date + package.duration_days.days
     membership.sessions_left = nil
-  end
-
-  def renewal_base_date
-    if membership.expires_at.present? && membership.expires_at >= Date.current
-      membership.expires_at
-    else
-      Date.current
-    end
   end
 
   def create_paid_invoice!

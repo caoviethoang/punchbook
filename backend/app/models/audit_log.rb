@@ -52,6 +52,47 @@ class AuditLog < ApplicationRecord
     )
   end
 
+  # rubocop:disable Metrics/ParameterLists, Metrics/MethodLength
+  def self.log_membership_frozen!(shop:, staff:, membership:, frozen_until:, reason: nil, **extra)
+    details = {
+      customer_name: membership.customer_name,
+      phone: membership.phone,
+      package_name: membership.package&.name,
+      frozen_until: frozen_until.to_s,
+      reason: reason,
+      **extra
+    }
+    create!(
+      shop: shop,
+      staff: staff,
+      action: 'membership_frozen',
+      target_type: 'Membership',
+      target_id: membership.id,
+      details: details
+    )
+  end
+
+  def self.log_membership_unfrozen!(shop:, staff:, membership:, days_extended:, new_expires_at:, reason: nil, **extra)
+    details = {
+      customer_name: membership.customer_name,
+      phone: membership.phone,
+      package_name: membership.package&.name,
+      days_extended: days_extended,
+      new_expires_at: new_expires_at&.iso8601,
+      reason: reason,
+      **extra
+    }
+    create!(
+      shop: shop,
+      staff: staff,
+      action: 'membership_unfrozen',
+      target_type: 'Membership',
+      target_id: membership.id,
+      details: details
+    )
+  end
+  # rubocop:enable Metrics/ParameterLists, Metrics/MethodLength
+
   def self.format_renewal_reason(membership)
     if membership.package.session_based?
       "Còn #{membership.sessions_left} buổi"

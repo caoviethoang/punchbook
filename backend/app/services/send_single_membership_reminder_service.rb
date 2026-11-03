@@ -12,12 +12,12 @@ class SendSingleMembershipReminderService
   end
 
   def call
-    return nil if membership.reminder_sent_today?
+    membership.with_lock do
+      next unless Membership.needing_reminder.exists?(membership.id)
+      next if membership.reminder_sent_today?
 
-    payment_url = get_or_create_payment_link(membership)
-    send_zalo_reminder(membership, payment_url)
-
-    membership.membership_reminders.create!(sent_at: Time.current, reminder_type: 'expiring')
+      deliver_reminder
+    end
   rescue StandardError => e
     Rails.logger.error("Failed to send membership reminder for membership #{membership.id}: #{e.message}")
     raise
@@ -26,6 +26,12 @@ class SendSingleMembershipReminderService
   private
 
   attr_reader :membership
+
+  def deliver_reminder
+    payment_url = get_or_create_payment_link(membership)
+    send_zalo_reminder(membership, payment_url)
+    membership.membership_reminders.create!(sent_at: Time.current, reminder_type: 'expiring')
+  end
 
   def get_or_create_payment_link(membership)
     url = find_pending_payment_url(membership)

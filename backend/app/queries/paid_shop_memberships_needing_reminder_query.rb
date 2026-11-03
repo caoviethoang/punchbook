@@ -15,6 +15,7 @@ class PaidShopMembershipsNeedingReminderQuery
 
   def call
     @relation
+      .where(frozen_at: nil)
       .joins(:shop)
       .merge(Shop.paid)
       .where(query_conditions, threshold: Membership::EXPIRING_SESSIONS_THRESHOLD, **date_range)

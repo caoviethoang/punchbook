@@ -33,7 +33,11 @@ export interface Membership {
   expires_at: string | null
   package: MembershipPackage
   shop?: MembershipShop
-  status?: "active" | "expiring" | "expired" | "deleted"
+  status?: "active" | "expiring" | "expired" | "deleted" | "frozen"
+  is_frozen?: boolean
+  frozen_at?: string | null
+  frozen_until?: string | null
+  freeze_reason?: string | null
   discarded_at?: string | null
   checked_in_today?: boolean
   last_checked_in_at?: string | null
@@ -59,11 +63,29 @@ export interface MembershipDetailInvoice {
   created_at: string
 }
 
+export interface FreezeHistoryItem {
+  id: string
+  action: "membership_frozen" | "membership_unfrozen" | string
+  created_at: string
+  staff_name: string
+  details?: {
+    frozen_until?: string
+    freeze_days?: number
+    days_extended?: number
+    new_expires_at?: string
+    reason?: string | null
+    customer_name?: string
+    phone?: string
+    package_name?: string
+  }
+}
+
 export interface MembershipDetail extends Membership {
-  status: "active" | "expiring" | "expired"
+  status: "active" | "expiring" | "expired" | "frozen"
   created_at?: string
   check_ins: MembershipDetailCheckIn[]
   invoices: MembershipDetailInvoice[]
+  freeze_history?: FreezeHistoryItem[]
 }
 
 export interface CheckInRecord {
@@ -115,9 +137,14 @@ export function isMembershipExhausted(
  * - Active: otherwise
  */
 export function computeMembershipStatus(
-  membership: Pick<Membership, "sessions_left" | "expires_at"> & { status?: string; discarded_at?: string | null },
-): "active" | "expiring" | "expired" | "deleted" {
+  membership: Pick<Membership, "sessions_left" | "expires_at"> & {
+    status?: string
+    discarded_at?: string | null
+    is_frozen?: boolean
+  },
+): "active" | "expiring" | "expired" | "deleted" | "frozen" {
   if (membership.status === "deleted" || membership.discarded_at) return "deleted"
+  if (membership.status === "frozen" || membership.is_frozen) return "frozen"
 
   // Session-based
   if (membership.sessions_left !== null && membership.sessions_left !== undefined) {
@@ -171,7 +198,14 @@ export interface PaginationMeta {
   total_pages: number
 }
 
-export type StatusFilterType = "all" | "active" | "expiring" | "expired" | "not_checked_in" | "deleted"
+export type StatusFilterType =
+  | "all"
+  | "active"
+  | "expiring"
+  | "expired"
+  | "not_checked_in"
+  | "deleted"
+  | "frozen"
 
 export type CheckInFilterType = "not_checked_in" | "expiring" | "expired" | "all"
 
@@ -387,4 +421,32 @@ export async function renewMembership(
   payload?: RenewMembershipPayload,
 ): Promise<RenewMembershipResult> {
   return apiPost<RenewMembershipResult>(`/memberships/${id}/renew`, payload || {})
+}
+
+export interface FreezeMembershipPayload {
+  freeze_until: string
+  reason?: string
+}
+
+/** POST /memberships/:id/freeze — freeze a membership until a specified date */
+export async function freezeMembership(
+  id: string,
+  payload: FreezeMembershipPayload,
+): Promise<{ membership: Membership; message: string }> {
+  return apiPost<{ membership: Membership; message: string }>(`/memberships/${id}/freeze`, payload)
+}
+
+export interface UnfreezeMembershipPayload {
+  reason?: string
+}
+
+/** POST /memberships/:id/unfreeze — unfreeze a membership and recalculate expiry date */
+export async function unfreezeMembership(
+  id: string,
+  payload?: UnfreezeMembershipPayload,
+): Promise<{ membership: Membership; message: string }> {
+  return apiPost<{ membership: Membership; message: string }>(
+    `/memberships/${id}/unfreeze`,
+    payload || {},
+  )
 }

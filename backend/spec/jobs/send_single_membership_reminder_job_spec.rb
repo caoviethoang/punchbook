@@ -72,6 +72,24 @@ RSpec.describe SendSingleMembershipReminderJob, type: :job do
         .not_to change(MembershipReminder, :count)
     end
 
+    it 'skips a member frozen after their reminder was queued' do
+      membership_id = membership.id
+      FreezeMembership.call(membership: membership, freeze_until: Date.current + 7)
+      expect { described_class.new.perform(membership_id) }
+        .not_to change(MembershipReminder, :count)
+      expect(PayosService).not_to have_received(:create_payment_link)
+      expect(WebMock).not_to have_requested(:post, 'https://business.openapi.zalo.me/message/template')
+    end
+
+    it 'rechecks a stale member before sending directly through the service' do
+      stale_member = Membership.find(membership.id)
+      FreezeMembership.call(membership: membership, freeze_until: Date.current + 7)
+      expect { SendSingleMembershipReminderService.call(stale_member) }
+        .not_to change(MembershipReminder, :count)
+      expect(PayosService).not_to have_received(:create_payment_link)
+      expect(WebMock).not_to have_requested(:post, 'https://business.openapi.zalo.me/message/template')
+    end
+
     it 'reuses existing pending invoice checkout url' do
       Invoice.create!(
         membership: membership,

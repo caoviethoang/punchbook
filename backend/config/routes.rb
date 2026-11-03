@@ -42,6 +42,8 @@ Rails.application.routes.draw do
       member do
         post :check_in
         post :restore
+        post :freeze
+        post :unfreeze
       end
       resources :invoices, only: %i[create]
     end
