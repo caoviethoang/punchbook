@@ -4,39 +4,41 @@ require 'rails_helper'
 
 RSpec.describe 'ClassSchedules API', type: :request do
   let!(:shop) { create_shop(name: 'Yoga Hub', phone: '0901112222') }
-  let!(:coach) do
-    Staff.create!(shop: shop, name: 'Instructor Linh', username: 'linh1', password: 'password123', role: 'staff')
-  end
   let!(:yoga) do
     ClassType.create!(
       shop: shop, name: 'Yoga Flow', color: '#6366f1',
       default_capacity: 10, default_duration_minutes: 60
     )
   end
-  let!(:session_pkg) { Package.create!(shop: shop, name: '10 Sessions', sessions_count: 10, price: 1_000_000) }
-  let!(:member1) do
-    Membership.create!(
-      shop: shop, package: session_pkg, customer_name: 'Nguyen Van A',
-      phone: '0901111111', sessions_left: 5, expires_at: Date.current + 30.days
-    )
+
+  def create_coach
+    Staff.create!(shop: shop, name: 'Instructor Linh', username: 'linh1', password: 'password123', role: 'staff')
   end
-  let!(:member2) do
+
+  def create_member(name: 'Nguyen Van A', phone: '0901111111', sessions: 5)
+    pkg = Package.find_or_create_by!(shop: shop, name: '10 Sessions') do |p|
+      p.sessions_count = 10
+      p.price = 1_000_000
+    end
     Membership.create!(
-      shop: shop, package: session_pkg, customer_name: 'Tran Thi B',
-      phone: '0902222222', sessions_left: 3, expires_at: Date.current + 30.days
+      shop: shop, package: pkg, customer_name: name,
+      phone: phone, sessions_left: sessions, expires_at: Date.current + 30.days
     )
   end
 
-  let!(:schedule) do
+  def create_schedule(capacity: 1, policy: 'booking', starts_at: 2.hours.from_now)
     ClassSchedule.create!(
-      shop: shop, class_type: yoga, instructor: coach,
-      starts_at: 2.hours.from_now, ends_at: 3.hours.from_now,
-      max_capacity: 1, status: 'scheduled', credit_policy: 'booking', cancellation_hours: 1
+      shop: shop, class_type: yoga, instructor: create_coach,
+      starts_at: starts_at, ends_at: starts_at + 1.hour,
+      max_capacity: capacity, status: 'scheduled',
+      credit_policy: policy, cancellation_hours: 1
     )
   end
 
   describe 'GET /api/v1/class_schedules' do
     it 'returns schedules within the date range' do
+      schedule = create_schedule
+
       get '/api/v1/class_schedules',
           params: { from: 1.hour.from_now.iso8601, to: 4.hours.from_now.iso8601 },
           headers: auth_headers(shop)
@@ -58,6 +60,7 @@ RSpec.describe 'ClassSchedules API', type: :request do
 
   describe 'POST /api/v1/class_schedules' do
     it 'creates a new single schedule' do
+      coach = create_coach
       params = {
         class_schedule: {
           class_type_id: yoga.id,
@@ -79,79 +82,81 @@ RSpec.describe 'ClassSchedules API', type: :request do
 
   describe 'POST /api/v1/class_schedules/:id/book and /cancel_booking' do
     it 'books the first member and waitlists the second member when capacity is 1' do
+      schedule = create_schedule(capacity: 1)
+      primary_member = create_member(name: 'Nguyen Van A', phone: '0901111111', sessions: 5)
+      waitlist_member = create_member(name: 'Tran Thi B', phone: '0902222222', sessions: 3)
+
       post "/api/v1/class_schedules/#{schedule.id}/book",
-           params: { membership_id: member1.id },
+           params: { membership_id: primary_member.id },
            headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       roster = response.parsed_body.dig('class_schedule', 'bookings')
-      first_booking = roster.find { |b| b['membership_id'] == member1.id }
+      first_booking = roster.find { |b| b['membership_id'] == primary_member.id }
       expect(first_booking['status']).to eq('booked')
-      expect(member1.reload.sessions_left).to eq(4) # deducted because credit_policy is 'booking'
+      expect(primary_member.reload.sessions_left).to eq(4) # deducted because credit_policy is 'booking'
 
       post "/api/v1/class_schedules/#{schedule.id}/book",
-           params: { membership_id: member2.id },
+           params: { membership_id: waitlist_member.id },
            headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
       roster = response.parsed_body.dig('class_schedule', 'bookings')
-      second_booking = roster.find { |b| b['membership_id'] == member2.id }
+      second_booking = roster.find { |b| b['membership_id'] == waitlist_member.id }
       expect(second_booking['status']).to eq('waitlisted')
-      expect(member2.reload.sessions_left).to eq(3) # not deducted while waitlisted
+      expect(waitlist_member.reload.sessions_left).to eq(3) # not deducted while waitlisted
     end
 
     it 'promotes the waitlisted member when the booked member cancels' do
-      # Book member 1
+      schedule = create_schedule(capacity: 1)
+      primary_member = create_member(name: 'Nguyen Van A', phone: '0901111111', sessions: 5)
+      waitlist_member = create_member(name: 'Tran Thi B', phone: '0902222222', sessions: 3)
+
       post "/api/v1/class_schedules/#{schedule.id}/book",
-           params: { membership_id: member1.id },
+           params: { membership_id: primary_member.id },
            headers: auth_headers(shop)
-      # Waitlist member 2
       post "/api/v1/class_schedules/#{schedule.id}/book",
-           params: { membership_id: member2.id },
+           params: { membership_id: waitlist_member.id },
            headers: auth_headers(shop)
 
-      # Cancel member 1
       post "/api/v1/class_schedules/#{schedule.id}/cancel_booking",
-           params: { membership_id: member1.id },
+           params: { membership_id: primary_member.id },
            headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
-      expect(member1.reload.sessions_left).to eq(5) # refunded
+      expect(primary_member.reload.sessions_left).to eq(5) # refunded
 
       roster = response.parsed_body.dig('class_schedule', 'bookings')
-      b1 = roster.find { |b| b['membership_id'] == member1.id }
-      b2 = roster.find { |b| b['membership_id'] == member2.id }
+      b1 = roster.find { |b| b['membership_id'] == primary_member.id }
+      b2 = roster.find { |b| b['membership_id'] == waitlist_member.id }
       expect(b1['status']).to eq('cancelled')
       expect(b2['status']).to eq('booked')
-      expect(member2.reload.sessions_left).to eq(2) # deducted on promotion
+      expect(waitlist_member.reload.sessions_left).to eq(2) # deducted on promotion
     end
   end
 
   describe 'POST /api/v1/class_schedules/:id/check_in_member' do
-    let!(:active_schedule) do
-      ClassSchedule.create!(
-        shop: shop, class_type: yoga, instructor: coach,
-        starts_at: 10.minutes.from_now, ends_at: 70.minutes.from_now,
-        max_capacity: 5, status: 'scheduled', credit_policy: 'attendance', cancellation_hours: 2
-      )
-    end
-
     it 'checks in a booked member and deducts attendance credit' do
+      active_schedule = create_schedule(
+        capacity: 5, policy: 'attendance', starts_at: 10.minutes.from_now
+      )
+      member = create_member(sessions: 5)
+
       # First book member
       post "/api/v1/class_schedules/#{active_schedule.id}/book",
-           params: { membership_id: member1.id },
+           params: { membership_id: member.id },
            headers: auth_headers(shop)
 
-      expect(member1.reload.sessions_left).to eq(5) # attendance policy does not deduct on booking
+      expect(member.reload.sessions_left).to eq(5) # attendance policy does not deduct on booking
 
       # Check in member
       post "/api/v1/class_schedules/#{active_schedule.id}/check_in_member",
-           params: { membership_id: member1.id },
+           params: { membership_id: member.id },
            headers: auth_headers(shop)
 
       expect(response).to have_http_status(:ok)
-      expect(member1.reload.sessions_left).to eq(4) # deducted on attendance check-in
-      booking = response.parsed_body.dig('class_schedule', 'bookings').find { |b| b['membership_id'] == member1.id }
+      expect(member.reload.sessions_left).to eq(4) # deducted on attendance check-in
+      booking = response.parsed_body.dig('class_schedule', 'bookings').find { |b| b['membership_id'] == member.id }
       expect(booking['status']).to eq('attended')
       expect(booking['checked_in_at']).to be_present
     end
