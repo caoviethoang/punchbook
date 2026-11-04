@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ClassLength
 class AuditLog < ApplicationRecord
   belongs_to :shop
   belongs_to :staff, optional: true
@@ -91,6 +92,29 @@ class AuditLog < ApplicationRecord
       details: details
     )
   end
+
+  def self.log_membership_transferred!(shop:, staff:, source_membership:, target_membership:, transfer:, **extra)
+    details = {
+      source_customer_name: source_membership.customer_name,
+      source_phone: source_membership.phone,
+      target_customer_name: target_membership.customer_name,
+      target_phone: target_membership.phone,
+      package_name: source_membership.package&.name,
+      sessions_transferred: transfer.sessions_transferred,
+      days_transferred: transfer.days_transferred,
+      fee: transfer.fee,
+      note: transfer.note,
+      **extra
+    }
+    create!(
+      shop: shop,
+      staff: staff,
+      action: 'membership_transferred',
+      target_type: 'Membership',
+      target_id: source_membership.id,
+      details: details
+    )
+  end
   # rubocop:enable Metrics/ParameterLists, Metrics/MethodLength
 
   def self.format_renewal_reason(membership)
@@ -103,3 +127,4 @@ class AuditLog < ApplicationRecord
     end
   end
 end
+# rubocop:enable Metrics/ClassLength

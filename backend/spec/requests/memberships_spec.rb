@@ -822,4 +822,35 @@ RSpec.describe 'Memberships', type: :request do
       expect(response).to have_http_status(:unprocessable_entity)
     end
   end
+
+  describe 'POST /memberships/:id/transfer' do
+    it 'transfers membership to a new recipient' do
+      post "/api/v1/memberships/#{hoa.id}/transfer",
+           params: {
+             target_customer_name: 'Recipient Name',
+             target_phone: '0988888888',
+             transfer_fee: 100_000,
+             note: 'Transfer to cousin'
+           },
+           headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['message']).to eq('Chuyển nhượng thẻ hội viên thành công')
+      expect(body['source_membership']['status']).to eq('transferred')
+      expect(body['source_membership']['is_transferred']).to be true
+      expect(body['target_membership']['customer_name']).to eq('Recipient Name')
+      expect(body['transfer']['fee']).to eq(100_000)
+      expect(body['invoice']['amount']).to eq(100_000)
+    end
+
+    it 'returns 422 if target parameters are invalid' do
+      post "/api/v1/memberships/#{hoa.id}/transfer",
+           params: { target_customer_name: '', target_phone: '' },
+           headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body['error']).to be_present
+    end
+  end
 end

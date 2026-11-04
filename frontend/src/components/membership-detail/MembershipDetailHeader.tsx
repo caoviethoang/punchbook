@@ -1,4 +1,4 @@
-import { Calendar, Package as PackageIcon, PauseCircle, QrCode } from "lucide-react"
+import { ArrowRightLeft, Calendar, Package as PackageIcon, PauseCircle, QrCode } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import type { MembershipDetail } from "../../lib/memberships"
 import { formatDate, remainingLabel } from "../../lib/formatters"
@@ -60,6 +60,31 @@ export function MembershipDetailHeader({ detail, onOpenCardTab }: MembershipDeta
           </button>
         )}
       </div>
+
+      {detail.is_transferred && (
+        <div className="mt-3 flex items-center gap-2 rounded-xl border border-purple-200 bg-purple-50/80 px-3.5 py-2 text-xs font-medium text-purple-800 dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300">
+          <ArrowRightLeft className="h-4 w-4 shrink-0 text-purple-600 dark:text-purple-400" />
+          <span>
+            {t(
+              "member_detail.transferred_to_notice",
+              "Thẻ đã được chuyển nhượng cho: {{name}}",
+              { name: detail.transferred_to_name || "Hội viên khác" },
+            )}
+          </span>
+        </div>
+      )}
+      {detail.transferred_from_name && !detail.is_transferred && (
+        <div className="mt-3 flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50/80 px-3.5 py-2 text-xs font-medium text-blue-800 dark:border-blue-800/50 dark:bg-blue-950/40 dark:text-blue-300">
+          <ArrowRightLeft className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
+          <span>
+            {t(
+              "member_detail.transferred_from_notice",
+              "Nhận chuyển nhượng từ: {{name}}",
+              { name: detail.transferred_from_name },
+            )}
+          </span>
+        </div>
+      )}
     </div>
   )
 }

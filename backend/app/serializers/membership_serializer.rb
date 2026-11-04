@@ -57,7 +57,8 @@ class MembershipSerializer
   def as_api_json
     membership.as_json(
       only: %i[id customer_name phone card_number sessions_left expires_at discarded_at notes
-               frozen_at frozen_until freeze_reason],
+               frozen_at frozen_until freeze_reason transferred_at
+               transferred_to_membership_id transferred_from_membership_id],
       include: ASSOCIATION_INCLUDES
     ).merge(status_and_qr_hash)
   end
@@ -71,7 +72,8 @@ class MembershipSerializer
   def as_detail_json
     base = membership.as_json(
       only: %i[id customer_name phone card_number sessions_left expires_at created_at notes
-               frozen_at frozen_until freeze_reason],
+               frozen_at frozen_until freeze_reason transferred_at
+               transferred_to_membership_id transferred_from_membership_id],
       include: ASSOCIATION_INCLUDES
     )
     base.merge(extra_detail_hash)
@@ -89,7 +91,7 @@ class MembershipSerializer
       'checked_in_today' => checked_in_today_value,
       'last_checked_in_at' => last_checked_in_at_value,
       'qr_code_value' => "PUNCHBOOK:#{membership.id}"
-    }.merge(freeze_attributes_hash)
+    }.merge(freeze_attributes_hash).merge(transfer_meta_hash)
   end
 
   def freeze_attributes_hash
@@ -98,6 +100,15 @@ class MembershipSerializer
       'frozen_at' => membership.frozen_at&.iso8601,
       'frozen_until' => membership.frozen_until&.to_s,
       'freeze_reason' => membership.freeze_reason
+    }
+  end
+
+  def transfer_meta_hash
+    {
+      'is_transferred' => membership.transferred?,
+      'transferred_at' => membership.transferred_at&.iso8601,
+      'transferred_to_name' => membership.transferred_to_membership&.customer_name,
+      'transferred_from_name' => membership.transferred_from_membership&.customer_name
     }
   end
 
@@ -117,7 +128,8 @@ class MembershipSerializer
     status_and_qr_hash.merge(
       'check_ins' => serialized_check_ins,
       'invoices' => serialized_invoices,
-      'freeze_history' => serialized_freeze_history
+      'freeze_history' => serialized_freeze_history,
+      'transfers' => serialized_transfers
     )
   end
 
@@ -139,6 +151,12 @@ class MembershipSerializer
                      action: %w[membership_frozen membership_unfrozen])
               .includes(:staff)
               .order(created_at: :desc)
+  end
+
+  def serialized_transfers
+    transfers = (membership.outgoing_transfers.includes(:staff, :target_membership) +
+                 membership.incoming_transfers.includes(:staff, :source_membership))
+    transfers.sort_by(&:created_at).reverse.map(&:as_api_json)
   end
 
   def serialized_check_ins

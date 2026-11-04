@@ -101,7 +101,33 @@ class MembershipsController < ApiController
     render_business_exception(e)
   end
 
+  def transfer
+    membership = find_shop_membership(params.expect(:id))
+    result = execute_membership_transfer(membership)
+    render_transfer_success(result)
+  rescue TransferMembership::IneligibleMembershipError, TransferMembership::InvalidTargetError => e
+    render json: { error: e.message }, status: :unprocessable_content
+  end
+
   private
+
+  def execute_membership_transfer(membership)
+    TransferMembership.call(
+      source_membership: membership, target_customer_name: params[:target_customer_name],
+      target_phone: params[:target_phone], staff: find_staff,
+      transfer_fee: params[:transfer_fee], note: params[:note]
+    )
+  end
+
+  def render_transfer_success(result)
+    render json: {
+      source_membership: result[:source_membership].as_api_json,
+      target_membership: result[:target_membership].as_api_json,
+      transfer: result[:transfer].as_api_json,
+      invoice: result[:invoice]&.as_api_json,
+      message: 'Chuyển nhượng thẻ hội viên thành công'
+    }
+  end
 
   def membership_params
     params.expect(membership: %i[customer_name phone package_id notes card_number])

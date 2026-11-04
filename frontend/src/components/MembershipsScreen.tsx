@@ -11,6 +11,7 @@ import { UnfreezeModal } from "./memberships/UnfreezeModal"
 import { MembershipFilterBar } from "./memberships/MembershipFilterBar"
 import { MembershipHeader } from "./memberships/MembershipHeader"
 import { MembershipTable } from "./memberships/MembershipTable"
+import { TransferModal } from "./memberships/TransferModal"
 
 import { ImportMembersModal } from "./ImportMembersModal"
 import { MembershipCreateForm } from "./MembershipCreateForm"
@@ -29,6 +30,7 @@ export function MembershipsScreen({ shop, currentStaff }: MembershipsScreenProps
   const [exportError, setExportError] = useState<string | null>(null)
   const [freezingMember, setFreezingMember] = useState<Membership | null>(null)
   const [unfreezingMember, setUnfreezingMember] = useState<Membership | null>(null)
+  const [transferringMember, setTransferringMember] = useState<Membership | null>(null)
 
   const {
     memberships,
@@ -127,6 +129,7 @@ export function MembershipsScreen({ shop, currentStaff }: MembershipsScreenProps
         onOpenDelete={setDeletingMember}
         onOpenFreeze={setFreezingMember}
         onOpenUnfreeze={setUnfreezingMember}
+        onOpenTransfer={setTransferringMember}
         onRestore={(m) => void handleRestore(m)}
         restoringId={restoringMemberId}
       />
@@ -209,6 +212,18 @@ export function MembershipsScreen({ shop, currentStaff }: MembershipsScreenProps
           isOpen={true}
           onClose={() => setUnfreezingMember(null)}
           onSuccess={() => void reloadData()}
+        />
+      )}
+
+      {/* 9. Transfer Modal */}
+      {transferringMember && (
+        <TransferModal
+          membership={transferringMember}
+          staffId={currentStaff?.id}
+          onClose={() => setTransferringMember(null)}
+          onSuccess={() => {
+            void reloadData()
+          }}
         />
       )}
     </div>

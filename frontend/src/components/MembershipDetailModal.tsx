@@ -1,9 +1,10 @@
-import { AlertCircle, Loader2, PauseCircle, QrCode, Receipt, UserCheck } from "lucide-react"
+import { AlertCircle, ArrowRightLeft, Loader2, PauseCircle, QrCode, Receipt, UserCheck } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useMembershipDetail, type MembershipDetailTab } from "../hooks/useMembershipDetail"
 import { CheckInHistoryTab } from "./membership-detail/CheckInHistoryTab"
 import { InvoiceHistoryTab } from "./membership-detail/InvoiceHistoryTab"
 import { FreezeHistoryTab } from "./membership-detail/FreezeHistoryTab"
+import { TransferHistoryTab } from "./membership-detail/TransferHistoryTab"
 import { MembershipDetailHeader } from "./membership-detail/MembershipDetailHeader"
 import { MembershipNotesSection } from "./membership-detail/MembershipNotesSection"
 import { DigitalMembershipCard } from "./DigitalMembershipCard"
@@ -119,6 +120,20 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
                   </span>
                 )}
               </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("transfers")}
+                className={tabClass("transfers")}
+              >
+                <ArrowRightLeft className="h-4 w-4" />
+                <span>{t("member_detail.tab_transfers", "Chuyển nhượng")}</span>
+                {Boolean(detail.transfers && detail.transfers.length > 0) && (
+                  <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-bold text-purple-700 dark:bg-purple-900/60 dark:text-purple-300">
+                    {detail.transfers?.length}
+                  </span>
+                )}
+              </button>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
@@ -132,7 +147,14 @@ export function MembershipDetailModal({ membershipId, onClose }: MembershipDetai
               ) : activeTab === "invoices" ? (
                 <InvoiceHistoryTab invoices={detail.invoices} />
               ) : (
+activeTab === "freeze" ? (
                 <FreezeHistoryTab freezeHistory={detail.freeze_history} />
+              ) : (
+                <TransferHistoryTab
+                  transfers={detail.transfers}
+                  currentMembershipId={detail.id}
+                />
+              )
               )}
             </div>
           </div>

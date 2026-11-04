@@ -8,6 +8,7 @@ const FILTER_TABS: { key: StatusFilterType; label: string; adminOnly?: boolean }
   { key: "expiring", label: "Sắp hết" },
   { key: "expired", label: "Đã hết" },
   { key: "frozen", label: "Bảo lưu" },
+  { key: "transferred", label: "Đã chuyển" },
   { key: "deleted", label: "Đã xóa", adminOnly: true },
 ]
 
