@@ -1,4 +1,5 @@
 import {
+  ArrowRightLeft,
   ChevronLeft,
   ChevronRight,
   Edit3,
@@ -33,6 +34,7 @@ interface MembershipTableProps {
   onOpenDelete: (m: Membership) => void
   onOpenFreeze?: (m: Membership) => void
   onOpenUnfreeze?: (m: Membership) => void
+  onOpenTransfer?: (m: Membership) => void
   onRestore?: (m: Membership) => void
   restoringId?: string | null
 }
@@ -53,6 +55,7 @@ export function MembershipTable({
   onOpenDelete,
   onOpenFreeze,
   onOpenUnfreeze,
+  onOpenTransfer,
   onRestore,
   restoringId,
 }: MembershipTableProps) {
@@ -193,12 +196,29 @@ export function MembershipTable({
                           <button
                             type="button"
                             onClick={() => onOpenFreeze?.(m)}
-                            disabled={m.status === "expired"}
+                            disabled={m.status === "expired" || m.status === "transferred" || m.is_transferred}
                             title={t("memberships.freeze", "Bảo lưu thẻ")}
                             className="inline-flex items-center gap-1 rounded-xl border border-blue-200 bg-blue-50/70 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 disabled:opacity-40 disabled:cursor-not-allowed dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/60"
                           >
                             <PauseCircle className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                             <span className="hidden sm:inline">{t("memberships.freeze", "Bảo lưu")}</span>
+                          </button>
+                        )}
+
+                        {onOpenTransfer && (
+                          <button
+                            type="button"
+                            onClick={() => onOpenTransfer(m)}
+                            disabled={m.status === "transferred" || m.is_transferred}
+                            title={
+                              m.status === "transferred" || m.is_transferred
+                                ? t("memberships.already_transferred", "Đã chuyển nhượng")
+                                : t("memberships.transfer_action", "Chuyển nhượng thẻ")
+                            }
+                            className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                          >
+                            <ArrowRightLeft className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                            <span className="hidden sm:inline">{t("memberships.transfer_btn_short", "Chuyển")}</span>
                           </button>
                         )}
 

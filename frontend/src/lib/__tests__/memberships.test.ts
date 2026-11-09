@@ -119,6 +119,42 @@ describe("computeMembershipStatus", () => {
       ).toBe("active")
     })
   })
+
+  describe("special statuses", () => {
+    it("returns deleted when status is deleted or discarded_at is set", () => {
+      expect(
+        computeMembershipStatus({
+          sessions_left: 10,
+          expires_at: null,
+          status: "deleted",
+        }),
+      ).toBe("deleted")
+      expect(
+        computeMembershipStatus({
+          sessions_left: 10,
+          expires_at: null,
+          discarded_at: "2026-11-01T00:00:00Z",
+        }),
+      ).toBe("deleted")
+    })
+
+    it("returns transferred when status is transferred or is_transferred is true", () => {
+      expect(
+        computeMembershipStatus({
+          sessions_left: 10,
+          expires_at: null,
+          status: "transferred",
+        }),
+      ).toBe("transferred")
+      expect(
+        computeMembershipStatus({
+          sessions_left: 10,
+          expires_at: null,
+          is_transferred: true,
+        }),
+      ).toBe("transferred")
+    })
+  })
 })
 
 describe("isMembershipExhausted", () => {
@@ -242,5 +278,30 @@ describe("extractMembershipIdFromQR", () => {
     expect(
       extractMembershipIdFromQR("https://punchbook.vn/memberships/uuid-999?source=qr"),
     ).toBe("uuid-999")
+  })
+})
+
+describe("transferMembership", () => {
+  it("calls POST /memberships/:id/transfer with payload", async () => {
+    const { transferMembership } = await import("../memberships")
+    const apiPostSpy = vi.spyOn(api, "apiPost").mockResolvedValueOnce({
+      source_membership: { id: "mem-1" },
+      target_membership: { id: "mem-2" },
+      transfer: { id: "tf-1", fee: 50000 },
+      message: "Success",
+    })
+
+    const payload = {
+      target_customer_name: "Tran Van B",
+      target_phone: "0912345678",
+      transfer_fee: 50000,
+      note: "Chuyen the cho em trai",
+    }
+
+    const res = await transferMembership("mem-1", payload)
+
+    expect(apiPostSpy).toHaveBeenCalledWith("/memberships/mem-1/transfer", payload)
+    expect(res.message).toBe("Success")
+    apiPostSpy.mockRestore()
   })
 })

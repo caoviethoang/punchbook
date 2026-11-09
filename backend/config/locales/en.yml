@@ -17,6 +17,13 @@ en:
       freeze_date_must_be_future: "Freeze end date must be after today."
       freeze_days_exceeded: "Maximum freeze duration is %{max} days."
       not_frozen: "Membership is not frozen."
+      transferred: "Membership has been transferred and cannot be used for check-in."
+      already_transferred: "Membership has already been transferred."
+      no_sessions_to_transfer: "Membership has no remaining sessions to transfer."
+      cannot_transfer_expired: "Membership has expired and cannot be transferred."
+      target_name_required: "Recipient name is required."
+      target_phone_required: "Recipient phone number is required."
+      cannot_transfer_to_self: "Cannot transfer membership to yourself."
       invalid_package: "Package is invalid or has been deactivated"
       file_missing: "Please select a file to import"
     hardware:
