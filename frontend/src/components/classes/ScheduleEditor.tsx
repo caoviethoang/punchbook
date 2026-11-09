@@ -8,14 +8,14 @@ import { Modal } from '../ui/Modal'
 import { inputClass, labelClass, primaryClass } from './styles'
 
 function localTime(date: Date) { return `${dateKey(date)}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}` }
-export function ScheduleEditor({ types, schedule, onClose, onSaved }: {
-  types: ClassType[]; schedule?: ClassSchedule; onClose: () => void; onSaved: () => Promise<void>
+export function ScheduleEditor({ types, schedule, initialDate, onClose, onSaved }: {
+  types: ClassType[]; schedule?: ClassSchedule; initialDate?: Date; onClose: () => void; onSaved: () => Promise<void>
 }) {
   const { t, i18n } = useTranslation()
   const [staffs, setStaffs] = useState<Staff[]>([])
   const [typeId, setTypeId] = useState(schedule?.class_type.id || types[0]?.id || '')
   const [instructor, setInstructor] = useState(schedule?.instructor?.id || '')
-  const [start, setStart] = useState(() => localTime(schedule ? new Date(schedule.starts_at) : new Date(Date.now() + 86400000)))
+  const [start, setStart] = useState(() => localTime(schedule ? new Date(schedule.starts_at) : (initialDate || new Date(Date.now() + 86400000))))
   const [duration, setDuration] = useState(schedule ? (Date.parse(schedule.ends_at) - Date.parse(schedule.starts_at)) / 60000 : types[0]?.default_duration_minutes || 60)
   const [capacity, setCapacity] = useState(schedule?.max_capacity || types[0]?.default_capacity || 15)
   const [policy, setPolicy] = useState<'attendance' | 'booking'>(schedule?.credit_policy || 'attendance')
