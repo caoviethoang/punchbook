@@ -22,6 +22,7 @@ class Ability
     can :manage, CheckIn, membership: { shop_id: staff.shop_id, assigned_staff_id: staff.id }
     can :read, Package, shop_id: staff.shop_id
     can :read, PackageCategory, shop_id: staff.shop_id
+    can :read, Tag, shop_id: staff.shop_id
 
     cannot %i[create destroy], Membership
     cannot %i[create update destroy], Package
@@ -35,6 +36,7 @@ class Ability
     can :manage, CheckIn, membership: { shop_id: shop_id }
     can :read, Package, shop_id: shop_id
     can :read, PackageCategory, shop_id: shop_id
+    can %i[read create update], Tag, shop_id: shop_id
 
     cannot %i[create update destroy], Package
     cannot %i[create update destroy], PackageCategory

@@ -7,6 +7,7 @@ import { listPackages, type PackageItem } from "../lib/packages"
 import { fetchTrainers, type TrainerOption } from "../lib/staffs"
 import { ImportMembersModal } from "./ImportMembersModal"
 import { MembershipPaymentQRModal } from "./MembershipPaymentQRModal"
+import { TagSelector } from "./tags/TagSelector"
 import { FormField, FORM_CONTROL_CLASS } from "./ui/FormField"
 
 interface MembershipCreateFormProps {
@@ -23,6 +24,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
   const [cardNumber, setCardNumber] = useState("")
   const [packageId, setPackageId] = useState("")
   const [assignedStaffId, setAssignedStaffId] = useState("")
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([])
   const [notes, setNotes] = useState("")
   const [packages, setPackages] = useState<PackageItem[]>([])
   const [trainers, setTrainers] = useState<TrainerOption[]>([])
@@ -95,6 +97,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
         card_number: cardNumber.trim() || undefined,
         notes: notes.trim() || undefined,
         assigned_staff_id: assignedStaffId || null,
+        tag_ids: selectedTagIds,
       })
       setCreated(membership)
       setIsQrModalOpen(true)
@@ -254,6 +257,8 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
             </select>
           </div>
         )}
+
+        <TagSelector selectedTagIds={selectedTagIds} onChange={setSelectedTagIds} />
 
         <div>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">

@@ -36,11 +36,14 @@ export function MembershipsScreen({ shop, currentStaff }: MembershipsScreenProps
     memberships,
     meta,
     packages,
+    tags,
     query,
     setQuery,
     debouncedQuery,
     status,
     setStatus,
+    tagIds,
+    setTagIds,
     page,
     setPage,
     loading,
@@ -110,6 +113,9 @@ export function MembershipsScreen({ shop, currentStaff }: MembershipsScreenProps
           setPage(1)
         }}
         isAdmin={isAdmin}
+        tags={tags}
+        selectedTagIds={tagIds}
+        onTagIdsChange={setTagIds}
       />
 
       {/* Content Table / State */}

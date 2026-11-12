@@ -25,6 +25,8 @@ class Membership < ApplicationRecord
   has_many :incoming_transfers, class_name: 'MembershipTransfer', foreign_key: :target_membership_id,
                                 dependent: :destroy, inverse_of: :target_membership
   has_many :notification_logs, dependent: :nullify
+  has_many :membership_tags, dependent: :destroy, inverse_of: :membership
+  has_many :tags, through: :membership_tags
 
   validates :customer_name, :phone, presence: true
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
@@ -32,8 +34,16 @@ class Membership < ApplicationRecord
   validates :card_number, uniqueness: { scope: :shop_id }, allow_blank: true
   validate :validate_free_plan_limit, on: :create
   validate :assigned_staff_belongs_to_shop
+  validate :tags_belong_to_shop
 
   scope :needing_reminder, -> { PaidShopMembershipsNeedingReminderQuery.call(self) }
+
+  scope :with_tags, lambda { |tag_ids|
+    ids = Array(tag_ids).flat_map { |v| v.to_s.split(',') }.map(&:strip).compact_blank.uniq
+    return all if ids.empty?
+
+    joins(:membership_tags).where(membership_tags: { tag_id: ids }).distinct
+  }
 
   scope :by_status, lambda { |status|
     return all if status.blank? || status.to_s == 'all'
@@ -90,5 +100,12 @@ class Membership < ApplicationRecord
     return if assigned_staff&.shop_id == shop_id
 
     errors.add(:assigned_staff_id, 'must belong to the same shop')
+  end
+
+  def tags_belong_to_shop
+    return if tags.empty? || shop_id.blank?
+    return if tags.all? { |tag| tag.shop_id == shop_id }
+
+    errors.add(:tag_ids, 'must belong to the same shop')
   end
 end

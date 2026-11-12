@@ -34,6 +34,7 @@ Rails.application.routes.draw do
 
     resources :package_categories, only: %i[index create update destroy]
     resources :packages, only: %i[index create update destroy]
+    resources :tags, only: %i[index create update destroy]
     resources :staffs, only: %i[index create destroy] do
       get :trainers, on: :collection
     end

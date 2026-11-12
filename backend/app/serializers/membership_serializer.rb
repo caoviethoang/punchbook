@@ -91,8 +91,13 @@ class MembershipSerializer
       'checked_in_today' => checked_in_today_value,
       'last_checked_in_at' => last_checked_in_at_value,
       'qr_code_value' => "PUNCHBOOK:#{membership.id}",
-      'assigned_staff' => assigned_staff_hash
+      'assigned_staff' => assigned_staff_hash,
+      'tags' => serialized_tags
     }.merge(freeze_attributes_hash).merge(transfer_meta_hash)
+  end
+
+  def serialized_tags
+    membership.tags.map { |tag| { 'id' => tag.id, 'name' => tag.name, 'color' => tag.color } }
   end
 
   def assigned_staff_hash

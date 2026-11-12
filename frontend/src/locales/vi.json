@@ -878,5 +878,17 @@
     "packages_unit": "gói",
     "status_pending": "Chờ chi trả",
     "status_settled": "Không phát sinh"
+  },
+  "tags": {
+    "label": "Nhãn phân loại (Tags)",
+    "empty": "Chưa có nhãn nào. Tạo nhanh nhãn mới bên dưới.",
+    "quick_create_placeholder": "Tên nhãn mới (VD: VIP, Ca sáng)...",
+    "add_btn": "Thêm",
+    "color_label": "Màu:",
+    "pick_color": "Chọn màu {{color}}",
+    "remove_aria": "Gỡ nhãn {{name}}",
+    "create_error": "Không thể tạo nhãn",
+    "filter_label": "Lọc theo nhãn",
+    "all_tags": "Tất cả nhãn"
   }
 }

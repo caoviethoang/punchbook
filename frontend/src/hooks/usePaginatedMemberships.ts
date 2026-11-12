@@ -28,6 +28,7 @@ export function usePaginatedMemberships(options: UsePaginatedMembershipsOptions 
   const [query, setQueryState] = useState("")
   const debouncedQuery = useDebounce(query, debounceMs)
   const [status, setStatusState] = useState<StatusFilterType>(initialStatus)
+  const [tagIds, setTagIdsState] = useState<string[]>([])
   const [page, setPageState] = useState(initialPage)
   const [fetchLoading, setFetchLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -50,6 +51,12 @@ export function usePaginatedMemberships(options: UsePaginatedMembershipsOptions 
     [],
   )
 
+  const setTagIds = useCallback((nextTagIds: string[]) => {
+    setFetchLoading(true)
+    setTagIdsState(nextTagIds)
+    setPageState(1)
+  }, [])
+
   const setPage = useCallback((nextPage: number | ((prev: number) => number)) => {
     setFetchLoading(true)
     setPageState(nextPage)
@@ -71,6 +78,7 @@ export function usePaginatedMemberships(options: UsePaginatedMembershipsOptions 
           status,
           page,
           per_page: perPage,
+          ...(tagIds.length > 0 ? { tag_ids: tagIds } : {}),
         })
         if (!active) return
         setMemberships(res.memberships)
@@ -94,7 +102,7 @@ export function usePaginatedMemberships(options: UsePaginatedMembershipsOptions 
     return () => {
       active = false
     }
-  }, [debouncedQuery, status, page, perPage, refreshIndex])
+  }, [debouncedQuery, status, tagIds, page, perPage, refreshIndex])
 
   return {
     memberships,
@@ -104,6 +112,8 @@ export function usePaginatedMemberships(options: UsePaginatedMembershipsOptions 
     debouncedQuery,
     status,
     setStatus,
+    tagIds,
+    setTagIds,
     page,
     setPage,
     loading,

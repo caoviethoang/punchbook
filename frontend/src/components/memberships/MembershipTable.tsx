@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next"
 import type { Membership, PaginationMeta, StatusFilterType } from "../../lib/memberships"
 import { computeMembershipStatus, getPaginationRange } from "../../lib/memberships"
 import { StatusBadge } from "../ui/StatusBadge"
+import { TagPill } from "../tags/TagPill"
 import { MemberRemainingBadge } from "./MemberRemainingBadge"
 
 interface MembershipTableProps {
@@ -133,6 +134,13 @@ export function MembershipTable({
                       <p className="text-xs text-slate-500 dark:text-slate-400">{m.phone}</p>
                       {m.email && (
                         <p className="max-w-[160px] truncate text-[11px] text-slate-400 dark:text-slate-500">{m.email}</p>
+                      )}
+                      {m.tags && m.tags.length > 0 && (
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {m.tags.map((tag) => (
+                            <TagPill key={tag.id} tag={tag} size="sm" />
+                          ))}
+                        </div>
                       )}
                     </div>
                   </div>

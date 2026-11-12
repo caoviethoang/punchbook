@@ -3,6 +3,7 @@ import { X, UserCheck, Loader2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { updateMembership, type Membership, type MembershipPackage } from "../lib/memberships"
 import { fetchTrainers, type TrainerOption } from "../lib/staffs"
+import { TagSelector } from "./tags/TagSelector"
 
 interface MemberEditModalProps {
   membership: Membership | null
@@ -33,6 +34,9 @@ export function MemberEditModal({
   )
   const [notes, setNotes] = useState(membership?.notes || "")
   const [assignedStaffId, setAssignedStaffId] = useState(membership?.assigned_staff_id || "")
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
+    membership?.tags?.map((tag) => tag.id) || [],
+  )
   const [trainers, setTrainers] = useState<TrainerOption[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -72,6 +76,7 @@ export function MemberEditModal({
         expires_at: expiresAt !== "" ? expiresAt : null,
         notes: notes.trim(),
         assigned_staff_id: assignedStaffId || null,
+        tag_ids: selectedTagIds,
       })
       onSuccess(updated)
       onClose()
@@ -238,6 +243,8 @@ export function MemberEditModal({
               />
             </div>
           </div>
+
+          <TagSelector selectedTagIds={selectedTagIds} onChange={setSelectedTagIds} />
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">

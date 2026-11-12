@@ -3,7 +3,7 @@
 # Service object that encapsulates creating a new Membership from a Package.
 # Lifting this out of MembershipsController keeps the controller thin.
 class CreateMembership
-  OPTIONAL_ATTRS = %i[card_number email assigned_staff_id].freeze
+  OPTIONAL_ATTRS = %i[card_number email assigned_staff_id tag_ids].freeze
 
   def self.call(shop:, **attrs)
     new(shop: shop, **attrs).call

@@ -878,5 +878,17 @@
     "packages_unit": "pkg",
     "status_pending": "Pending Payout",
     "status_settled": "No Payout"
+  },
+  "tags": {
+    "label": "Member Tags",
+    "empty": "No tags yet. Quick-create one below.",
+    "quick_create_placeholder": "New tag name (e.g. VIP, Morning Club)...",
+    "add_btn": "Add",
+    "color_label": "Color:",
+    "pick_color": "Pick color {{color}}",
+    "remove_aria": "Remove tag {{name}}",
+    "create_error": "Failed to create tag",
+    "filter_label": "Filter by tag",
+    "all_tags": "All Tags"
   }
 }

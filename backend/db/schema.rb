@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_04_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_12_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -117,6 +117,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_100000) do
     t.index ["membership_id"], name: "index_membership_reminders_on_membership_id"
   end
 
+  create_table "membership_tags", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "membership_id", null: false
+    t.uuid "tag_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["membership_id", "tag_id"], name: "index_membership_tags_on_membership_id_and_tag_id", unique: true
+    t.index ["membership_id"], name: "index_membership_tags_on_membership_id"
+    t.index ["tag_id"], name: "index_membership_tags_on_tag_id"
+  end
+
   create_table "membership_transfers", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "days_transferred"
@@ -140,6 +150,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_100000) do
   create_table "memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "assigned_staff_id"
     t.string "card_number"
+    t.string "churn_risk_level"
+    t.datetime "churn_risk_scored_at"
     t.datetime "created_at", null: false
     t.string "customer_name"
     t.datetime "discarded_at"
@@ -148,6 +160,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_100000) do
     t.string "freeze_reason"
     t.datetime "frozen_at"
     t.date "frozen_until"
+    t.datetime "last_reengagement_sent_at"
     t.text "notes"
     t.uuid "package_id", null: false
     t.string "phone"
@@ -162,6 +175,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_100000) do
     t.index ["discarded_at"], name: "index_memberships_on_discarded_at"
     t.index ["package_id"], name: "index_memberships_on_package_id"
     t.index ["shop_id", "card_number"], name: "index_memberships_on_shop_id_and_card_number", unique: true, where: "(card_number IS NOT NULL)"
+    t.index ["shop_id", "churn_risk_level"], name: "index_memberships_on_shop_id_and_churn_risk_level"
     t.index ["shop_id", "customer_name"], name: "index_memberships_on_shop_id_and_customer_name"
     t.index ["shop_id", "email"], name: "index_memberships_on_shop_id_and_email"
     t.index ["shop_id", "expires_at"], name: "index_memberships_on_shop_id_and_expires_at"
@@ -270,6 +284,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_100000) do
     t.index ["shop_id"], name: "index_staffs_on_shop_id"
   end
 
+  create_table "tags", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "color", default: "#6366f1", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.uuid "shop_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["shop_id", "name"], name: "index_tags_on_shop_id_and_name", unique: true
+    t.index ["shop_id"], name: "index_tags_on_shop_id"
+  end
+
   create_table "versions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at"
     t.string "event", null: false
@@ -315,6 +339,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_100000) do
   add_foreign_key "class_types", "shops"
   add_foreign_key "invoices", "memberships"
   add_foreign_key "membership_reminders", "memberships"
+  add_foreign_key "membership_tags", "memberships"
+  add_foreign_key "membership_tags", "tags"
   add_foreign_key "membership_transfers", "invoices"
   add_foreign_key "membership_transfers", "memberships", column: "source_membership_id"
   add_foreign_key "membership_transfers", "memberships", column: "target_membership_id"
@@ -332,5 +358,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_100000) do
   add_foreign_key "packages", "shops"
   add_foreign_key "shop_plan_payments", "shops"
   add_foreign_key "staffs", "shops"
+  add_foreign_key "tags", "shops"
   add_foreign_key "webhook_events", "shops"
 end

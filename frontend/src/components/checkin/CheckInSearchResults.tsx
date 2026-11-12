@@ -13,6 +13,7 @@ import {
 import { useTranslation } from "react-i18next"
 import { computeMembershipStatus, isMembershipExhausted, type Membership } from "../../lib/memberships"
 import { formatDate } from "../../lib/formatters"
+import { TagPill } from "../tags/TagPill"
 
 // ─── Remaining indicator ──────────────────────────────────────────────────────
 
@@ -267,6 +268,9 @@ export function MembershipResultList({
                       <span>{t("checkin.expiring_soon", "Sắp hết hạn")}</span>
                     </span>
                   )}
+                  {membership.tags && membership.tags.map((tag) => (
+                    <TagPill key={tag.id} tag={tag} size="sm" />
+                  ))}
                 </div>
               </button>
               {currentMessage && (

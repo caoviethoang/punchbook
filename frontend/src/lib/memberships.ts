@@ -8,6 +8,7 @@ import {
   parseApiResponse,
   apiBaseUrl,
 } from "./api"
+import type { MemberTag } from "./tags"
 
 export interface MembershipPackage {
   id: string
@@ -57,6 +58,7 @@ export interface Membership {
   last_checked_in_at?: string | null
   qr_code_value?: string
   notes?: string | null
+  tags?: MemberTag[]
 }
 
 export interface MembershipDetailCheckIn {
@@ -255,6 +257,7 @@ export interface FetchMembershipsParams {
   page?: number
   per_page?: number
   assigned_staff_id?: string
+  tag_ids?: string[]
 }
 
 export interface PaginatedMembershipsResult {
@@ -298,6 +301,7 @@ export async function fetchMemberships(
   if (params.status && params.status !== "all") queryParams.status = params.status
   if (params.sort && params.sort !== "name") queryParams.sort = params.sort
   if (params.assigned_staff_id) queryParams.assigned_staff_id = params.assigned_staff_id
+  if (params.tag_ids && params.tag_ids.length > 0) queryParams.tag_ids = params.tag_ids.join(",")
 
   return apiGet<PaginatedMembershipsResult>("/memberships", {
     query: queryParams,
@@ -318,6 +322,7 @@ export interface CreateMembershipPayload {
   notes?: string | null
   card_number?: string | null
   assigned_staff_id?: string | null
+  tag_ids?: string[]
 }
 
 export interface UpdateMembershipPayload {
@@ -330,6 +335,7 @@ export interface UpdateMembershipPayload {
   notes?: string | null
   card_number?: string | null
   assigned_staff_id?: string | null
+  tag_ids?: string[]
 }
 
 /** POST /memberships — create member; backend inits sessions_left / expires_at from package. */
