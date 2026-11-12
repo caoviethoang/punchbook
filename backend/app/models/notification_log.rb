@@ -2,7 +2,7 @@
 
 class NotificationLog < ApplicationRecord
   CHANNELS = %w[zalo sms email].freeze
-  EVENT_TYPES = %w[welcome check_in_receipt payment_receipt expiring_reminder].freeze
+  EVENT_TYPES = %w[welcome check_in_receipt payment_receipt expiring_reminder reengagement].freeze
   STATUSES = %w[sent failed skipped].freeze
 
   belongs_to :shop

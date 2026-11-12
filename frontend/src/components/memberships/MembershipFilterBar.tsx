@@ -6,6 +6,7 @@ const FILTER_TABS: { key: StatusFilterType; label: string; adminOnly?: boolean }
   { key: "all", label: "Tất cả" },
   { key: "active", label: "Còn hạn" },
   { key: "expiring", label: "Sắp hết" },
+  { key: "at_risk", label: "Có nguy cơ" },
   { key: "expired", label: "Đã hết" },
   { key: "frozen", label: "Bảo lưu" },
   { key: "transferred", label: "Đã chuyển" },

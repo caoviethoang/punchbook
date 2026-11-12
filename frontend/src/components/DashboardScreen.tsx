@@ -12,6 +12,7 @@ import { computeMembershipStatus } from "../lib/memberships"
 import { downloadExcelReport } from "../lib/reports"
 import { AnalyticsCharts } from "./AnalyticsCharts"
 import { AttendanceReportSection } from "./dashboard/AttendanceReportSection"
+import RetentionRiskWidget from "./dashboard/RetentionRiskWidget"
 import { TrainerCommissionReportSection } from "./dashboard/TrainerCommissionReportSection"
 import { DashboardHeader } from "./dashboard/DashboardHeader"
 import { DashboardMembershipsTable } from "./dashboard/DashboardMembershipsTable"
@@ -185,6 +186,8 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
             peakHour={data.peak_check_in_hour}
             packageRevenue={data.revenue_by_package}
           />
+
+          <RetentionRiskWidget onSelectDetail={setSelectedMembershipIdForDetail} />
 
           <div className="space-y-3">
             <div className="inline-flex items-center rounded-2xl border border-slate-200 bg-white p-1 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
