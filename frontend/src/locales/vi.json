@@ -70,7 +70,8 @@
     "settings": "Cài đặt",
     "logout": "Đăng xuất",
     "admin": "Admin",
-    "staff": "Lễ tân"
+    "staff": "Lễ tân",
+    "trainer": "PT / HLV"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -348,7 +349,9 @@
     "unfreeze_reason_label": "Ghi chú / Lý do mở khóa (Tùy chọn)",
     "unfreeze_reason_placeholder": "Ví dụ: Hội viên đi tập lại sớm hơn dự kiến...",
     "unfreeze_confirm_btn": "Mở khóa thẻ",
-    "days_extended_label": "Gia hạn thêm:"
+    "days_extended_label": "Gia hạn thêm:",
+    "assigned_trainer_label": "Huấn luyện viên phụ trách / PT (tùy chọn)",
+    "no_trainer_assigned": "-- Không chỉ định PT --"
   },
   "packages": {
     "title": "Gói Dịch Vụ",
@@ -438,7 +441,15 @@
     "delete": "Xóa",
     "empty_packages": "Chưa có gói dịch vụ nào.",
     "empty_filtered": "Không tìm thấy gói thuộc môn tập này",
-    "empty_filtered_hint": "Thử chọn bộ môn khác hoặc chọn tất cả bộ môn."
+    "empty_filtered_hint": "Thử chọn bộ môn khác hoặc chọn tất cả bộ môn.",
+    "pt_package_label": "Gói tập kèm Huấn luyện viên (PT 1-1)",
+    "pt_package_hint": "Tự động tính hoa hồng buổi dạy và doanh số cho PT phụ trách.",
+    "commission_type_label": "Hình thức tính buổi dạy",
+    "commission_flat": "Cố định (VNĐ / buổi)",
+    "commission_percent": "Phần trăm (% giá buổi)",
+    "commission_rate_flat": "Hoa hồng mỗi buổi (VNĐ)",
+    "commission_rate_percent": "Hoa hồng mỗi buổi (%)",
+    "sale_commission_rate": "Hoa hồng chốt sales bán gói (%)"
   },
   "settings": {
     "title": "Cài đặt Cửa hàng & Tài khoản",
@@ -537,7 +548,11 @@
       "role": "Vai trò",
       "role_admin": "Quản trị viên (Admin)",
       "role_staff": "Lễ tân (Staff)",
-      "empty": "Chưa có nhân viên nào."
+      "empty": "Chưa có nhân viên nào.",
+      "role_trainer": "Huấn luyện viên (PT)",
+      "option_staff": "Lễ tân (Thực hiện Check-in, quản lý hội viên)",
+      "option_trainer": "Huấn luyện viên / PT (Quản lý học viên kèm 1-1 & Hoa hồng)",
+      "option_admin": "Quản trị viên (Toàn quyền quản lý tiệm)"
     },
     "notifications": {
       "title": "Cấu hình Thông báo Đa kênh (Multi-channel Notifications)",
@@ -826,5 +841,42 @@
     "spots_left": "còn {{count}} chỗ",
     "waitlist_count": "{{count}} đang chờ",
     "no_classes_day": "Không có lịch lớp nào trong ngày này."
+  },
+  "reports": {
+    "tab_attendance": "Báo cáo Chuyên cần",
+    "tab_trainer_commissions": "Hoa hồng PT & Payroll"
+  },
+  "trainer_commissions": {
+    "welcome_title": "Bảng điều khiển Huấn luyện viên (PT)",
+    "welcome_subtitle": "Theo dõi học viên được phân công, số buổi còn lại và tổng hợp hoa hồng hàng tháng.",
+    "admin_title": "Báo cáo Hoa hồng PT & Huấn luyện viên",
+    "admin_subtitle": "Tổng hợp buổi dạy hoàn thành, doanh số chốt gói PT và bảng tính hoa hồng hàng tháng",
+    "trainer_title": "Thu nhập & Ca dạy PT của tôi",
+    "trainer_subtitle": "Theo dõi số buổi tập đã hướng dẫn, doanh số và hoa hồng trong tháng",
+    "filter_trainer": "Lọc theo huấn luyện viên",
+    "all_trainers": "Tất cả huấn luyện viên",
+    "export_excel": "Xuất Excel",
+    "kpi_sessions": "Buổi dạy hoàn thành",
+    "kpi_session_comm": "Hoa hồng buổi dạy",
+    "kpi_sales": "Doanh số gói PT",
+    "kpi_total_comm": "Tổng hoa hồng PT",
+    "tab_summary": "Bảng tổng hợp PT",
+    "tab_sessions": "Chi tiết buổi dạy",
+    "empty_trainers": "Chưa có dữ liệu huấn luyện viên trong tháng này.",
+    "empty_sessions": "Chưa có buổi dạy PT nào được ghi nhận trong tháng này.",
+    "col_trainer": "Huấn luyện viên",
+    "col_clients": "Học viên",
+    "col_sessions": "Buổi dạy",
+    "col_session_comm": "HH Buổi dạy",
+    "col_sales": "Doanh số",
+    "col_sale_comm": "HH Doanh số",
+    "col_total": "Tổng hoa hồng",
+    "col_time": "Thời gian",
+    "col_client": "Học viên",
+    "col_package": "Gói dịch vụ",
+    "col_commission": "Hoa hồng",
+    "packages_unit": "gói",
+    "status_pending": "Chờ chi trả",
+    "status_settled": "Không phát sinh"
   }
 }

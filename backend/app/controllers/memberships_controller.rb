@@ -23,24 +23,20 @@ class MembershipsController < ApiController
   end
 
   def show
-    render json: { membership: find_shop_membership(params.expect(:id)).as_detail_json }
+    membership = find_shop_membership(params.expect(:id))
+    authorize! :read, membership
+    render json: { membership: membership.as_detail_json }
   end
 
   def create
-    membership = CreateMembership.call(
-      shop: current_shop,
-      customer_name: membership_params[:customer_name],
-      phone: membership_params[:phone],
-      package_id: membership_params[:package_id],
-      notes: membership_params[:notes],
-      card_number: membership_params[:card_number],
-      email: membership_params[:email]
-    )
+    authorize! :create, Membership
+    membership = CreateMembership.call(shop: current_shop, **membership_params.to_h.symbolize_keys)
     render json: { membership: membership.as_api_json }, status: :created
   end
 
   def update
     membership = find_shop_membership(params.expect(:id))
+    authorize! :update, membership
     if membership.update(update_membership_params)
       render json: { membership: membership.as_api_json }
     else
@@ -49,7 +45,9 @@ class MembershipsController < ApiController
   end
 
   def destroy
-    find_shop_membership(params.expect(:id)).discard
+    membership = find_shop_membership(params.expect(:id))
+    authorize! :destroy, membership
+    membership.discard
     render json: { message: 'Đã xóa hội viên thành công' }
   end
 
@@ -73,6 +71,7 @@ class MembershipsController < ApiController
 
   def check_in
     membership = find_shop_membership(params.expect(:id))
+    authorize! :check_in, membership
     record = CheckInMembership.call(membership: membership, staff: find_staff)
     render json: { membership: membership.reload.as_api_json, check_in: record.as_json(only: %i[id checked_in_at]) }
   end
@@ -131,11 +130,12 @@ class MembershipsController < ApiController
   end
 
   def membership_params
-    params.expect(membership: %i[customer_name phone package_id notes card_number email])
+    params.expect(membership: %i[customer_name phone package_id notes card_number email assigned_staff_id])
   end
 
   def update_membership_params
-    params.expect(membership: %i[customer_name phone package_id sessions_left expires_at notes card_number email])
+    params.expect(membership: %i[customer_name phone package_id sessions_left expires_at notes card_number email
+                                 assigned_staff_id])
   end
 
   def find_staff
@@ -149,13 +149,22 @@ class MembershipsController < ApiController
   end
 
   def memberships_relation
-    scope = params[:status] == 'deleted' ? current_shop.memberships.with_discarded.discarded : current_shop.memberships
-    scoped = scope.search_by_query(params[:query])
+    scoped = apply_trainer_filter(base_memberships_scope).search_by_query(params[:query])
     params[:status] == 'deleted' ? scoped : scoped.by_status(params[:status])
   end
 
+  def base_memberships_scope
+    params[:status] == 'deleted' ? current_shop.memberships.with_discarded.discarded : current_shop.memberships
+  end
+
+  def apply_trainer_filter(scope)
+    scope = scope.assigned_to(current_staff.id) if current_staff&.trainer?
+    scope = scope.assigned_to(params[:assigned_staff_id]) if params[:assigned_staff_id].present?
+    scope
+  end
+
   def fetch_paginated_memberships(relation, page, per_page)
-    ordered = relation.preload(:package, :shop)
+    ordered = relation.preload(:package, :shop, :assigned_staff)
     ordered = if params[:status] == 'deleted'
                 ordered.order(discarded_at: :desc)
               else

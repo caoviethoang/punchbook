@@ -15,6 +15,7 @@ export interface MembershipPackage {
   price?: number
   sessions_count?: number | null
   duration_days?: number | null
+  pt_package?: boolean
 }
 
 export interface MembershipShop {
@@ -22,6 +23,12 @@ export interface MembershipShop {
   name: string
   phone?: string | null
   address?: string | null
+}
+
+export interface AssignedStaff {
+  id: string
+  name: string
+  role?: string
 }
 
 export interface Membership {
@@ -34,6 +41,8 @@ export interface Membership {
   expires_at: string | null
   package: MembershipPackage
   shop?: MembershipShop
+  assigned_staff_id?: string | null
+  assigned_staff?: AssignedStaff | null
   status?: "active" | "expiring" | "expired" | "deleted" | "frozen" | "transferred"
   is_frozen?: boolean
   frozen_at?: string | null
@@ -245,6 +254,7 @@ export interface FetchMembershipsParams {
   sort?: SortType
   page?: number
   per_page?: number
+  assigned_staff_id?: string
 }
 
 export interface PaginatedMembershipsResult {
@@ -287,6 +297,7 @@ export async function fetchMemberships(
   if (params.query?.trim()) queryParams.query = params.query.trim()
   if (params.status && params.status !== "all") queryParams.status = params.status
   if (params.sort && params.sort !== "name") queryParams.sort = params.sort
+  if (params.assigned_staff_id) queryParams.assigned_staff_id = params.assigned_staff_id
 
   return apiGet<PaginatedMembershipsResult>("/memberships", {
     query: queryParams,
@@ -306,6 +317,7 @@ export interface CreateMembershipPayload {
   package_id: string
   notes?: string | null
   card_number?: string | null
+  assigned_staff_id?: string | null
 }
 
 export interface UpdateMembershipPayload {
@@ -317,6 +329,7 @@ export interface UpdateMembershipPayload {
   expires_at?: string | null
   notes?: string | null
   card_number?: string | null
+  assigned_staff_id?: string | null
 }
 
 /** POST /memberships — create member; backend inits sessions_left / expires_at from package. */
@@ -433,6 +446,7 @@ export interface RenewMembershipPayload {
   package_id?: string
   staff_id?: string
   auto_check_in?: boolean
+  assigned_staff_id?: string | null
 }
 
 export interface RenewMembershipResult {

@@ -138,7 +138,12 @@ export function MembershipTable({
                   </div>
                 </td>
                 <td className="px-4 py-3.5 font-medium text-slate-800 dark:text-slate-200">
-                  {m.package?.name || t("memberships.unknown_package", "Không rõ")}
+                  <div>{m.package?.name || t("memberships.unknown_package", "Không rõ")}</div>
+                  {m.assigned_staff && (
+                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                      PT: {m.assigned_staff.name}
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3.5">
                   <MemberRemainingBadge membership={m} />

@@ -2,6 +2,7 @@
 
 class Membership < ApplicationRecord
   include Discard::Model
+  include MembershipSearchable
   include MembershipStatusable
 
   has_paper_trail
@@ -12,6 +13,7 @@ class Membership < ApplicationRecord
 
   belongs_to :shop, inverse_of: :memberships
   belongs_to :package, -> { with_discarded }, inverse_of: :memberships
+  belongs_to :assigned_staff, class_name: 'Staff', optional: true, inverse_of: :assigned_memberships
   has_many :class_bookings, dependent: :restrict_with_error
   belongs_to :transferred_to_membership, class_name: 'Membership', optional: true
   belongs_to :transferred_from_membership, class_name: 'Membership', optional: true
@@ -29,28 +31,8 @@ class Membership < ApplicationRecord
   validates :sessions_left, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :card_number, uniqueness: { scope: :shop_id }, allow_blank: true
   validate :validate_free_plan_limit, on: :create
+  validate :assigned_staff_belongs_to_shop
 
-  scope :search_by_query, lambda { |query|
-    return all if query.blank?
-
-    raw_query = query.to_s.strip
-    clean_query = raw_query.sub(/\APUNCHBOOK:/i, '')
-    name_pattern = "%#{sanitize_sql_like(raw_query)}%"
-    clean_pattern = "%#{sanitize_sql_like(clean_query)}%"
-    digits_only = raw_query.gsub(/\D/, '')
-
-    if digits_only.present?
-      phone_pattern = "%#{sanitize_sql_like(digits_only)}%"
-      sql = 'memberships.customer_name ILIKE :q OR memberships.phone ILIKE :q OR ' \
-            "regexp_replace(memberships.phone, '\\D', '', 'g') ILIKE :pq OR " \
-            'memberships.card_number ILIKE :q OR memberships.id::text ILIKE :cq'
-      where(sql, q: name_pattern, pq: phone_pattern, cq: clean_pattern)
-    else
-      where('memberships.customer_name ILIKE :q OR memberships.phone ILIKE :q OR ' \
-            'memberships.card_number ILIKE :q OR memberships.id::text ILIKE :cq',
-            q: name_pattern, cq: clean_pattern)
-    end
-  }
   scope :needing_reminder, -> { PaidShopMembershipsNeedingReminderQuery.call(self) }
 
   scope :by_status, lambda { |status|
@@ -59,27 +41,10 @@ class Membership < ApplicationRecord
     by_status_query(status.to_s)
   }
 
-  # Sorts members for the check-in screen: not-checked-in & active first,
-  # checked-in today second, exhausted (0 sessions / expired) last.
-  scope :checkin_priority_order, lambda {
-    checked_in_sql = klass.checked_in_today_subquery
+  scope :assigned_to, lambda { |staff_id|
+    return all if staff_id.blank?
 
-    exhausted_sql = <<~SQL.squish
-      CASE
-        WHEN memberships.sessions_left IS NOT NULL
-             AND memberships.sessions_left <= 0 THEN 1
-        WHEN memberships.sessions_left IS NULL
-             AND memberships.expires_at IS NOT NULL
-             AND memberships.expires_at < CURRENT_DATE THEN 1
-        ELSE 0
-      END
-    SQL
-
-    order(
-      Arel.sql("(#{exhausted_sql}) ASC"),
-      Arel.sql("(#{checked_in_sql})::int ASC"),
-      :customer_name
-    )
+    where(assigned_staff_id: staff_id)
   }
 
   def checked_in_today?
@@ -118,5 +83,12 @@ class Membership < ApplicationRecord
     return if shop.memberships.count < MAX_FREE_MEMBERSHIPS
 
     errors.add(:base, 'Gói Free chỉ được tạo tối đa 15 hội viên. Vui lòng nâng cấp gói trả phí để tạo thêm hội viên.')
+  end
+
+  def assigned_staff_belongs_to_shop
+    return if assigned_staff_id.blank?
+    return if assigned_staff&.shop_id == shop_id
+
+    errors.add(:assigned_staff_id, 'must belong to the same shop')
   end
 end

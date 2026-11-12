@@ -5,6 +5,7 @@ import { RenewalModal } from "../RenewalModal"
 import * as packagesApi from "../../lib/packages"
 import * as settingsApi from "../../lib/settings"
 import * as membershipsApi from "../../lib/memberships"
+import * as staffsApi from "../../lib/staffs"
 import type { Membership } from "../../lib/memberships"
 import type { PackageItem } from "../../lib/packages"
 import type { SettingsResponse } from "../../lib/settings"
@@ -174,6 +175,40 @@ describe("RenewalModal component", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Gói tập không hợp lệ")).toBeInTheDocument()
+    })
+  })
+
+  it("allows selecting an assigned trainer when renewing a membership", async () => {
+    vi.spyOn(staffsApi, "fetchTrainers").mockResolvedValue([
+      { id: "tr-1", name: "HLV Tuan Kiet", role: "trainer" },
+    ])
+    const renewSpy = vi.spyOn(membershipsApi, "renewMembership").mockResolvedValue({
+      membership: { ...dummyMember, assigned_staff_id: "tr-1" },
+      invoice: { id: "inv-3", amount: 1000000, status: "paid" },
+      check_in: null,
+    })
+
+    render(
+      <RenewalModal
+        membership={dummyMember}
+        onClose={vi.fn()}
+        initialAutoCheckIn={false}
+      />,
+    )
+
+    const trainerSelect = await screen.findByLabelText(/Huấn luyện viên phụ trách/i)
+    fireEvent.change(trainerSelect, { target: { value: "tr-1" } })
+
+    const submitBtn = screen.getByRole("button", { name: /Xác nhận gia hạn/i })
+    fireEvent.click(submitBtn)
+
+    await waitFor(() => {
+      expect(renewSpy).toHaveBeenCalledWith("m-1", {
+        package_id: "pkg-1",
+        staff_id: undefined,
+        auto_check_in: false,
+        assigned_staff_id: "tr-1",
+      })
     })
   })
 })

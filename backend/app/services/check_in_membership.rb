@@ -83,7 +83,8 @@ class CheckInMembership
   end
 
   def create_check_in_record!
-    CheckIn.create!(membership: membership, staff: staff, checked_in_at: Time.current)
+    trainer = membership.assigned_staff || (staff&.trainer? ? staff : nil)
+    CheckIn.create!(membership: membership, staff: staff, trainer: trainer, checked_in_at: Time.current)
   end
 
   def log_audit_event!(check_in)

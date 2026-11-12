@@ -7,6 +7,8 @@ export interface PackageCategory {
   name: string
 }
 
+export type CommissionType = "flat" | "percent"
+
 export interface PackageItem {
   id: string
   name: string
@@ -15,6 +17,10 @@ export interface PackageItem {
   duration_days: number | null
   package_category_id?: string | null
   category_name?: string | null
+  pt_package?: boolean
+  commission_type?: CommissionType
+  commission_rate?: number
+  sale_commission_rate?: number
   created_at?: string
 }
 
@@ -26,6 +32,10 @@ export interface CreatePackagePayload {
   sessions_count?: number
   duration_days?: number
   package_category_id?: string | null
+  pt_package?: boolean
+  commission_type?: CommissionType
+  commission_rate?: number
+  sale_commission_rate?: number
 }
 
 /** GET /packages — shop-scoped package list for membership form select. */

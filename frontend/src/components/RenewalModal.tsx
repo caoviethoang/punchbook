@@ -3,8 +3,14 @@ import { AlertCircle, Check, CheckCircle2, Copy, CreditCard, Loader2, QrCode, Re
 import { useTranslation } from "react-i18next"
 import { formatVndInput } from "../lib/formatters"
 import { fetchSettings } from "../lib/settings"
-import { renewMembership, type Membership, type RenewMembershipResult } from "../lib/memberships"
+import {
+  renewMembership,
+  type Membership,
+  type RenewMembershipPayload,
+  type RenewMembershipResult,
+} from "../lib/memberships"
 import { listPackages, type PackageItem } from "../lib/packages"
+import { fetchTrainers, type TrainerOption } from "../lib/staffs"
 import { toApiError } from "../lib/errors"
 import type { Shop } from "../lib/auth"
 import { Modal } from "./ui/Modal"
@@ -30,6 +36,10 @@ export function RenewalModal({
   const [selectedPackageId, setSelectedPackageId] = useState<string>(
     membership.package?.id || "",
   )
+  const [assignedStaffId, setAssignedStaffId] = useState<string>(
+    membership.assigned_staff_id || "",
+  )
+  const [trainers, setTrainers] = useState<TrainerOption[]>([])
   const [autoCheckIn, setAutoCheckIn] = useState<boolean>(initialAutoCheckIn)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -43,15 +53,20 @@ export function RenewalModal({
 
     const loadData = async () => {
       try {
-        const [settingsRes, packagesRes] = await Promise.allSettled([
+        const [settingsRes, packagesRes, trainersRes] = await Promise.allSettled([
           fetchSettings(),
           listPackages(),
+          fetchTrainers(),
         ])
 
         if (isCancelled) return
 
         if (settingsRes.status === "fulfilled") {
           setShop(settingsRes.value.shop)
+        }
+
+        if (trainersRes.status === "fulfilled") {
+          setTrainers(trainersRes.value)
         }
 
         if (packagesRes.status === "fulfilled") {
@@ -114,11 +129,15 @@ export function RenewalModal({
     setError(null)
 
     try {
-      const result = await renewMembership(membership.id, {
+      const payload: RenewMembershipPayload = {
         package_id: selectedPackageId || undefined,
         staff_id: staffId || undefined,
         auto_check_in: autoCheckIn,
-      })
+      }
+      if (assignedStaffId !== (membership.assigned_staff_id || "")) {
+        payload.assigned_staff_id = assignedStaffId || null
+      }
+      const result = await renewMembership(membership.id, payload)
 
       if (onSuccess) {
         onSuccess(result)
@@ -195,6 +214,32 @@ export function RenewalModal({
               ))}
             </select>
           </div>
+
+          {trainers.length > 0 && (
+            <div>
+              <label
+                htmlFor="renewal-trainer-select"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+              >
+                {t("memberships.assigned_trainer_label", "Huấn luyện viên phụ trách / PT")}
+              </label>
+              <select
+                id="renewal-trainer-select"
+                value={assignedStaffId}
+                onChange={(e) => setAssignedStaffId(e.target.value)}
+                className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+              >
+                <option value="">
+                  {t("memberships.no_trainer_assigned", "-- Không chỉ định PT --")}
+                </option>
+                {trainers.map((tr) => (
+                  <option key={tr.id} value={tr.id}>
+                    {tr.name} ({tr.role === "trainer" ? "PT" : "Admin"})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Package info summary */}
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 import type { Shop } from "../lib/auth"
 import { createMembership, type Membership } from "../lib/memberships"
 import { listPackages, type PackageItem } from "../lib/packages"
+import { fetchTrainers, type TrainerOption } from "../lib/staffs"
 import { ImportMembersModal } from "./ImportMembersModal"
 import { MembershipPaymentQRModal } from "./MembershipPaymentQRModal"
 import { FormField, FORM_CONTROL_CLASS } from "./ui/FormField"
@@ -21,8 +22,10 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
   const [email, setEmail] = useState("")
   const [cardNumber, setCardNumber] = useState("")
   const [packageId, setPackageId] = useState("")
+  const [assignedStaffId, setAssignedStaffId] = useState("")
   const [notes, setNotes] = useState("")
   const [packages, setPackages] = useState<PackageItem[]>([])
+  const [trainers, setTrainers] = useState<TrainerOption[]>([])
   const [packagesLoading, setPackagesLoading] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -40,10 +43,11 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
   useEffect(() => {
     let cancelled = false
 
-    listPackages()
-      .then((items) => {
+    Promise.all([listPackages(), fetchTrainers().catch(() => [])])
+      .then(([items, trainerList]) => {
         if (cancelled) return
         setPackages(items)
+        setTrainers(trainerList)
         if (items.length === 1) {
           setPackageId(items[0].id)
         }
@@ -90,6 +94,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
         package_id: packageId,
         card_number: cardNumber.trim() || undefined,
         notes: notes.trim() || undefined,
+        assigned_staff_id: assignedStaffId || null,
       })
       setCreated(membership)
       setIsQrModalOpen(true)
@@ -97,6 +102,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
       setPhone("")
       setEmail("")
       setCardNumber("")
+      setAssignedStaffId("")
       setNotes("")
       onSuccess?.(membership)
     } catch (err) {
@@ -221,6 +227,33 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
             ))}
           </select>
         </div>
+
+        {trainers.length > 0 && (
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              {t("memberships.assigned_trainer_label", "Huấn luyện viên phụ trách / PT (tùy chọn)")}
+              {selectedPackage?.pt_package && (
+                <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                  PT
+                </span>
+              )}
+            </label>
+            <select
+              value={assignedStaffId}
+              onChange={(e) => setAssignedStaffId(e.target.value)}
+              className={FORM_CONTROL_CLASS}
+            >
+              <option value="">
+                {t("memberships.no_trainer_assigned", "-- Không chỉ định PT --")}
+              </option>
+              {trainers.map((tr) => (
+                <option key={tr.id} value={tr.id}>
+                  {tr.name} ({tr.role === "trainer" ? "PT" : "Admin"})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">

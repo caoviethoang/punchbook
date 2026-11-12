@@ -58,7 +58,7 @@ class MembershipSerializer
     membership.as_json(
       only: %i[id customer_name phone email card_number sessions_left expires_at discarded_at notes
                frozen_at frozen_until freeze_reason transferred_at
-               transferred_to_membership_id transferred_from_membership_id],
+               transferred_to_membership_id transferred_from_membership_id assigned_staff_id],
       include: ASSOCIATION_INCLUDES
     ).merge(status_and_qr_hash)
   end
@@ -73,7 +73,7 @@ class MembershipSerializer
     base = membership.as_json(
       only: %i[id customer_name phone email card_number sessions_left expires_at created_at notes
                frozen_at frozen_until freeze_reason transferred_at
-               transferred_to_membership_id transferred_from_membership_id],
+               transferred_to_membership_id transferred_from_membership_id assigned_staff_id],
       include: ASSOCIATION_INCLUDES
     )
     base.merge(extra_detail_hash)
@@ -90,8 +90,16 @@ class MembershipSerializer
       'discarded_at' => membership.discarded_at,
       'checked_in_today' => checked_in_today_value,
       'last_checked_in_at' => last_checked_in_at_value,
-      'qr_code_value' => "PUNCHBOOK:#{membership.id}"
+      'qr_code_value' => "PUNCHBOOK:#{membership.id}",
+      'assigned_staff' => assigned_staff_hash
     }.merge(freeze_attributes_hash).merge(transfer_meta_hash)
+  end
+
+  def assigned_staff_hash
+    staff = membership.assigned_staff
+    return nil unless staff
+
+    { 'id' => staff.id, 'name' => staff.name, 'role' => staff.role }
   end
 
   def freeze_attributes_hash

@@ -66,6 +66,16 @@ function PackageFormContent({
   const [price, setPrice] = useState<string>(
     editingPackage?.price ? String(editingPackage.price) : "",
   )
+  const [ptPackage, setPtPackage] = useState(editingPackage?.pt_package ?? false)
+  const [commissionType, setCommissionType] = useState<"flat" | "percent">(
+    editingPackage?.commission_type ?? "flat",
+  )
+  const [commissionRate, setCommissionRate] = useState<string>(
+    editingPackage?.commission_rate !== undefined ? String(editingPackage.commission_rate) : "150000",
+  )
+  const [saleCommissionRate, setSaleCommissionRate] = useState<string>(
+    editingPackage?.sale_commission_rate !== undefined ? String(editingPackage.sale_commission_rate) : "5",
+  )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -144,6 +154,10 @@ function PackageFormContent({
         sessions_count: payloadSessions,
         duration_days: payloadDays,
         package_category_id: selectedCategoryId || null,
+        pt_package: ptPackage,
+        commission_type: commissionType,
+        commission_rate: ptPackage ? Math.max(0, parseInt(commissionRate, 10) || 0) : 0,
+        sale_commission_rate: ptPackage ? Math.max(0, parseInt(saleCommissionRate, 10) || 0) : 0,
       }
 
       let result: PackageItem
@@ -341,6 +355,80 @@ function PackageFormContent({
               {t("packages.currency_vnd", "VNĐ")}
             </span>
           </div>
+        </div>
+
+        {/* PT & Commission Settings */}
+        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-800/40">
+          <label className="flex cursor-pointer items-center justify-between gap-3">
+            <div>
+              <span className="block text-sm font-semibold text-slate-800 dark:text-slate-100">
+                {t("packages.pt_package_label", "Gói tập kèm Huấn luyện viên (PT 1-1)")}
+              </span>
+              <span className="block text-xs text-slate-500 dark:text-slate-400">
+                {t("packages.pt_package_hint", "Tự động tính hoa hồng buổi dạy và doanh số cho PT phụ trách.")}
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              checked={ptPackage}
+              onChange={(e) => setPtPackage(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            />
+          </label>
+
+          {ptPackage && (
+            <div className="mt-4 space-y-3 border-t border-slate-200/80 pt-3 dark:border-slate-700/80">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                    {t("packages.commission_type_label", "Hình thức tính buổi dạy")}
+                  </label>
+                  <select
+                    value={commissionType}
+                    onChange={(e) => setCommissionType(e.target.value as "flat" | "percent")}
+                    className={FORM_CONTROL_CLASS}
+                  >
+                    <option value="flat">
+                      {t("packages.commission_flat", "Cố định (VNĐ / buổi)")}
+                    </option>
+                    <option value="percent">
+                      {t("packages.commission_percent", "Phần trăm (% giá buổi)")}
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                    {commissionType === "flat"
+                      ? t("packages.commission_rate_flat", "Hoa hồng mỗi buổi (VNĐ)")
+                      : t("packages.commission_rate_percent", "Hoa hồng mỗi buổi (%)")}
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={commissionType === "percent" ? 100 : undefined}
+                    value={commissionRate}
+                    onChange={(e) => setCommissionRate(e.target.value)}
+                    className={FORM_CONTROL_CLASS}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                  {t("packages.sale_commission_rate", "Hoa hồng chốt sales bán gói (%)")}
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={saleCommissionRate}
+                  onChange={(e) => setSaleCommissionRate(e.target.value)}
+                  className={FORM_CONTROL_CLASS}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-6 flex items-center justify-end gap-3 pt-2">

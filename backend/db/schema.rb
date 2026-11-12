@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_03_040000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_04_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -36,9 +36,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_040000) do
     t.datetime "created_at", null: false
     t.uuid "membership_id", null: false
     t.uuid "staff_id"
+    t.uuid "trainer_id"
     t.datetime "updated_at", null: false
     t.index ["membership_id"], name: "index_check_ins_on_membership_id"
     t.index ["staff_id"], name: "index_check_ins_on_staff_id"
+    t.index ["trainer_id"], name: "index_check_ins_on_trainer_id"
   end
 
   create_table "class_bookings", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -136,6 +138,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_040000) do
   end
 
   create_table "memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "assigned_staff_id"
     t.string "card_number"
     t.datetime "created_at", null: false
     t.string "customer_name"
@@ -155,6 +158,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_040000) do
     t.uuid "transferred_from_membership_id"
     t.uuid "transferred_to_membership_id"
     t.datetime "updated_at", null: false
+    t.index ["assigned_staff_id"], name: "index_memberships_on_assigned_staff_id"
     t.index ["discarded_at"], name: "index_memberships_on_discarded_at"
     t.index ["package_id"], name: "index_memberships_on_package_id"
     t.index ["shop_id", "card_number"], name: "index_memberships_on_shop_id_and_card_number", unique: true, where: "(card_number IS NOT NULL)"
@@ -199,12 +203,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_040000) do
   end
 
   create_table "packages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.integer "commission_rate", default: 0, null: false
+    t.string "commission_type", default: "flat", null: false
     t.datetime "created_at", null: false
     t.datetime "discarded_at"
     t.integer "duration_days"
     t.string "name"
     t.uuid "package_category_id"
     t.integer "price"
+    t.boolean "pt_package", default: false, null: false
+    t.integer "sale_commission_rate", default: 0, null: false
     t.integer "sessions_count"
     t.uuid "shop_id", null: false
     t.datetime "updated_at", null: false
@@ -298,6 +306,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_040000) do
   add_foreign_key "audit_logs", "staffs", on_delete: :nullify
   add_foreign_key "check_ins", "memberships"
   add_foreign_key "check_ins", "staffs"
+  add_foreign_key "check_ins", "staffs", column: "trainer_id", on_delete: :nullify
   add_foreign_key "class_bookings", "class_schedules"
   add_foreign_key "class_bookings", "memberships"
   add_foreign_key "class_schedules", "class_types"
@@ -315,6 +324,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_040000) do
   add_foreign_key "memberships", "memberships", column: "transferred_to_membership_id"
   add_foreign_key "memberships", "packages"
   add_foreign_key "memberships", "shops"
+  add_foreign_key "memberships", "staffs", column: "assigned_staff_id", on_delete: :nullify
   add_foreign_key "notification_logs", "memberships"
   add_foreign_key "notification_logs", "shops"
   add_foreign_key "package_categories", "shops"
