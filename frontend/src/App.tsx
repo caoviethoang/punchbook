@@ -37,6 +37,18 @@ const PackagesScreen = lazy(() =>
 const SettingsScreen = lazy(() =>
   import("./components/SettingsScreen").then((m) => ({ default: m.SettingsScreen })),
 )
+const MemberPortalScreen = lazy(() =>
+  import("./components/portal/MemberPortalScreen").then((m) => ({ default: m.MemberPortalScreen })),
+)
+
+function getMemberPortalToken(): string | null {
+  if (typeof window === "undefined") return null
+  const hashMatch = window.location.hash.match(/^#\/?m\/([^/?#]+)/)
+  if (hashMatch?.[1]) return decodeURIComponent(hashMatch[1])
+  const pathMatch = window.location.pathname.match(/^\/m\/([^/?#]+)/)
+  if (pathMatch?.[1]) return decodeURIComponent(pathMatch[1])
+  return null
+}
 
 function ScreenFallback() {
   return (
@@ -47,6 +59,26 @@ function ScreenFallback() {
 }
 
 function App() {
+  const [portalToken, setPortalToken] = useState<string | null>(getMemberPortalToken)
+
+  useEffect(() => {
+    const syncPortalToken = () => setPortalToken(getMemberPortalToken())
+    window.addEventListener("hashchange", syncPortalToken)
+    return () => window.removeEventListener("hashchange", syncPortalToken)
+  }, [])
+
+  if (portalToken) {
+    return (
+      <Suspense fallback={<ScreenFallback />}>
+        <MemberPortalScreen token={portalToken} />
+      </Suspense>
+    )
+  }
+
+  return <StaffApp />
+}
+
+function StaffApp() {
   const { shop, setShop, staff, authLoading, handleLogout, handleAuthSuccess } =
     useAppAuth()
   const [view, setView] = useState<AppView>(getInitialView)

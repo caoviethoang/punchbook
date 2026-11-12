@@ -56,6 +56,7 @@ export interface Membership {
   checked_in_today?: boolean
   last_checked_in_at?: string | null
   qr_code_value?: string
+  public_token?: string | null
   notes?: string | null
 }
 

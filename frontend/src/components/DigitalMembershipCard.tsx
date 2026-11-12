@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Check, Copy, Download, Loader2, Printer, QrCode, ShieldCheck, Sparkles } from "lucide-react"
+import { Check, Copy, Download, Link2, Loader2, Printer, QrCode, ShieldCheck, Sparkles } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import type { Membership, MembershipDetail } from "../lib/memberships"
 import { remainingLabel } from "../lib/formatters"
@@ -25,6 +25,7 @@ export function DigitalMembershipCard({
   const { t } = useTranslation()
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [copiedPortal, setCopiedPortal] = useState(false)
   const [downloading, setDownloading] = useState(false)
 
   const effectiveShopName = membership.shop?.name || shopName || "PunchBook Spa"
@@ -49,6 +50,14 @@ export function DigitalMembershipCard({
     void navigator.clipboard.writeText(qrValue)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  function handleCopyPortalLink() {
+    if (!membership.public_token) return
+    const url = `${window.location.origin}/#/m/${membership.public_token}`
+    void navigator.clipboard.writeText(url)
+    setCopiedPortal(true)
+    setTimeout(() => setCopiedPortal(false), 2000)
   }
 
   function handlePrint() {
@@ -253,6 +262,26 @@ export function DigitalMembershipCard({
             <Printer className="h-4 w-4" />
             <span>{t("card.print_card", "In thẻ")}</span>
           </button>
+
+          {membership.public_token && (
+            <button
+              type="button"
+              onClick={handleCopyPortalLink}
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 shadow-2xs transition hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900/50"
+            >
+              {copiedPortal ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  <span>{t("card.copied_portal", "Đã sao chép link thẻ hội viên")}</span>
+                </>
+              ) : (
+                <>
+                  <Link2 className="h-3.5 w-3.5" />
+                  <span>{t("card.copy_portal_link", "Sao chép link Portal cho hội viên")}</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
       )}
     </div>

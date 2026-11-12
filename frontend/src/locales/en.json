@@ -728,7 +728,9 @@
     "copy_code": "Copy ID",
     "downloading": "Downloading...",
     "download_png": "Download PNG",
-    "print_card": "Print Card"
+    "print_card": "Print Card",
+    "copy_portal_link": "Copy Member Portal Link",
+    "copied_portal": "Portal link copied"
   },
   "scanner": {
     "title": "Scan Member QR",
@@ -878,5 +880,37 @@
     "packages_unit": "pkg",
     "status_pending": "Pending Payout",
     "status_settled": "No Payout"
+  },
+  "portal": {
+    "app_badge": "Member Card",
+    "load_error": "Could not load membership card. The link may have expired.",
+    "error_title": "Membership Card Not Found",
+    "pwa_title": "Add to Home Screen",
+    "pwa_subtitle": "Quickly open your check-in QR code like a mobile app",
+    "pwa_install": "Install",
+    "tab_card": "Card & QR",
+    "tab_checkins": "Check-ins",
+    "tab_invoices": "Invoices",
+    "assigned_pt": "Trainer:",
+    "qr_alt": "Check-in QR Code",
+    "qr_instruction": "Show this QR code at reception or scanner to check in",
+    "sessions_progress": "{{left}}/{{total}} sessions left",
+    "days_progress": "{{days}} days left (Exp: {{date}})",
+    "renew_now": "Renew Membership Now",
+    "studio_info": "Studio Info",
+    "checkin_history_title": "Recent Check-in History",
+    "empty_checkins": "No check-ins recorded yet.",
+    "checkin_label": "Checked in successfully",
+    "invoices_title": "Invoices & Receipts",
+    "empty_invoices": "No payment invoices yet.",
+    "invoice_paid": "Paid",
+    "invoice_pending": "Pending",
+    "renew_modal_title": "Renew Membership",
+    "select_package": "Select Package",
+    "package_price": "Total",
+    "generate_payment": "Generate VietQR / payOS Payment",
+    "renew_failed": "Failed to generate payment link. Please try again.",
+    "payment_created": "Payment link created successfully!",
+    "open_payos": "Open payOS Checkout"
   }
 }
