@@ -12,6 +12,7 @@ import { computeMembershipStatus } from "../lib/memberships"
 import { downloadExcelReport } from "../lib/reports"
 import { AnalyticsCharts } from "./AnalyticsCharts"
 import { AttendanceReportSection } from "./dashboard/AttendanceReportSection"
+import { TrainerCommissionReportSection } from "./dashboard/TrainerCommissionReportSection"
 import { DashboardHeader } from "./dashboard/DashboardHeader"
 import { DashboardMembershipsTable } from "./dashboard/DashboardMembershipsTable"
 import { MetricCard } from "./dashboard/MetricCard"
@@ -26,6 +27,7 @@ interface DashboardScreenProps {
 export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
   const { t } = useTranslation()
   const isAdmin = !currentStaff || currentStaff.role === "admin"
+  const isTrainer = currentStaff?.role === "trainer"
   const { data, loading, error, load } = useDashboard()
   const [selectedMembershipForRenewal, setSelectedMembershipForRenewal] =
     useState<DashboardMembership | null>(null)
@@ -36,6 +38,7 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
   const [exportError, setExportError] = useState<string | null>(null)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [isAuditLogsOpen, setIsAuditLogsOpen] = useState(false)
+  const [reportTab, setReportTab] = useState<"attendance" | "trainer_commissions">("attendance")
 
   // Shared Pagination & Filtering hook with debouncing and safe typing
   const {
@@ -61,10 +64,11 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
   )
 
   useEffect(() => {
+    if (!isAdmin) return
     load().catch(() => {
       // Ignored
     })
-  }, [load])
+  }, [isAdmin, load])
 
   const handleExport = async () => {
     try {
@@ -78,7 +82,7 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
     }
   }
 
-  if (loading && !data) {
+  if (isAdmin && loading && !data) {
     return (
       <div className="flex items-center justify-center py-24">
         <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
@@ -86,7 +90,7 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
     )
   }
 
-  if (error && !data) {
+  if (isAdmin && error && !data) {
     return (
       <div className="rounded-xl bg-red-50 p-4 text-base font-medium text-red-700 dark:bg-red-950/40 dark:text-red-300">
         <div className="flex items-center gap-3">
@@ -104,7 +108,8 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
     )
   }
 
-  if (!data) return null
+  if (isAdmin && !data) return null
+  if (!isAdmin && !isTrainer && !data) return null
 
   return (
     <div className="space-y-6">
@@ -117,48 +122,62 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
         </div>
       )}
 
-      {/* Header with quick action buttons */}
-      <DashboardHeader
-        isAdmin={isAdmin}
-        exporting={exporting}
-        onOpenAuditLogs={() => setIsAuditLogsOpen(true)}
-        onOpenImportModal={() => setIsImportModalOpen(true)}
-        onExport={() => void handleExport()}
-      />
-
-      {/* KPI Cards */}
-      <div className={`grid gap-4 ${isAdmin ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
-        {isAdmin && (
-          <MetricCard
-            label={t("dashboard.revenue_this_month", "Doanh thu tháng")}
-            value={formatVnd(data.revenue_this_month)}
-            icon={<Wallet className="h-4 w-4" />}
+      {isAdmin && data ? (
+        <>
+          {/* Header with quick action buttons */}
+          <DashboardHeader
+            isAdmin={isAdmin}
+            exporting={exporting}
+            onOpenAuditLogs={() => setIsAuditLogsOpen(true)}
+            onOpenImportModal={() => setIsImportModalOpen(true)}
+            onExport={() => void handleExport()}
           />
-        )}
-        <MetricCard
-          label={t("dashboard.active_members", "Hội viên active")}
-          value={String(data.active_memberships_count)}
-          icon={<Users className="h-4 w-4" />}
-          active={statusFilter === "active"}
-          onClick={() => {
-            setStatusFilter((prev) => (prev === "active" ? "all" : "active"))
-            setPage(1)
-          }}
-        />
-        <MetricCard
-          label={t("dashboard.expiring_soon", "Sắp hết hạn (<= 3 buổi / 7 ngày)")}
-          value={String(data.expiring_within_7_days_count)}
-          icon={<CalendarClock className="h-4 w-4" />}
-          active={statusFilter === "expiring"}
-          onClick={() => {
-            setStatusFilter((prev) => (prev === "expiring" ? "all" : "expiring"))
-            setPage(1)
-          }}
-        />
-      </div>
+
+          {/* KPI Cards */}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <MetricCard
+              label={t("dashboard.revenue_this_month", "Doanh thu tháng")}
+              value={formatVnd(data.revenue_this_month)}
+              icon={<Wallet className="h-4 w-4" />}
+            />
+            <MetricCard
+              label={t("dashboard.active_members", "Hội viên active")}
+              value={String(data.active_memberships_count)}
+              icon={<Users className="h-4 w-4" />}
+              active={statusFilter === "active"}
+              onClick={() => {
+                setStatusFilter((prev) => (prev === "active" ? "all" : "active"))
+                setPage(1)
+              }}
+            />
+            <MetricCard
+              label={t("dashboard.expiring_soon", "Sắp hết hạn (<= 3 buổi / 7 ngày)")}
+              value={String(data.expiring_within_7_days_count)}
+              icon={<CalendarClock className="h-4 w-4" />}
+              active={statusFilter === "expiring"}
+              onClick={() => {
+                setStatusFilter((prev) => (prev === "expiring" ? "all" : "expiring"))
+                setPage(1)
+              }}
+            />
+          </div>
+        </>
+      ) : isTrainer ? (
+        <div className="flex flex-col gap-1">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            {t("trainer_commissions.welcome_title", "Bảng điều khiển Huấn luyện viên (PT)")}
+          </h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {t(
+              "trainer_commissions.welcome_subtitle",
+              "Theo dõi học viên được phân công, số buổi còn lại và tổng hợp hoa hồng hàng tháng.",
+            )}
+          </p>
+        </div>
+      ) : null}
 
       {/* Analytics Charts (30-day Revenue, Package Revenue & 24h Check-in Frequency) */}
-      {!currentStaff || currentStaff.role === "admin" ? (
+      {isAdmin && data ? (
         <>
           <AnalyticsCharts
             dailyRevenue={data.daily_revenue_30_days}
@@ -166,10 +185,48 @@ export function DashboardScreen({ currentStaff }: DashboardScreenProps) {
             peakHour={data.peak_check_in_hour}
             packageRevenue={data.revenue_by_package}
           />
-          <AttendanceReportSection
-            onSelectDetail={setSelectedMembershipIdForDetail}
-          />
+
+          <div className="space-y-3">
+            <div className="inline-flex items-center rounded-2xl border border-slate-200 bg-white p-1 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+              <button
+                type="button"
+                onClick={() => setReportTab("attendance")}
+                className={`rounded-xl px-4 py-2 text-xs font-semibold transition ${
+                  reportTab === "attendance"
+                    ? "bg-indigo-600 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                }`}
+              >
+                {t("reports.tab_attendance", "Báo cáo Chuyên cần")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setReportTab("trainer_commissions")}
+                className={`rounded-xl px-4 py-2 text-xs font-semibold transition ${
+                  reportTab === "trainer_commissions"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                }`}
+              >
+                {t("reports.tab_trainer_commissions", "Hoa hồng PT & Payroll")}
+              </button>
+            </div>
+
+            {reportTab === "attendance" ? (
+              <AttendanceReportSection onSelectDetail={setSelectedMembershipIdForDetail} />
+            ) : (
+              <TrainerCommissionReportSection
+                currentStaff={currentStaff}
+                onSelectDetail={setSelectedMembershipIdForDetail}
+              />
+            )}
+          </div>
         </>
+      ) : currentStaff?.role === "trainer" ? (
+        <TrainerCommissionReportSection
+          currentStaff={currentStaff}
+          onSelectDetail={setSelectedMembershipIdForDetail}
+        />
       ) : null}
 
       {/* Memberships Table with search & pagination */}

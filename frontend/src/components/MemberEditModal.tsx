@@ -1,7 +1,8 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { X, UserCheck, Loader2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { updateMembership, type Membership, type MembershipPackage } from "../lib/memberships"
+import { fetchTrainers, type TrainerOption } from "../lib/staffs"
 
 interface MemberEditModalProps {
   membership: Membership | null
@@ -31,8 +32,22 @@ export function MemberEditModal({
     membership?.expires_at ? membership.expires_at.substring(0, 10) : "",
   )
   const [notes, setNotes] = useState(membership?.notes || "")
+  const [assignedStaffId, setAssignedStaffId] = useState(membership?.assigned_staff_id || "")
+  const [trainers, setTrainers] = useState<TrainerOption[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let active = true
+    fetchTrainers()
+      .then((list) => {
+        if (active) setTrainers(list)
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [])
 
   if (!membership) return null
 
@@ -56,6 +71,7 @@ export function MemberEditModal({
         sessions_left: sessionsLeft !== "" ? Number(sessionsLeft) : null,
         expires_at: expiresAt !== "" ? expiresAt : null,
         notes: notes.trim(),
+        assigned_staff_id: assignedStaffId || null,
       })
       onSuccess(updated)
       onClose()
@@ -172,6 +188,28 @@ export function MemberEditModal({
               ))}
             </select>
           </div>
+
+          {trainers.length > 0 && (
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                {t("memberships.assigned_trainer_label", "Huấn luyện viên phụ trách / PT")}
+              </label>
+              <select
+                value={assignedStaffId}
+                onChange={(e) => setAssignedStaffId(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
+              >
+                <option value="">
+                  {t("memberships.no_trainer_assigned", "-- Không chỉ định PT --")}
+                </option>
+                {trainers.map((tr) => (
+                  <option key={tr.id} value={tr.id}>
+                    {tr.name} ({tr.role === "trainer" ? "PT" : "Admin"})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <div>

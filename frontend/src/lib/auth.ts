@@ -4,7 +4,7 @@ export interface Staff {
   id: string
   name: string
   username: string | null
-  role: "admin" | "staff"
+  role: "admin" | "staff" | "trainer"
   created_at?: string
 }
 

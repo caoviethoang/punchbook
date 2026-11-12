@@ -52,11 +52,11 @@ function App() {
   const [view, setView] = useState<AppView>(getInitialView)
 
   const isAdmin = !staff || staff.role === "admin"
-  const activeView =
-    !isAdmin &&
-    (view === "dashboard" || view === "settings" || view === "packages")
-      ? "checkin"
-      : view
+  const isTrainer = staff?.role === "trainer"
+  const isRestrictedView =
+    (!isAdmin && (view === "settings" || view === "packages")) ||
+    (!isAdmin && !isTrainer && view === "dashboard")
+  const activeView = isRestrictedView ? "checkin" : view
 
   useEffect(() => {
     if (shop) {

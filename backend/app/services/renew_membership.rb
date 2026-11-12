@@ -7,15 +7,21 @@ class RenewMembership
   class Error < StandardError; end
   class InvalidPackageError < Error; end
 
-  def self.call(membership:, staff:, package: nil, auto_check_in: false)
-    new(membership: membership, staff: staff, package: package, auto_check_in: auto_check_in).call
+  UNSET = Object.new.freeze
+
+  def self.call(membership:, staff:, package: nil, auto_check_in: false, assigned_staff_id: UNSET)
+    new(
+      membership: membership, staff: staff, package: package,
+      auto_check_in: auto_check_in, assigned_staff_id: assigned_staff_id
+    ).call
   end
 
-  def initialize(membership:, staff:, package: nil, auto_check_in: false)
+  def initialize(membership:, staff:, package: nil, auto_check_in: false, assigned_staff_id: UNSET)
     @membership = membership
     @staff = staff
     @package = package || membership.package
     @auto_check_in = auto_check_in
+    @assigned_staff_id = assigned_staff_id
   end
 
   def call
@@ -36,7 +42,7 @@ class RenewMembership
 
   private
 
-  attr_reader :membership, :staff, :package, :auto_check_in
+  attr_reader :membership, :staff, :package, :auto_check_in, :assigned_staff_id
 
   def validate_package!
     return unless package.blank? || package.shop_id != membership.shop_id || package.discarded?
@@ -45,15 +51,22 @@ class RenewMembership
   end
 
   def apply_package_renewal!
-    membership.package = package if package.id != membership.package_id
+    assign_renewal_attributes!
+    apply_package_balance!
+    membership.save!
+  end
 
+  def assign_renewal_attributes!
+    membership.package = package if package.id != membership.package_id
+    membership.assigned_staff_id = assigned_staff_id.presence unless assigned_staff_id.equal?(UNSET)
+  end
+
+  def apply_package_balance!
     if package.session_based?
       renew_session_package!
     elsif package.day_based?
       renew_day_package!
     end
-
-    membership.save!
   end
 
   def renew_session_package!

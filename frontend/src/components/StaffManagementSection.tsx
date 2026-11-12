@@ -22,7 +22,7 @@ export function StaffManagementSection({ currentStaff, onToast }: StaffManagemen
   const [name, setName] = useState("")
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  const [role, setRole] = useState<"admin" | "staff">("staff")
+  const [role, setRole] = useState<"admin" | "staff" | "trainer">("staff")
   const [submitting, setSubmitting] = useState(false)
 
   const isAdmin = !currentStaff || currentStaff.role === "admin"
@@ -160,11 +160,15 @@ export function StaffManagementSection({ currentStaff, onToast }: StaffManagemen
                       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         s.role === "admin"
                           ? "bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300"
+                          : s.role === "trainer"
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300"
                           : "bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300"
                       }`}
                     >
                       {s.role === "admin"
                         ? t("settings.staff.role_admin", "Quản trị viên (Admin)")
+                        : s.role === "trainer"
+                        ? t("settings.staff.role_trainer", "Huấn luyện viên (PT)")
                         : t("settings.staff.role_staff", "Lễ tân (Staff)")}
                     </span>
                   </td>
@@ -230,11 +234,18 @@ export function StaffManagementSection({ currentStaff, onToast }: StaffManagemen
                 </label>
                 <select
                   value={role}
-                  onChange={(e) => setRole(e.target.value as "admin" | "staff")}
+                  onChange={(e) => setRole(e.target.value as "admin" | "staff" | "trainer")}
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 >
-                  <option value="staff">Lễ tân (Thực hiện Check-in, quản lý hội viên)</option>
-                  <option value="admin">Quản trị viên (Toàn quyền quản lý tiệm)</option>
+                  <option value="staff">
+                    {t("settings.staff.option_staff", "Lễ tân (Thực hiện Check-in, quản lý hội viên)")}
+                  </option>
+                  <option value="trainer">
+                    {t("settings.staff.option_trainer", "Huấn luyện viên / PT (Quản lý học viên kèm 1-1 & Hoa hồng)")}
+                  </option>
+                  <option value="admin">
+                    {t("settings.staff.option_admin", "Quản trị viên (Toàn quyền quản lý tiệm)")}
+                  </option>
                 </select>
               </div>
 

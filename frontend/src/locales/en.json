@@ -70,7 +70,8 @@
     "settings": "Settings",
     "logout": "Sign out",
     "admin": "Admin",
-    "staff": "Staff"
+    "staff": "Staff",
+    "trainer": "Trainer"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -348,7 +349,9 @@
     "unfreeze_reason_label": "Unfreeze note / Reason (Optional)",
     "unfreeze_reason_placeholder": "e.g. Member returned earlier than expected...",
     "unfreeze_confirm_btn": "Unfreeze Membership",
-    "days_extended_label": "Extended by:"
+    "days_extended_label": "Extended by:",
+    "assigned_trainer_label": "Assigned Personal Trainer (optional)",
+    "no_trainer_assigned": "-- No Trainer Assigned --"
   },
   "packages": {
     "title": "Service Packages",
@@ -438,7 +441,15 @@
     "delete": "Delete",
     "empty_packages": "No service packages found.",
     "empty_filtered": "No packages found in this discipline",
-    "empty_filtered_hint": "Try selecting another discipline or choose all disciplines."
+    "empty_filtered_hint": "Try selecting another discipline or choose all disciplines.",
+    "pt_package_label": "Personal Trainer (1-on-1 PT) Package",
+    "pt_package_hint": "Automatically calculate session and sales commissions for assigned trainers.",
+    "commission_type_label": "Session Commission Type",
+    "commission_flat": "Flat Amount (VND / session)",
+    "commission_percent": "Percentage (% per session)",
+    "commission_rate_flat": "Commission per session (VND)",
+    "commission_rate_percent": "Commission per session (%)",
+    "sale_commission_rate": "Sales commission rate (%)"
   },
   "settings": {
     "title": "Store & Account Settings",
@@ -537,7 +548,11 @@
       "role": "Role",
       "role_admin": "Administrator (Admin)",
       "role_staff": "Receptionist (Staff)",
-      "empty": "No staff accounts found."
+      "empty": "No staff accounts found.",
+      "role_trainer": "Personal Trainer (PT)",
+      "option_staff": "Receptionist (Check-in & membership management)",
+      "option_trainer": "Personal Trainer / PT (Assigned clients & commissions)",
+      "option_admin": "Administrator (Full studio management)"
     },
     "notifications": {
       "title": "Multi-channel Notifications",
@@ -826,5 +841,42 @@
     "spots_left": "{{count}} spots left",
     "waitlist_count": "{{count}} waitlisted",
     "no_classes_day": "No classes scheduled on this day."
+  },
+  "reports": {
+    "tab_attendance": "Attendance Report",
+    "tab_trainer_commissions": "Trainer Commission & Payroll"
+  },
+  "trainer_commissions": {
+    "welcome_title": "Personal Trainer Dashboard",
+    "welcome_subtitle": "View your assigned clients, remaining sessions, and monthly commission summary.",
+    "admin_title": "Trainer Commission & Payroll Report",
+    "admin_subtitle": "Monthly summary of completed PT sessions, closed sales, and calculated payouts",
+    "trainer_title": "My PT Sessions & Commissions",
+    "trainer_subtitle": "Track your completed sessions, sales volume, and monthly earnings",
+    "filter_trainer": "Filter by trainer",
+    "all_trainers": "All Trainers",
+    "export_excel": "Export Excel",
+    "kpi_sessions": "Sessions Completed",
+    "kpi_session_comm": "Session Commission",
+    "kpi_sales": "PT Package Sales",
+    "kpi_total_comm": "Total Commission",
+    "tab_summary": "Trainer Summary",
+    "tab_sessions": "Session Log",
+    "empty_trainers": "No trainer activity recorded for this month.",
+    "empty_sessions": "No PT check-ins recorded for this month.",
+    "col_trainer": "Trainer",
+    "col_clients": "Clients",
+    "col_sessions": "Sessions",
+    "col_session_comm": "Session Comm.",
+    "col_sales": "Sales",
+    "col_sale_comm": "Sales Comm.",
+    "col_total": "Total Commission",
+    "col_time": "Time",
+    "col_client": "Member",
+    "col_package": "Package",
+    "col_commission": "Commission",
+    "packages_unit": "pkg",
+    "status_pending": "Pending Payout",
+    "status_settled": "No Payout"
   }
 }

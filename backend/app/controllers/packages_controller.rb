@@ -32,6 +32,7 @@ class PackagesController < ApiController
   end
 
   def package_params
-    params.expect(package: %i[name price sessions_count duration_days package_category_id])
+    params.expect(package: %i[name price sessions_count duration_days package_category_id
+                              pt_package commission_type commission_rate sale_commission_rate])
   end
 end

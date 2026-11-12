@@ -10,10 +10,11 @@ interface NavItemConfig {
   labelKey: string
   defaultLabel: string
   adminOnly?: boolean
+  trainerAllowed?: boolean
 }
 
 const NAV_ITEMS_CONFIG: NavItemConfig[] = [
-  { view: "dashboard", labelKey: "nav.dashboard", defaultLabel: "Dashboard", adminOnly: true },
+  { view: "dashboard", labelKey: "nav.dashboard", defaultLabel: "Dashboard", adminOnly: true, trainerAllowed: true },
   { view: "checkin", labelKey: "nav.checkin", defaultLabel: "Check-in" },
   { view: "classes", labelKey: "nav.classes", defaultLabel: "Lịch lớp" },
   { view: "members", labelKey: "nav.members", defaultLabel: "Hội viên" },
@@ -51,7 +52,10 @@ export function AppHeader({
 }: AppHeaderProps) {
   const { t } = useTranslation()
   const isAdmin = !staff || staff.role === "admin"
-  const visibleNavItems = NAV_ITEMS_CONFIG.filter((item) => !item.adminOnly || isAdmin)
+  const isTrainer = staff?.role === "trainer"
+  const visibleNavItems = NAV_ITEMS_CONFIG.filter(
+    (item) => !item.adminOnly || isAdmin || (isTrainer && item.trainerAllowed),
+  )
 
   return (
     <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
@@ -67,8 +71,18 @@ export function AppHeader({
             {shop.name}
           </h1>
           {staff && (
-            <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-              {staff.role === "admin" ? t("nav.admin", "Admin") : t("nav.staff", "Lễ tân")}
+            <span
+              className={`rounded-md px-2 py-0.5 text-xs font-medium ${
+                staff.role === "trainer"
+                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
+                  : "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
+              }`}
+            >
+              {staff.role === "admin"
+                ? t("nav.admin", "Admin")
+                : staff.role === "trainer"
+                  ? t("nav.trainer", "PT / HLV")
+                  : t("nav.staff", "Lễ tân")}
             </span>
           )}
         </div>

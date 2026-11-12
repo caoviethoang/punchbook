@@ -3,18 +3,23 @@
 class MembershipRenewalsController < ApiController
   def create
     membership = current_shop.memberships.find(params.expect(:id))
-    package = find_renewal_package(membership)
-    auto_check_in = ActiveModel::Type::Boolean.new.cast(params[:auto_check_in])
-
-    result = RenewMembership.call(
-      membership: membership, package: package, staff: find_staff, auto_check_in: auto_check_in
-    )
-    render json: format_response(result)
+    authorize! :update, membership
+    render json: format_response(RenewMembership.call(**renewal_args(membership)))
   rescue RenewMembership::Error => e
     render json: { error: e.message }, status: :unprocessable_content
   end
 
   private
+
+  def renewal_args(membership)
+    {
+      membership: membership,
+      package: find_renewal_package(membership),
+      staff: find_staff,
+      auto_check_in: ActiveModel::Type::Boolean.new.cast(params[:auto_check_in]),
+      assigned_staff_id: params.key?(:assigned_staff_id) ? params[:assigned_staff_id] : RenewMembership::UNSET
+    }
+  end
 
   def format_response(result)
     {

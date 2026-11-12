@@ -12,6 +12,8 @@ Rails.application.routes.draw do
     get '/reports/export', to: 'reports#export'
     get '/reports/attendance', to: 'reports#attendance'
     get '/reports/attendance/export', to: 'reports#export_attendance'
+    get '/reports/trainer_commissions', to: 'reports#trainer_commissions'
+    get '/reports/trainer_commissions/export', to: 'reports#export_trainer_commissions'
 
     get '/settings', to: 'settings#show'
     patch '/settings/profile', to: 'settings#update_profile'
@@ -32,7 +34,9 @@ Rails.application.routes.draw do
 
     resources :package_categories, only: %i[index create update destroy]
     resources :packages, only: %i[index create update destroy]
-    resources :staffs, only: %i[index create destroy]
+    resources :staffs, only: %i[index create destroy] do
+      get :trainers, on: :collection
+    end
     resources :memberships, only: %i[index create show update destroy] do
       collection do
         get :export

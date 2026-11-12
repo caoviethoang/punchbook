@@ -2,11 +2,16 @@
 
 # Controller for managing Staff accounts within a shop.
 class StaffsController < ApiController
-  before_action :authorize_staff_management!
+  before_action :authorize_staff_management!, except: :trainers
 
   def index
     staffs = current_shop.staffs.order(created_at: :asc)
     render json: { staffs: staffs.map { |s| StaffSerializer.new(s).as_json } }
+  end
+
+  def trainers
+    trainers = current_shop.staffs.where(role: %w[trainer admin]).order(:name)
+    render json: { trainers: trainers.map { |s| { id: s.id, name: s.name, role: s.role } } }
   end
 
   def create
