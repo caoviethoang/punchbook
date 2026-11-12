@@ -74,6 +74,7 @@ class CheckInMembership
     decrement_sessions_if_needed!
     check_in = create_check_in_record!
     log_audit_event!(check_in)
+    enqueue_notification!(check_in)
     check_in
   end
 
@@ -89,6 +90,15 @@ class CheckInMembership
     AuditLog.log_check_in!(
       shop: membership.shop, staff: staff, membership: membership, checked_in_at: check_in.checked_in_at,
       **extra_audit_details
+    )
+  end
+
+  def enqueue_notification!(check_in)
+    SendNotificationJob.perform_later(
+      :check_in_receipt,
+      shop_id: membership.shop_id,
+      membership_id: membership.id,
+      check_in_id: check_in.id
     )
   end
 end

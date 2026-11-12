@@ -18,6 +18,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
   const { t } = useTranslation()
   const [customerName, setCustomerName] = useState("")
   const [phone, setPhone] = useState("")
+  const [email, setEmail] = useState("")
   const [cardNumber, setCardNumber] = useState("")
   const [packageId, setPackageId] = useState("")
   const [notes, setNotes] = useState("")
@@ -85,6 +86,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
       const membership = await createMembership({
         customer_name: name,
         phone: phoneValue,
+        email: email.trim() || undefined,
         package_id: packageId,
         card_number: cardNumber.trim() || undefined,
         notes: notes.trim() || undefined,
@@ -93,6 +95,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
       setIsQrModalOpen(true)
       setCustomerName("")
       setPhone("")
+      setEmail("")
       setCardNumber("")
       setNotes("")
       onSuccess?.(membership)
@@ -175,6 +178,14 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="0902000000"
+        />
+
+        <FormField
+          label={t("memberships.email_label", "Email (tùy chọn - nhận biên lai & nhắc hạn)")}
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="member@example.com"
         />
 
         <FormField

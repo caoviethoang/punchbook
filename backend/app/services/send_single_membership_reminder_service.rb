@@ -29,7 +29,7 @@ class SendSingleMembershipReminderService
 
   def deliver_reminder
     payment_url = get_or_create_payment_link(membership)
-    send_zalo_reminder(membership, payment_url)
+    dispatch_reminder(membership, payment_url)
     membership.membership_reminders.create!(sent_at: Time.current, reminder_type: 'expiring')
   end
 
@@ -67,25 +67,15 @@ class SendSingleMembershipReminderService
             &.payos_checkout_url
   end
 
-  def send_zalo_reminder(membership, payment_url)
-    data = build_template_data(membership, payment_url)
-    tracking_id = "pb_remind_#{membership.id}_#{Time.current.strftime('%Y%m%d')}"
-
-    ZaloService.new.send_template_message(
-      phone: membership.phone,
-      template_id: ENV.fetch('ZALO_TEMPLATE_ID_MEMBERSHIP_REMINDER', ''),
-      template_data: data,
-      tracking_id: tracking_id
+  def dispatch_reminder(membership, payment_url)
+    results = Notifications::NotificationDispatcher.dispatch(
+      :expiring_reminder,
+      shop: membership.shop,
+      membership: membership,
+      payment_url: payment_url
     )
-  end
 
-  def build_template_data(membership, payment_url)
-    {
-      'customer_name' => membership.customer_name,
-      'shop_name' => membership.shop.name,
-      'remaining_sessions' => membership.sessions_left.to_i.to_s,
-      'expiry_date' => membership.expires_at&.strftime('%d/%m/%Y') || '',
-      'payment_url' => payment_url
-    }
+    failed = results.find { |r| !r[:success] && !r[:skipped] && r[:error].present? }
+    raise StandardError, failed[:error] if failed && results.none? { |r| r[:success] }
   end
 end

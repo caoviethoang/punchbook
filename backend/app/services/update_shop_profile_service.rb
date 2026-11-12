@@ -9,7 +9,10 @@ class UpdateShopProfileService
   end
 
   def call
-    permitted_params = @params.slice(:name, :phone, :address, :bank_name, :bank_account_no, :bank_account_name)
+    permitted_params = @params.slice(
+      :name, :phone, :address, :bank_name, :bank_account_no, :bank_account_name,
+      :email_notifications_enabled, :sms_notifications_enabled, :zalo_notifications_enabled
+    )
 
     if @shop.update(permitted_params)
       Result.new(success?: true, shop: @shop)

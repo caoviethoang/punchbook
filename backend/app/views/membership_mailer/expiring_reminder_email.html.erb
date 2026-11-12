@@ -1,0 +1,32 @@
+<p>Xin chào <strong><%= @membership.customer_name %></strong>,</p>
+
+<p>Thẻ tập của bạn tại <strong><%= @shop.name %></strong> sắp hết hạn hoặc hết số buổi.</p>
+
+<div class="card" style="border-left: 4px solid #f59e0b;">
+  <div class="row">
+    <span>Gói hiện tại:</span>
+    <strong><%= @package.name %></strong>
+  </div>
+  <% if @membership.sessions_left.present? %>
+    <div class="row">
+      <span>Số buổi còn lại:</span>
+      <strong style="color: #dc2626; font-size: 16px;"><%= @membership.sessions_left %> buổi</strong>
+    </div>
+  <% end %>
+  <% if @membership.expires_at.present? %>
+    <div class="row">
+      <span>Ngày hết hạn:</span>
+      <strong style="color: #dc2626;"><%= @membership.expires_at.strftime('%d/%m/%Y') %></strong>
+    </div>
+  <% end %>
+</div>
+
+<p>Để không làm gián đoạn quá trình tập luyện và giữ các ưu đãi hội viên thân thiết, bạn có thể gia hạn ngay:</p>
+
+<% if @payment_url.present? %>
+  <div style="text-align: center; margin: 24px 0;">
+    <a href="<%= @payment_url %>" class="btn" style="background: #059669;">Gia hạn & Thanh toán Online</a>
+  </div>
+<% else %>
+  <p>Vui lòng liên hệ quầy lễ tân hoặc gọi hotline <strong><%= @shop.phone || @shop.email %></strong> để gia hạn thẻ nhé!</p>
+<% end %>

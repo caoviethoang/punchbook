@@ -61,4 +61,9 @@ Rails.application.configure do
   #
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+
+  # ActionMailer configuration for production
+  config.action_mailer.delivery_method = ENV.fetch('MAILER_DELIVERY_METHOD', 'test').to_sym
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.default_url_options = { host: ENV.fetch('APP_HOST', 'punchbook.vn') }
 end

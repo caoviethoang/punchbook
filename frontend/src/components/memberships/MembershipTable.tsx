@@ -131,6 +131,9 @@ export function MembershipTable({
                         {m.customer_name}
                       </button>
                       <p className="text-xs text-slate-500 dark:text-slate-400">{m.phone}</p>
+                      {m.email && (
+                        <p className="max-w-[160px] truncate text-[11px] text-slate-400 dark:text-slate-500">{m.email}</p>
+                      )}
                     </div>
                   </div>
                 </td>

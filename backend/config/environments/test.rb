@@ -42,4 +42,9 @@ Rails.application.configure do
 
   # Allow test runner default hostname
   config.hosts << "www.example.com"
+
+  # Configure ActionMailer for test environment
+  config.action_mailer.delivery_method = :test
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.default_url_options = { host: 'example.com' }
 end
