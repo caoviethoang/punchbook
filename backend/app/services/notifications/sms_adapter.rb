@@ -29,6 +29,7 @@ module Notifications
     def self.build_sms_message(event_type, member, params)
       case event_type
       when :expiring_reminder then reminder_sms(member, params[:payment_url])
+      when :reengagement then reengagement_sms(member, params[:custom_message])
       when :check_in_receipt then check_in_sms(member, params[:check_in])
       when :payment_receipt then payment_sms(member, params[:invoice])
       when :welcome then "[#{member.shop.name}] Chuc mung ban da dang ky the hoi vien tai #{member.shop.name}."
@@ -56,5 +57,11 @@ module Notifications
       "[#{member.shop.name}] Da thanh toan HD #{amt}. Cam on quy khach!"
     end
     private_class_method :payment_sms
+
+    def self.reengagement_sms(member, custom_message)
+      msg = custom_message.presence || 'Chung toi nho ban! Hay quay lai tap luyen cung chung toi nhe.'
+      "[#{member.shop.name}] Chao #{member.customer_name}, #{msg}"
+    end
+    private_class_method :reengagement_sms
   end
 end

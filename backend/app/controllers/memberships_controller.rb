@@ -109,7 +109,30 @@ class MembershipsController < ApiController
     render json: { error: e.message }, status: :unprocessable_content
   end
 
+  def send_reengagement
+    membership = find_shop_membership(params.expect(:id))
+    authorize! :update, membership
+    results = dispatch_reengagement(membership)
+    membership.update!(last_reengagement_sent_at: Time.current)
+
+    render json: {
+      message: 'Đã gửi lời nhắc quay lại cho hội viên',
+      membership: membership.reload.as_api_json,
+      delivery: results
+    }
+  end
+
   private
+
+  def dispatch_reengagement(membership)
+    Notifications::NotificationDispatcher.dispatch(
+      :reengagement,
+      shop: current_shop,
+      membership: membership,
+      custom_message: params[:message],
+      channels: params[:channels]
+    )
+  end
 
   def execute_membership_transfer(membership)
     TransferMembership.call(
@@ -150,11 +173,15 @@ class MembershipsController < ApiController
 
   def memberships_relation
     scoped = apply_trainer_filter(base_memberships_scope).search_by_query(params[:query])
-    params[:status] == 'deleted' ? scoped : scoped.by_status(params[:status])
+    %w[deleted at_risk].include?(params[:status]) ? scoped : scoped.by_status(params[:status])
   end
 
   def base_memberships_scope
-    params[:status] == 'deleted' ? current_shop.memberships.with_discarded.discarded : current_shop.memberships
+    case params[:status]
+    when 'deleted' then current_shop.memberships.with_discarded.discarded
+    when 'at_risk' then current_shop.memberships.where(id: AtRiskMembersQuery.at_risk_membership_ids(current_shop))
+    else current_shop.memberships
+    end
   end
 
   def apply_trainer_filter(scope)

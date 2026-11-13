@@ -22,6 +22,10 @@ class ReportsController < ApiController
     render json: report
   end
 
+  def churn_risk
+    render json: AtRiskMembersQuery.call(current_shop)
+  end
+
   def export_attendance
     month = params[:month].presence || Time.zone.today.strftime('%Y-%m')
     excel_data = AttendanceReportExcelGenerator.call(shop: current_shop, month_str: month)

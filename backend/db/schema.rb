@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_12_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_12_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -140,6 +140,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_140000) do
   create_table "memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "assigned_staff_id"
     t.string "card_number"
+    t.string "churn_risk_level"
+    t.datetime "churn_risk_scored_at"
     t.datetime "created_at", null: false
     t.string "customer_name"
     t.datetime "discarded_at"
@@ -148,6 +150,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_140000) do
     t.string "freeze_reason"
     t.datetime "frozen_at"
     t.date "frozen_until"
+    t.datetime "last_reengagement_sent_at"
     t.text "notes"
     t.uuid "package_id", null: false
     t.string "phone"
@@ -164,6 +167,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_140000) do
     t.index ["package_id"], name: "index_memberships_on_package_id"
     t.index ["public_token"], name: "index_memberships_on_public_token", unique: true
     t.index ["shop_id", "card_number"], name: "index_memberships_on_shop_id_and_card_number", unique: true, where: "(card_number IS NOT NULL)"
+    t.index ["shop_id", "churn_risk_level"], name: "index_memberships_on_shop_id_and_churn_risk_level"
     t.index ["shop_id", "customer_name"], name: "index_memberships_on_shop_id_and_customer_name"
     t.index ["shop_id", "email"], name: "index_memberships_on_shop_id_and_email"
     t.index ["shop_id", "expires_at"], name: "index_memberships_on_shop_id_and_expires_at"

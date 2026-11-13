@@ -16,6 +16,7 @@ Rails.application.routes.draw do
     get '/reports/export', to: 'reports#export'
     get '/reports/attendance', to: 'reports#attendance'
     get '/reports/attendance/export', to: 'reports#export_attendance'
+    get '/reports/churn_risk', to: 'reports#churn_risk'
     get '/reports/trainer_commissions', to: 'reports#trainer_commissions'
     get '/reports/trainer_commissions/export', to: 'reports#export_trainer_commissions'
 
@@ -53,6 +54,7 @@ Rails.application.routes.draw do
         post :freeze
         post :unfreeze
         post :transfer
+        post :send_reengagement
       end
       resources :invoices, only: %i[create]
     end

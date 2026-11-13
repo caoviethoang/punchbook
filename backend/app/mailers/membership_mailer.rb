@@ -47,4 +47,16 @@ class MembershipMailer < ApplicationMailer
       subject: "[#{@shop.name}] Nhắc nhở: Thẻ tập của bạn sắp hết hạn"
     )
   end
+
+  def reengagement_email(membership, custom_message: nil)
+    @membership = membership
+    @shop = membership.shop
+    @package = membership.package
+    @custom_message = custom_message
+
+    mail(
+      to: @membership.email,
+      subject: "[#{@shop.name}] Chúng tôi nhớ bạn! Quay lại tập luyện nhé"
+    )
+  end
 end
