@@ -57,8 +57,9 @@ class MembershipSerializer
   def as_api_json
     membership.as_json(
       only: %i[id customer_name phone email card_number sessions_left expires_at discarded_at notes
-               frozen_at frozen_until freeze_reason transferred_at
-               transferred_to_membership_id transferred_from_membership_id assigned_staff_id],
+               frozen_at frozen_until freeze_reason transferred_at public_token
+               transferred_to_membership_id transferred_from_membership_id assigned_staff_id
+               churn_risk_level last_reengagement_sent_at],
       include: ASSOCIATION_INCLUDES
     ).merge(status_and_qr_hash)
   end
@@ -72,8 +73,9 @@ class MembershipSerializer
   def as_detail_json
     base = membership.as_json(
       only: %i[id customer_name phone email card_number sessions_left expires_at created_at notes
-               frozen_at frozen_until freeze_reason transferred_at
-               transferred_to_membership_id transferred_from_membership_id assigned_staff_id],
+               frozen_at frozen_until freeze_reason transferred_at public_token
+               transferred_to_membership_id transferred_from_membership_id assigned_staff_id
+               churn_risk_level last_reengagement_sent_at],
       include: ASSOCIATION_INCLUDES
     )
     base.merge(extra_detail_hash)

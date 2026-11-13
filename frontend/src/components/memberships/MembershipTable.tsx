@@ -1,18 +1,22 @@
+import { useState } from "react"
 import {
   ArrowRightLeft,
   ChevronLeft,
   ChevronRight,
   Edit3,
   Eye,
+  HeartHandshake,
   Loader2,
   PauseCircle,
   PlayCircle,
   QrCode,
   RefreshCw,
   RotateCcw,
+  Send,
   Trash2,
 } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { sendMemberReengagement } from "../../lib/churnRisk"
 import type { Membership, PaginationMeta, StatusFilterType } from "../../lib/memberships"
 import { computeMembershipStatus, getPaginationRange } from "../../lib/memberships"
 import { StatusBadge } from "../ui/StatusBadge"
@@ -61,6 +65,18 @@ export function MembershipTable({
   restoringId,
 }: MembershipTableProps) {
   const { t } = useTranslation()
+  const [sendingReengagementId, setSendingReengagementId] = useState<string | null>(null)
+  const [sentReengagementIds, setSentReengagementIds] = useState<Record<string, boolean>>({})
+
+  const handleSendReengagement = async (member: Membership) => {
+    setSendingReengagementId(member.id)
+    try {
+      await sendMemberReengagement(member.id)
+      setSentReengagementIds((prev) => ({ ...prev, [member.id]: true }))
+    } finally {
+      setSendingReengagementId(null)
+    }
+  }
 
   if (loading) {
     return (
@@ -157,7 +173,22 @@ export function MembershipTable({
                   <MemberRemainingBadge membership={m} />
                 </td>
                 <td className="px-4 py-3.5">
-                  <StatusBadge status={m.status ?? computeMembershipStatus(m)} type="membership" className="whitespace-nowrap" />
+                  <div className="flex flex-col items-start gap-1">
+                    <StatusBadge status={m.status ?? computeMembershipStatus(m)} type="membership" className="whitespace-nowrap" />
+                    {m.churn_risk_level && (
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                          m.churn_risk_level === "high"
+                            ? "bg-red-500/15 text-red-600 dark:text-red-400"
+                            : m.churn_risk_level === "medium"
+                              ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                              : "bg-sky-500/15 text-sky-600 dark:text-sky-400"
+                        }`}
+                      >
+                        {t(`churn_risk.level_${m.churn_risk_level}`)}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="w-px whitespace-nowrap px-4 py-3.5 text-right">
                   <div className="flex min-w-max items-center justify-end gap-1.5 [&>button]:h-8 [&>button]:shrink-0 [&>button]:whitespace-nowrap [&_svg]:shrink-0">
@@ -178,6 +209,33 @@ export function MembershipTable({
                       </button>
                     ) : (
                       <>
+                        {(m.churn_risk_level || status === "at_risk") && (
+                          <button
+                            type="button"
+                            onClick={() => handleSendReengagement(m)}
+                            disabled={sendingReengagementId === m.id}
+                            title={t("churn_risk.send_we_miss_you", "Nhắc quay lại")}
+                            className={`inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition disabled:opacity-50 ${
+                              sentReengagementIds[m.id] || m.last_reengagement_sent_at
+                                ? "border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                                : "border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
+                            }`}
+                          >
+                            {sendingReengagementId === m.id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : sentReengagementIds[m.id] || m.last_reengagement_sent_at ? (
+                              <HeartHandshake className="h-3.5 w-3.5" />
+                            ) : (
+                              <Send className="h-3.5 w-3.5" />
+                            )}
+                            <span className="hidden sm:inline">
+                              {sentReengagementIds[m.id] || m.last_reengagement_sent_at
+                                ? t("churn_risk.sent_again", "Đã nhắc")
+                                : t("churn_risk.send_we_miss_you", "Nhắc quay lại")}
+                            </span>
+                          </button>
+                        )}
+
                         <button
                           type="button"
                           onClick={() => onOpenDetail(m.id)}

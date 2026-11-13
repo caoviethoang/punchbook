@@ -57,8 +57,11 @@ export interface Membership {
   checked_in_today?: boolean
   last_checked_in_at?: string | null
   qr_code_value?: string
+  public_token?: string | null
   notes?: string | null
   tags?: MemberTag[]
+  churn_risk_level?: "low" | "medium" | "high" | null
+  last_reengagement_sent_at?: string | null
 }
 
 export interface MembershipDetailCheckIn {
@@ -241,12 +244,18 @@ export type StatusFilterType =
   | "active"
   | "expiring"
   | "expired"
+  | "at_risk"
   | "not_checked_in"
   | "deleted"
   | "frozen"
   | "transferred"
 
-export type CheckInFilterType = "not_checked_in" | "expiring" | "expired" | "all"
+export type CheckInFilterType =
+  | "not_checked_in"
+  | "expiring"
+  | "expired"
+  | "at_risk"
+  | "all"
 
 export type SortType = "name" | "checkin_priority"
 

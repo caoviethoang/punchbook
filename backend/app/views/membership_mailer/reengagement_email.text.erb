@@ -1,0 +1,6 @@
+Chào <%= @membership.customer_name %>!
+Đã một thời gian chưa thấy bạn ghé thăm <%= @shop.name %>. Gói tập <%= @package.name %> của bạn vẫn đang chờ bạn tiếp tục!
+<% if @custom_message.present? %>
+"<%= @custom_message %>"
+<% end %>
+Hẹn gặp bạn tại phòng tập trong buổi tập tiếp theo nhé!

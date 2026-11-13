@@ -1,0 +1,6 @@
+<h2>Chào <%= @membership.customer_name %>!</h2>
+<p>Đã một thời gian chưa thấy bạn ghé thăm <strong><%= @shop.name %></strong>. Gói tập <strong><%= @package.name %></strong> của bạn vẫn đang chờ bạn tiếp tục!</p>
+<% if @custom_message.present? %>
+  <p><em>"<%= @custom_message %>"</em></p>
+<% end %>
+<p>Hẹn gặp bạn tại phòng tập trong buổi tập tiếp theo nhé!</p>

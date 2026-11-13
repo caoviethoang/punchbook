@@ -34,6 +34,7 @@ module Notifications
     def self.find_template_id(event_type)
       mapping = {
         expiring_reminder: 'ZALO_TEMPLATE_ID_MEMBERSHIP_REMINDER',
+        reengagement: 'ZALO_TEMPLATE_ID_REENGAGEMENT',
         welcome: 'ZALO_TEMPLATE_ID_WELCOME',
         check_in_receipt: 'ZALO_TEMPLATE_ID_CHECK_IN',
         payment_receipt: 'ZALO_TEMPLATE_ID_PAYMENT'

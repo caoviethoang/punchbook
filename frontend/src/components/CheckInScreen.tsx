@@ -17,6 +17,7 @@ import { cn } from "../lib/utils"
 const CHECKIN_FILTER_TABS: { key: CheckInFilterType; label: string }[] = [
   { key: "not_checked_in", label: "Chưa CI" },
   { key: "expiring", label: "Sắp hết vé" },
+  { key: "at_risk", label: "Có nguy cơ" },
   { key: "expired", label: "Đã hết vé" },
   { key: "all", label: "Tất cả" },
 ]
