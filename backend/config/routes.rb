@@ -8,6 +8,10 @@ Rails.application.routes.draw do
     post '/auth/login', to: 'auth#login'
     get '/auth/me', to: 'auth#me'
 
+    get '/member_portal/profile', to: 'member_portal#profile'
+    get '/member_portal/history', to: 'member_portal#history'
+    post '/member_portal/renew', to: 'member_portal#renew'
+
     get '/dashboard', to: 'dashboard#show'
     get '/reports/export', to: 'reports#export'
     get '/reports/attendance', to: 'reports#attendance'
