@@ -27,11 +27,14 @@ class Membership < ApplicationRecord
   has_many :notification_logs, dependent: :nullify
 
   validates :customer_name, :phone, presence: true
+  validates :public_token, presence: true, uniqueness: true
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
   validates :sessions_left, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :card_number, uniqueness: { scope: :shop_id }, allow_blank: true
   validate :validate_free_plan_limit, on: :create
   validate :assigned_staff_belongs_to_shop
+
+  before_validation :ensure_public_token, on: :create
 
   scope :needing_reminder, -> { PaidShopMembershipsNeedingReminderQuery.call(self) }
 
@@ -90,5 +93,9 @@ class Membership < ApplicationRecord
     return if assigned_staff&.shop_id == shop_id
 
     errors.add(:assigned_staff_id, 'must belong to the same shop')
+  end
+
+  def ensure_public_token
+    self.public_token ||= SecureRandom.urlsafe_base64(24)
   end
 end

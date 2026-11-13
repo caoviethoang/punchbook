@@ -22,6 +22,16 @@ class Rack::Attack
     req.ip if req.post? && req.path.match?(%r{\A(/api/v1)?/memberships/[^/]+/check_in\z})
   end
 
+  # 4. Throttle member portal reads: max 60 requests per minute per IP
+  throttle('req/ip/member_portal_read', limit: 60, period: 1.minute) do |req|
+    req.ip if req.get? && req.path.match?(%r{\A(/api/v1)?/member_portal/})
+  end
+
+  # 5. Throttle member portal renewal: max 10 requests per minute per IP
+  throttle('req/ip/member_portal_renew', limit: 10, period: 1.minute) do |req|
+    req.ip if req.post? && req.path.match?(%r{\A(/api/v1)?/member_portal/renew\z})
+  end
+
   # Custom 429 Too Many Requests response format in JSON
   error_429_responder = lambda do |_req|
     headers = {

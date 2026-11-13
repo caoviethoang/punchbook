@@ -730,7 +730,9 @@
     "copy_code": "Sao chép mã",
     "downloading": "Đang tải...",
     "download_png": "Tải về PNG",
-    "print_card": "In thẻ"
+    "print_card": "In thẻ",
+    "copy_portal_link": "Sao chép link Portal cho hội viên",
+    "copied_portal": "Đã sao chép link thẻ hội viên"
   },
   "scanner": {
     "title": "Quét mã QR Hội viên",
@@ -904,5 +906,37 @@
     "reengagement_error": "Không thể gửi tin nhắn nhắc quay lại.",
     "load_error": "Không thể tải báo cáo nguy cơ bỏ tập.",
     "empty_state": "Tuyệt vời! Hiện tại chưa có hội viên nào có nguy cơ bỏ tập."
+  },
+  "portal": {
+    "app_badge": "Thẻ Hội Viên",
+    "load_error": "Không thể tải thông tin thẻ hội viên. Liên kết có thể đã hết hạn.",
+    "error_title": "Không tìm thấy thẻ hội viên",
+    "pwa_title": "Lưu thẻ vào màn hình chính",
+    "pwa_subtitle": "Mở nhanh mã QR check-in như ứng dụng di động",
+    "pwa_install": "Cài đặt",
+    "tab_card": "Thẻ & QR",
+    "tab_checkins": "Lịch sử tập",
+    "tab_invoices": "Hóa đơn",
+    "assigned_pt": "PT phụ trách:",
+    "qr_alt": "Mã QR Check-in",
+    "qr_instruction": "Đưa mã QR này cho lễ tân hoặc máy quét khi đến tập",
+    "sessions_progress": "Còn {{left}}/{{total}} buổi",
+    "days_progress": "Còn {{days}} ngày (HSD: {{date}})",
+    "renew_now": "Gia hạn gói tập ngay",
+    "studio_info": "Thông tin phòng tập",
+    "checkin_history_title": "Lịch sử điểm danh gần đây",
+    "empty_checkins": "Chưa có lượt check-in nào.",
+    "checkin_label": "Điểm danh thành công",
+    "invoices_title": "Hóa đơn & Thanh toán",
+    "empty_invoices": "Chưa có hóa đơn thanh toán nào.",
+    "invoice_paid": "Đã thanh toán",
+    "invoice_pending": "Chờ thanh toán",
+    "renew_modal_title": "Gia hạn gói tập",
+    "select_package": "Chọn gói gia hạn",
+    "package_price": "Thành tiền",
+    "generate_payment": "Tạo mã thanh toán VietQR / payOS",
+    "renew_failed": "Không thể tạo link thanh toán. Vui lòng thử lại.",
+    "payment_created": "Đã tạo yêu cầu thanh toán thành công!",
+    "open_payos": "Mở trang thanh toán payOS"
   }
 }

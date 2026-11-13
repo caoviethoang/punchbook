@@ -154,6 +154,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_150000) do
     t.text "notes"
     t.uuid "package_id", null: false
     t.string "phone"
+    t.string "public_token", null: false
     t.integer "sessions_left"
     t.uuid "shop_id", null: false
     t.string "status", default: "active", null: false
@@ -164,6 +165,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_150000) do
     t.index ["assigned_staff_id"], name: "index_memberships_on_assigned_staff_id"
     t.index ["discarded_at"], name: "index_memberships_on_discarded_at"
     t.index ["package_id"], name: "index_memberships_on_package_id"
+    t.index ["public_token"], name: "index_memberships_on_public_token", unique: true
     t.index ["shop_id", "card_number"], name: "index_memberships_on_shop_id_and_card_number", unique: true, where: "(card_number IS NOT NULL)"
     t.index ["shop_id", "churn_risk_level"], name: "index_memberships_on_shop_id_and_churn_risk_level"
     t.index ["shop_id", "customer_name"], name: "index_memberships_on_shop_id_and_customer_name"
