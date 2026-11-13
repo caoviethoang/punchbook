@@ -6,11 +6,13 @@ import {
   type Membership,
 } from "../lib/memberships"
 import { listPackages, type PackageItem } from "../lib/packages"
+import { listTags, type MemberTag } from "../lib/tags"
 import { usePaginatedMemberships } from "./usePaginatedMemberships"
 
 export function useMembershipsQuery() {
   const pagination = usePaginatedMemberships()
   const [packages, setPackages] = useState<PackageItem[]>([])
+  const [tags, setTags] = useState<MemberTag[]>([])
 
   // Modal UI state
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -24,9 +26,11 @@ export function useMembershipsQuery() {
 
   useEffect(() => {
     let active = true
-    listPackages()
-      .then((pkgs) => {
-        if (active) setPackages(pkgs)
+    Promise.all([listPackages(), listTags().catch(() => [])])
+      .then(([pkgs, tagList]) => {
+        if (!active) return
+        setPackages(pkgs)
+        setTags(tagList)
       })
       .catch(() => {
         // Ignored or handled gracefully
@@ -65,6 +69,7 @@ export function useMembershipsQuery() {
   return {
     ...pagination,
     packages,
+    tags,
     showCreateModal,
     setShowCreateModal,
     showImportModal,

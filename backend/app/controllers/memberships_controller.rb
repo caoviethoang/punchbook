@@ -153,12 +153,13 @@ class MembershipsController < ApiController
   end
 
   def membership_params
-    params.expect(membership: %i[customer_name phone package_id notes card_number email assigned_staff_id])
+    params.expect(membership: [:customer_name, :phone, :package_id, :notes, :card_number, :email,
+                               :assigned_staff_id, { tag_ids: [] }])
   end
 
   def update_membership_params
-    params.expect(membership: %i[customer_name phone package_id sessions_left expires_at notes card_number email
-                                 assigned_staff_id])
+    params.expect(membership: [:customer_name, :phone, :package_id, :sessions_left, :expires_at, :notes,
+                               :card_number, :email, :assigned_staff_id, { tag_ids: [] }])
   end
 
   def find_staff
@@ -172,7 +173,7 @@ class MembershipsController < ApiController
   end
 
   def memberships_relation
-    scoped = apply_trainer_filter(base_memberships_scope).search_by_query(params[:query])
+    scoped = apply_trainer_filter(base_memberships_scope).search_by_query(params[:query]).with_tags(params[:tag_ids])
     %w[deleted at_risk].include?(params[:status]) ? scoped : scoped.by_status(params[:status])
   end
 
@@ -191,7 +192,7 @@ class MembershipsController < ApiController
   end
 
   def fetch_paginated_memberships(relation, page, per_page)
-    ordered = relation.preload(:package, :shop, :assigned_staff)
+    ordered = relation.preload(:package, :shop, :assigned_staff, :tags)
     ordered = if params[:status] == 'deleted'
                 ordered.order(discarded_at: :desc)
               else

@@ -11,7 +11,7 @@ class DashboardQuery
   end
 
   def to_h
-    memberships = shop.memberships.preload(:package, :shop).order(:customer_name).to_a
+    memberships = shop.memberships.preload(:package, :shop, :tags).order(:customer_name).to_a
     hourly = check_in_frequency_by_hour
 
     {
