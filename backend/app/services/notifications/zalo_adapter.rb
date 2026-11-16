@@ -2,6 +2,15 @@
 
 module Notifications
   class ZaloAdapter
+    ZALO_TEMPLATES = {
+      expiring_reminder: 'ZALO_TEMPLATE_ID_MEMBERSHIP_REMINDER',
+      reengagement: 'ZALO_TEMPLATE_ID_REENGAGEMENT',
+      welcome: 'ZALO_TEMPLATE_ID_WELCOME',
+      check_in_receipt: 'ZALO_TEMPLATE_ID_CHECK_IN',
+      payment_receipt: 'ZALO_TEMPLATE_ID_PAYMENT',
+      birthday_wish: 'ZALO_TEMPLATE_ID_BIRTHDAY'
+    }.freeze
+
     def self.send_notification(event_type:, **params)
       member = target_member(params)
       return { success: false, skipped: true, reason: 'missing_phone' } if member&.phone.blank?
@@ -32,14 +41,7 @@ module Notifications
     private_class_method :target_member
 
     def self.find_template_id(event_type)
-      mapping = {
-        expiring_reminder: 'ZALO_TEMPLATE_ID_MEMBERSHIP_REMINDER',
-        reengagement: 'ZALO_TEMPLATE_ID_REENGAGEMENT',
-        welcome: 'ZALO_TEMPLATE_ID_WELCOME',
-        check_in_receipt: 'ZALO_TEMPLATE_ID_CHECK_IN',
-        payment_receipt: 'ZALO_TEMPLATE_ID_PAYMENT'
-      }
-      env_key = mapping[event_type.to_sym]
+      env_key = ZALO_TEMPLATES[event_type.to_sym]
       return nil unless env_key
 
       ENV.fetch(env_key, '')

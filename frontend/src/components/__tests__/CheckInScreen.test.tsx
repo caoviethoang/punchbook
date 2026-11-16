@@ -98,6 +98,10 @@ describe("CheckInScreen component", () => {
     batchResult: null,
     isBatchResultModalOpen: false,
     setIsBatchResultModalOpen: vi.fn(),
+    todaysBirthdays: [] as Membership[],
+    loadTodaysBirthdays: vi.fn(),
+    milestoneCelebration: null as { membership: Membership; milestone: number } | null,
+    setMilestoneCelebration: vi.fn(),
   }
 
   beforeEach(() => {
@@ -399,5 +403,75 @@ describe("CheckInScreen component", () => {
     render(<CheckInScreen />)
 
     expect(screen.getByText("Tất cả hội viên đã check-in hôm nay")).toBeInTheDocument()
+  })
+
+  it("renders birthday_today tab and clicks it to filter", () => {
+    const setFilterMock = vi.fn()
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      setFilter: setFilterMock,
+    })
+
+    render(<CheckInScreen />)
+
+    const birthdayTab = screen.getByRole("tab", { name: /Sinh nhật/i })
+    expect(birthdayTab).toBeInTheDocument()
+    fireEvent.click(birthdayTab)
+    expect(setFilterMock).toHaveBeenCalledWith("birthday_today")
+  })
+
+  it("renders birthday today badge on member card when is_birthday_today is true", () => {
+    const birthdayMember: Membership = {
+      ...dummyMember1,
+      is_birthday_today: true,
+    }
+
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      memberships: [birthdayMember],
+    })
+
+    render(<CheckInScreen />)
+
+    expect(screen.getByText("Sinh nhật hôm nay 🎂")).toBeInTheDocument()
+  })
+
+  it("renders TodaysBirthdaysWidget and handles filter click", () => {
+    const setFilterMock = vi.fn()
+    const birthdayMember: Membership = {
+      ...dummyMember1,
+      is_birthday_today: true,
+    }
+
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      todaysBirthdays: [birthdayMember],
+      setFilter: setFilterMock,
+    })
+
+    render(<CheckInScreen />)
+
+    expect(screen.getByRole("region", { name: /Hội viên sinh nhật hôm nay/i })).toBeInTheDocument()
+    const filterBtn = screen.getByRole("button", { name: /Lọc danh sách sinh nhật/i })
+    fireEvent.click(filterBtn)
+    expect(setFilterMock).toHaveBeenCalledWith("birthday_today")
+  })
+
+  it("renders MilestoneCelebrationModal when milestoneCelebration is present", () => {
+    const setMilestoneMock = vi.fn()
+    vi.spyOn(checkInHook, "useCheckInScreen").mockReturnValue({
+      ...defaultHookState,
+      milestoneCelebration: {
+        membership: dummyMember1,
+        milestone: 50,
+      },
+      setMilestoneCelebration: setMilestoneMock,
+    })
+
+    render(<CheckInScreen />)
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument()
+    expect(screen.getByText(/Cột mốc 50 lần check-in/i)).toBeInTheDocument()
+    expect(screen.getByText(/Chúc mừng Cột mốc!/i)).toBeInTheDocument()
   })
 })

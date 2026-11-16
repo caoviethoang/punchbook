@@ -7,6 +7,7 @@ import {
   batchCheckIn,
   extractMembershipIdFromQR,
   fetchMemberships,
+  fetchTodaysBirthdays,
   getMembershipDetail,
   isMembershipExhausted,
   type BatchCheckInResult,
@@ -79,6 +80,13 @@ export function useCheckInScreen({
   const [renewingMembership, setRenewingMembership] = useState<Membership | null>(null)
   const [autoCheckInOnRenew, setAutoCheckInOnRenew] = useState<boolean>(true)
 
+  // Birthdays & Milestone states
+  const [todaysBirthdays, setTodaysBirthdays] = useState<Membership[]>([])
+  const [milestoneCelebration, setMilestoneCelebration] = useState<{
+    membership: Membership
+    milestone: number
+  } | null>(null)
+
   // Group check-in state
   const [isGroupMode, setIsGroupMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -89,6 +97,19 @@ export function useCheckInScreen({
   const isDebouncing = query !== debouncedQuery
   const isLoading = fetchLoading || searchLoading || isDebouncing
   const combinedError = fetchError || apiError
+
+  const loadTodaysBirthdays = useCallback(async () => {
+    try {
+      const res = await fetchTodaysBirthdays()
+      setTodaysBirthdays(res.birthdays)
+    } catch {
+      // Non-critical, ignore error
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadTodaysBirthdays()
+  }, [loadTodaysBirthdays])
 
   // Fetch staff list if user is admin
   useEffect(() => {
@@ -115,7 +136,7 @@ export function useCheckInScreen({
   }, [currentStaff])
 
   const handlePrintReceipt = useCallback(
-    (membership: Membership, checkedInAt?: string) => {
+    (membership: Membership, checkedInAt?: string, milestoneReached?: number | null) => {
       const effectiveStaffId = selectedStaffId || currentStaff?.id || currentStaffId || undefined
       const activeStaff = staffs.find((s) => s.id === effectiveStaffId) || currentStaff
       const staffName =
@@ -132,6 +153,7 @@ export function useCheckInScreen({
         expiresAt: membership.expires_at,
         checkedInAt: checkedInAt || new Date().toISOString(),
         staffName,
+        milestoneReached: milestoneReached ?? null,
       })
     },
     [selectedStaffId, currentStaff, currentStaffId, staffs, shopName, shopAddress, shopPhone],
@@ -286,10 +308,21 @@ export function useCheckInScreen({
         type: "success",
         text: `Check-in thành công! (Còn lại ${result.membership.sessions_left ?? "không giới hạn"} buổi)`,
       })
-      setToast({
-        message: `Đã check-in thành công cho ${membership.customer_name}`,
-        type: "success",
-      })
+      if (result.milestone_reached) {
+        setMilestoneCelebration({
+          membership: result.membership,
+          milestone: result.milestone_reached,
+        })
+        setToast({
+          message: `🎉 Chúc mừng ${membership.customer_name} đạt mốc ${result.milestone_reached} lần check-in!`,
+          type: "success",
+        })
+      } else {
+        setToast({
+          message: `Đã check-in thành công cho ${membership.customer_name}`,
+          type: "success",
+        })
+      }
     } catch (err) {
       // Rollback
       setMemberships((prev) =>
@@ -493,5 +526,9 @@ export function useCheckInScreen({
     batchResult,
     isBatchResultModalOpen,
     setIsBatchResultModalOpen,
+    todaysBirthdays,
+    loadTodaysBirthdays,
+    milestoneCelebration,
+    setMilestoneCelebration,
   }
 }

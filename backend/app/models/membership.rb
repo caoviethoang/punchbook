@@ -4,6 +4,7 @@ class Membership < ApplicationRecord
   include Discard::Model
   include MembershipSearchable
   include MembershipStatusable
+  include MembershipMilestoneable
 
   has_paper_trail
 
@@ -36,6 +37,7 @@ class Membership < ApplicationRecord
   validate :validate_free_plan_limit, on: :create
   validate :assigned_staff_belongs_to_shop
   validate :tags_belong_to_shop
+  validate :date_of_birth_cannot_be_in_future
 
   before_validation :ensure_public_token, on: :create
 
@@ -114,5 +116,12 @@ class Membership < ApplicationRecord
 
   def ensure_public_token
     self.public_token ||= SecureRandom.urlsafe_base64(24)
+  end
+
+  def date_of_birth_cannot_be_in_future
+    return if date_of_birth.blank?
+    return if date_of_birth <= Time.zone.today
+
+    errors.add(:date_of_birth, 'cannot be in the future')
   end
 end

@@ -22,7 +22,8 @@ class HardwareCheckInsController < ApplicationController
       status: 'success',
       message: result[:message],
       device_name: result[:device_name],
-      membership: result[:membership].as_api_json
+      membership: result[:membership].as_api_json,
+      milestone_reached: result[:milestone_reached]
     }, status: :ok
   end
 

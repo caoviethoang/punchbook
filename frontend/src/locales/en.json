@@ -164,6 +164,7 @@
     "tab_not_checked_in": "Not Checked In",
     "tab_expiring": "Expiring Soon",
     "tab_at_risk": "At-Risk",
+    "tab_birthday_today": "Birthdays 🎂",
     "tab_expired": "Expired",
     "tab_all": "All",
     "recent_checkins": "Recent Check-ins",
@@ -213,7 +214,17 @@
     "already_checked_in_for_aria": "{{name}} already checked in today",
     "frozen_for_aria": "{{name}}'s membership is frozen",
     "renew_and_ci_for_aria": "Renew and check-in for {{name}}",
-    "checkin_for_aria": "Check in for {{name}}"
+    "checkin_for_aria": "Check in for {{name}}",
+    "birthday_today_badge": "Birthday Today 🎂",
+    "todays_birthdays_aria": "Today's Birthdays",
+    "todays_birthdays_heading": "Today {{count}} member(s) celebrate birthday!",
+    "filter_birthdays_btn": "Filter birthday list",
+    "milestone_badge": "Milestone: {{count}} check-ins",
+    "milestone_title": "Milestone Celebration!",
+    "milestone_desc": "Congratulations to {{name}} on completing session #{{count}} at {{shop}}!",
+    "milestone_cheer": "Your dedication is truly inspiring. Keep up the amazing work!",
+    "print_milestone_receipt": "Print Commemorative Receipt",
+    "milestone_continue": "Awesome, continue!"
   },
   "receipt": {
     "preview_title": "Receipt Preview",
@@ -229,7 +240,9 @@
     "cashier": "Cashier:",
     "thank_you": "Thank you!",
     "tagline": "PunchBook - Simple member management",
-    "close": "Close"
+    "close": "Close",
+    "milestone_title": "CHECK-IN MILESTONE!",
+    "milestone_message": "Congratulations on your {{count}}th check-in!"
   },
   "memberships": {
     "title": "Members List",
@@ -243,6 +256,7 @@
     "tab_active": "Active",
     "tab_expiring": "Expiring",
     "tab_at_risk": "At-Risk",
+    "tab_birthday_today": "Birthdays 🎂",
     "tab_expired": "Expired",
     "tab_frozen": "Frozen",
     "tab_transferred": "Transferred",
@@ -295,6 +309,7 @@
     "phone_label": "Phone Number",
     "email_label": "Email (Optional - Receipts & Reminders)",
     "email_placeholder": "e.g. alice@example.com",
+    "date_of_birth_label": "Date of Birth (Optional)",
     "card_uid_label": "Card UID / RFID / Device Identifier (Optional)",
     "card_uid_placeholder": "e.g. RFID_123456 or swipe card here",
     "package_label": "Service Package",

@@ -73,7 +73,20 @@ class MembershipsController < ApiController
     membership = find_shop_membership(params.expect(:id))
     authorize! :check_in, membership
     record = CheckInMembership.call(membership: membership, staff: find_staff)
-    render json: { membership: membership.reload.as_api_json, check_in: record.as_json(only: %i[id checked_in_at]) }
+    reloaded_membership = membership.reload
+    render json: {
+      membership: reloaded_membership.as_api_json,
+      check_in: record.as_json(only: %i[id checked_in_at]),
+      milestone_reached: reloaded_membership.check_in_milestone_reached
+    }
+  end
+
+  def birthdays_today
+    birthdays = current_shop.memberships.birthday_today
+    render json: {
+      birthdays: MembershipSerializer.batch_api_json(birthdays),
+      count: birthdays.count
+    }
   end
 
   def freeze
@@ -154,12 +167,12 @@ class MembershipsController < ApiController
 
   def membership_params
     params.expect(membership: [:customer_name, :phone, :package_id, :notes, :card_number, :email,
-                               :assigned_staff_id, { tag_ids: [] }])
+                               :assigned_staff_id, :date_of_birth, { tag_ids: [] }])
   end
 
   def update_membership_params
     params.expect(membership: [:customer_name, :phone, :package_id, :sessions_left, :expires_at, :notes,
-                               :card_number, :email, :assigned_staff_id, { tag_ids: [] }])
+                               :card_number, :email, :assigned_staff_id, :date_of_birth, { tag_ids: [] }])
   end
 
   def find_staff
@@ -174,13 +187,14 @@ class MembershipsController < ApiController
 
   def memberships_relation
     scoped = apply_trainer_filter(base_memberships_scope).search_by_query(params[:query]).with_tags(params[:tag_ids])
-    %w[deleted at_risk].include?(params[:status]) ? scoped : scoped.by_status(params[:status])
+    %w[deleted at_risk birthday_today].include?(params[:status]) ? scoped : scoped.by_status(params[:status])
   end
 
   def base_memberships_scope
     case params[:status]
     when 'deleted' then current_shop.memberships.with_discarded.discarded
     when 'at_risk' then current_shop.memberships.where(id: AtRiskMembersQuery.at_risk_membership_ids(current_shop))
+    when 'birthday_today' then current_shop.memberships.birthday_today
     else current_shop.memberships
     end
   end

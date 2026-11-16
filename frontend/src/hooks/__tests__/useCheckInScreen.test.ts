@@ -369,6 +369,36 @@ describe("useCheckInScreen hook", () => {
       expiresAt: null,
       checkedInAt: "2026-10-16T10:00:00Z",
       staffName: "Lan Receptionist",
+      milestoneReached: null,
+    })
+  })
+
+  it("handlePrintReceipt prepares receipt data with milestoneReached", () => {
+    const { result } = renderHook(() =>
+      useCheckInScreen({
+        shopName: "Spa Test",
+        shopAddress: "123 Pho Hue",
+        shopPhone: "0900000000",
+        currentStaff: { id: "staff-1", name: "Lan Receptionist", role: "staff", username: "lan" },
+      }),
+    )
+
+    act(() => {
+      result.current.handlePrintReceipt(dummyMember, "2026-10-16T10:00:00Z", 50)
+    })
+
+    expect(result.current.selectedReceipt).toEqual({
+      shopName: "Spa Test",
+      shopAddress: "123 Pho Hue",
+      shopPhone: "0900000000",
+      customerName: "Nguyen Van A",
+      customerPhone: "0901234567",
+      packageName: "Gói 10 buổi",
+      sessionsLeft: 10,
+      expiresAt: null,
+      checkedInAt: "2026-10-16T10:00:00Z",
+      staffName: "Lan Receptionist",
+      milestoneReached: 50,
     })
   })
 

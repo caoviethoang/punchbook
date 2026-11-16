@@ -26,17 +26,25 @@ module Notifications
     end
     private_class_method :target_member
 
+    # rubocop:disable Metrics/AbcSize
     def self.build_sms_message(event_type, member, params)
       case event_type
       when :expiring_reminder then reminder_sms(member, params[:payment_url])
       when :reengagement then reengagement_sms(member, params[:custom_message])
       when :check_in_receipt then check_in_sms(member, params[:check_in])
       when :payment_receipt then payment_sms(member, params[:invoice])
+      when :birthday_wish then birthday_sms(member)
       when :welcome then "[#{member.shop.name}] Chuc mung ban da dang ky the hoi vien tai #{member.shop.name}."
       else "[#{member.shop.name}] Thong bao tu #{member.shop.name}"
       end
     end
+    # rubocop:enable Metrics/AbcSize
     private_class_method :build_sms_message
+
+    def self.birthday_sms(member)
+      "[#{member.shop.name}] Chuc mung sinh nhat #{member.customer_name}! Chuc ban tran day nang luong va suc khoe."
+    end
+    private_class_method :birthday_sms
 
     def self.reminder_sms(member, payment_url)
       rem = member.sessions_left.present? ? "#{member.sessions_left} buoi" : member.expires_at&.strftime('%d/%m/%Y')

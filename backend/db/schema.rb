@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_12_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -154,6 +154,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_160000) do
     t.datetime "churn_risk_scored_at"
     t.datetime "created_at", null: false
     t.string "customer_name"
+    t.date "date_of_birth"
     t.datetime "discarded_at"
     t.string "email"
     t.date "expires_at"
@@ -168,11 +169,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_160000) do
     t.integer "sessions_left"
     t.uuid "shop_id", null: false
     t.string "status", default: "active", null: false
+    t.integer "total_check_ins_count", default: 0, null: false
     t.datetime "transferred_at"
     t.uuid "transferred_from_membership_id"
     t.uuid "transferred_to_membership_id"
     t.datetime "updated_at", null: false
     t.index ["assigned_staff_id"], name: "index_memberships_on_assigned_staff_id"
+    t.index ["date_of_birth"], name: "index_memberships_on_date_of_birth"
     t.index ["discarded_at"], name: "index_memberships_on_discarded_at"
     t.index ["package_id"], name: "index_memberships_on_package_id"
     t.index ["public_token"], name: "index_memberships_on_public_token", unique: true

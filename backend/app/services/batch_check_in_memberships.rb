@@ -47,12 +47,14 @@ class BatchCheckInMemberships
 
   def execute_check_in(id, membership)
     record = CheckInMembership.call(membership: membership, staff: staff)
+    reloaded = membership.reload
     {
       membership_id: id,
-      customer_name: membership.customer_name,
+      customer_name: reloaded.customer_name,
       status: 'success',
-      membership: membership.reload.as_api_json,
-      check_in: record.as_json(only: %i[id checked_in_at])
+      membership: reloaded.as_api_json,
+      check_in: record.as_json(only: %i[id checked_in_at]),
+      milestone_reached: reloaded.check_in_milestone_reached
     }
   end
 

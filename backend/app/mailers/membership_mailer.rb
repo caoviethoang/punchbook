@@ -59,4 +59,15 @@ class MembershipMailer < ApplicationMailer
       subject: "[#{@shop.name}] Chúng tôi nhớ bạn! Quay lại tập luyện nhé"
     )
   end
+
+  def birthday_wish_email(membership)
+    @membership = membership
+    @shop = membership.shop
+    @package = membership.package
+
+    mail(
+      to: @membership.email,
+      subject: "[#{@shop.name}] Chúc mừng sinh nhật #{@membership.customer_name}! 🎂"
+    )
+  end
 end

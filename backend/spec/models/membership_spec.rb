@@ -60,6 +60,31 @@ RSpec.describe Membership, type: :model do
       expect(membership.errors[:sessions_left]).to be_present
     end
 
+    it 'rejects date_of_birth in the future' do
+      membership = described_class.new(
+        shop: shop,
+        package: package,
+        customer_name: 'Hoa Nguyen',
+        phone: '0902000000',
+        date_of_birth: Date.tomorrow
+      )
+
+      expect(membership).not_to be_valid
+      expect(membership.errors[:date_of_birth]).to be_present
+    end
+
+    it 'accepts date_of_birth in the past or today' do
+      membership = described_class.new(
+        shop: shop,
+        package: package,
+        customer_name: 'Hoa Nguyen',
+        phone: '0902000000',
+        date_of_birth: Date.new(1995, 5, 20)
+      )
+
+      expect(membership).to be_valid
+    end
+
     context 'when shop is on free plan' do
       let(:free_shop) { create_shop(plan: 'free') }
       let(:free_package) do
@@ -201,6 +226,86 @@ RSpec.describe Membership, type: :model do
         )
 
         expect(membership.status).to eq('active')
+      end
+    end
+  end
+
+  describe 'birthday and milestones' do
+    let(:member) do
+      described_class.create!(
+        shop: shop,
+        package: package,
+        customer_name: 'Lan Anh',
+        phone: '0901234567',
+        date_of_birth: Date.new(1992, Time.zone.today.month, Time.zone.today.day)
+      )
+    end
+
+    describe '#birthday_today?' do
+      it 'returns true when member birthday is today' do
+        expect(member.birthday_today?).to be(true)
+      end
+
+      it 'returns false when member birthday is on another day' do
+        other_member = described_class.create!(
+          shop: shop,
+          package: package,
+          customer_name: 'Binh',
+          phone: '0909999888',
+          date_of_birth: Date.new(1990, 1, 1)
+        )
+        expect(other_member.birthday_today?(Date.new(2026, 6, 15))).to be(false)
+      end
+
+      it 'returns false when date_of_birth is nil' do
+        member.date_of_birth = nil
+        expect(member.birthday_today?).to be(false)
+      end
+    end
+
+    describe '.birthday_today scope' do
+      it 'includes members whose birthday is today' do
+        expect(described_class.birthday_today).to include(member)
+      end
+
+      it 'excludes members whose birthday is not today' do
+        other = described_class.create!(
+          shop: shop,
+          package: package,
+          customer_name: 'Minh',
+          phone: '0908888777',
+          date_of_birth: Date.new(1995, (Time.zone.today.month % 12) + 1, 1)
+        )
+        expect(described_class.birthday_today).not_to include(other)
+      end
+    end
+
+    describe '#check_in_milestone_reached' do
+      it 'returns milestone number when total_check_ins_count matches a milestone' do
+        member.total_check_ins_count = 10
+        expect(member.check_in_milestone_reached).to eq(10)
+
+        member.total_check_ins_count = 50
+        expect(member.check_in_milestone_reached).to eq(50)
+
+        member.total_check_ins_count = 100
+        expect(member.check_in_milestone_reached).to eq(100)
+      end
+
+      it 'returns nil when count is not a milestone' do
+        member.total_check_ins_count = 7
+        expect(member.check_in_milestone_reached).to be_nil
+
+        member.total_check_ins_count = 51
+        expect(member.check_in_milestone_reached).to be_nil
+      end
+    end
+
+    describe 'counter cache on CheckIn' do
+      it 'increments total_check_ins_count when check_in is created' do
+        expect do
+          CheckIn.create!(membership: member, checked_in_at: Time.current)
+        end.to change { member.reload.total_check_ins_count }.by(1)
       end
     end
   end

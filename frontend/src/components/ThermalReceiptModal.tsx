@@ -16,6 +16,7 @@ export interface ReceiptData {
   expiresAt?: string | null
   checkedInAt: string
   staffName?: string | null
+  milestoneReached?: number | null
 }
 
 interface ThermalReceiptModalProps {
@@ -101,6 +102,15 @@ function ThermalReceiptContent({ receipt }: { receipt: ReceiptData }) {
               {t("receipt.cashier", "Thu ngân:")}
             </span>
             <span className="font-medium text-right">{receipt.staffName}</span>
+          </div>
+        )}
+
+        {receipt.milestoneReached && (
+          <div className="mt-2 rounded border border-dashed border-slate-400 p-1.5 text-center font-bold">
+            <p className="text-xs uppercase tracking-wider">🎉 {t("receipt.milestone_title", "CỘT MỐC CHECK-IN!")}</p>
+            <p className="text-[11px] font-black text-indigo-700 dark:text-indigo-400">
+              {t("receipt.milestone_message", "Chúc mừng lần check-in thứ {{count}}!", { count: receipt.milestoneReached })}
+            </p>
           </div>
         )}
       </div>

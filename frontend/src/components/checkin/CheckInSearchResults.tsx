@@ -262,6 +262,12 @@ export function MembershipResultList({
                       <span>{t("checkin.already_checked_in", "Đã check-in")}{checkInTime ? ` (${checkInTime})` : ""}</span>
                     </span>
                   )}
+                  {membership.is_birthday_today && (
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-pink-50 px-2 py-0.5 text-[11px] font-semibold text-pink-700 border border-pink-200 dark:border-pink-800 dark:bg-pink-950/60 dark:text-pink-300">
+                      <span>🎂</span>
+                      <span>{t("checkin.birthday_today_badge", "Sinh nhật hôm nay 🎂")}</span>
+                    </span>
+                  )}
                   {computeMembershipStatus(membership) === "expiring" && !isExhausted && (
                     <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700 border border-amber-200 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
                       <AlertCircle className="h-3 w-3 shrink-0 text-amber-600 dark:text-amber-400" />

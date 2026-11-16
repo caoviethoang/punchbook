@@ -29,6 +29,7 @@ module Notifications
     end
     private_class_method :build_mail
 
+    # rubocop:disable Metrics/AbcSize
     def self.mailer_actions(params)
       m = params[:membership]
       {
@@ -36,9 +37,11 @@ module Notifications
         check_in_receipt: -> { MembershipMailer.check_in_receipt_email(params[:check_in]) },
         payment_receipt: -> { MembershipMailer.payment_receipt_email(params[:invoice]) },
         expiring_reminder: -> { MembershipMailer.expiring_reminder_email(m, payment_url: params[:payment_url]) },
-        reengagement: -> { MembershipMailer.reengagement_email(m, custom_message: params[:custom_message]) }
+        reengagement: -> { MembershipMailer.reengagement_email(m, custom_message: params[:custom_message]) },
+        birthday_wish: -> { MembershipMailer.birthday_wish_email(m) }
       }
     end
+    # rubocop:enable Metrics/AbcSize
     private_class_method :mailer_actions
   end
 end

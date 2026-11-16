@@ -93,5 +93,16 @@ describe("ThermalReceiptModal", () => {
     await user.click(closeButtons[0])
     expect(onCloseMock).toHaveBeenCalled()
   })
+
+  it("renders milestone celebration banner when milestoneReached is present", () => {
+    const milestoneReceipt: ReceiptData = {
+      ...mockReceipt,
+      milestoneReached: 50,
+    }
+
+    render(<ThermalReceiptModal receipt={milestoneReceipt} onClose={vi.fn()} />)
+    expect(screen.getAllByText(/CỘT MỐC CHECK-IN/i).length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText(/Chúc mừng lần check-in thứ 50!/i).length).toBeGreaterThanOrEqual(1)
+  })
 })
 

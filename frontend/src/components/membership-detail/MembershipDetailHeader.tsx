@@ -50,6 +50,12 @@ export function MembershipDetailHeader({ detail, onOpenCardTab }: MembershipDeta
           <Calendar className="h-4 w-4 shrink-0 text-slate-500" />
           <span>{remainingLabel(detail)}</span>
         </div>
+        {detail.date_of_birth && (
+          <div className="inline-flex items-center gap-1.5 rounded-xl bg-pink-50 px-3 py-1.5 font-semibold text-pink-700 dark:bg-pink-950/60 dark:text-pink-300">
+            <span>🎂</span>
+            <span>{formatDate(detail.date_of_birth)}</span>
+          </div>
+        )}
         {onOpenCardTab && (
           <button
             type="button"

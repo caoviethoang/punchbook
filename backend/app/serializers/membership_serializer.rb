@@ -59,7 +59,7 @@ class MembershipSerializer
       only: %i[id customer_name phone email card_number sessions_left expires_at discarded_at notes
                frozen_at frozen_until freeze_reason transferred_at public_token
                transferred_to_membership_id transferred_from_membership_id assigned_staff_id
-               churn_risk_level last_reengagement_sent_at],
+               churn_risk_level last_reengagement_sent_at date_of_birth total_check_ins_count],
       include: ASSOCIATION_INCLUDES
     ).merge(status_and_qr_hash)
   end
@@ -75,7 +75,7 @@ class MembershipSerializer
       only: %i[id customer_name phone email card_number sessions_left expires_at created_at notes
                frozen_at frozen_until freeze_reason transferred_at public_token
                transferred_to_membership_id transferred_from_membership_id assigned_staff_id
-               churn_risk_level last_reengagement_sent_at],
+               churn_risk_level last_reengagement_sent_at date_of_birth total_check_ins_count],
       include: ASSOCIATION_INCLUDES
     )
     base.merge(extra_detail_hash)
@@ -86,17 +86,25 @@ class MembershipSerializer
   attr_reader :membership, :checkin_summary
 
   def status_and_qr_hash
+    base_status_hash.merge(freeze_attributes_hash).merge(transfer_meta_hash)
+  end
+
+  # rubocop:disable Metrics/MethodLength
+  def base_status_hash
     status = membership.discarded? ? 'deleted' : membership.status
     {
       'status' => status,
       'discarded_at' => membership.discarded_at,
       'checked_in_today' => checked_in_today_value,
       'last_checked_in_at' => last_checked_in_at_value,
+      'is_birthday_today' => membership.birthday_today?,
+      'total_check_ins_count' => membership.total_check_ins_count,
       'qr_code_value' => "PUNCHBOOK:#{membership.id}",
       'assigned_staff' => assigned_staff_hash,
       'tags' => serialized_tags
-    }.merge(freeze_attributes_hash).merge(transfer_meta_hash)
+    }
   end
+  # rubocop:enable Metrics/MethodLength
 
   def serialized_tags
     membership.tags.map { |tag| { 'id' => tag.id, 'name' => tag.name, 'color' => tag.color } }

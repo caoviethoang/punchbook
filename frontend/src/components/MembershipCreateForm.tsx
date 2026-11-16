@@ -21,6 +21,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
   const [customerName, setCustomerName] = useState("")
   const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")
+  const [dateOfBirth, setDateOfBirth] = useState("")
   const [cardNumber, setCardNumber] = useState("")
   const [packageId, setPackageId] = useState("")
   const [assignedStaffId, setAssignedStaffId] = useState("")
@@ -95,6 +96,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
         email: email.trim() || undefined,
         package_id: packageId,
         card_number: cardNumber.trim() || undefined,
+        date_of_birth: dateOfBirth.trim() || undefined,
         notes: notes.trim() || undefined,
         assigned_staff_id: assignedStaffId || null,
         tag_ids: selectedTagIds,
@@ -104,6 +106,7 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
       setCustomerName("")
       setPhone("")
       setEmail("")
+      setDateOfBirth("")
       setCardNumber("")
       setAssignedStaffId("")
       setNotes("")
@@ -195,6 +198,13 @@ export function MembershipCreateForm({ shop, onSuccess, onCancel }: MembershipCr
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="member@example.com"
+        />
+
+        <FormField
+          label={t("memberships.date_of_birth_label", "Ngày sinh (tùy chọn)")}
+          type="date"
+          value={dateOfBirth}
+          onChange={(e) => setDateOfBirth(e.target.value)}
         />
 
         <FormField
