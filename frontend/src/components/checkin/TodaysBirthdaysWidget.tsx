@@ -1,4 +1,4 @@
-import { Cake, Sparkles, Filter } from "lucide-react"
+import { Cake, Filter } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import type { Membership } from "../../lib/memberships"
 

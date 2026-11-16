@@ -108,8 +108,18 @@ export function useCheckInScreen({
   }, [])
 
   useEffect(() => {
-    void loadTodaysBirthdays()
-  }, [loadTodaysBirthdays])
+    let isCancelled = false
+    fetchTodaysBirthdays()
+      .then((res) => {
+        if (!isCancelled) setTodaysBirthdays(res.birthdays)
+      })
+      .catch(() => {
+        // Non-critical, ignore error
+      })
+    return () => {
+      isCancelled = true
+    }
+  }, [])
 
   // Fetch staff list if user is admin
   useEffect(() => {
