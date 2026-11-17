@@ -20,30 +20,27 @@ class Ability
   def setup_trainer_permissions(staff)
     can %i[read update check_in], Membership, shop_id: staff.shop_id, assigned_staff_id: staff.id
     can :manage, CheckIn, membership: { shop_id: staff.shop_id, assigned_staff_id: staff.id }
-    can :read, Package, shop_id: staff.shop_id
-    can :read, PackageCategory, shop_id: staff.shop_id
-    can :read, Tag, shop_id: staff.shop_id
+    can :read, [Package, PackageCategory, Tag], shop_id: staff.shop_id
 
     cannot %i[create destroy], Membership
-    cannot %i[create update destroy], Package
-    cannot %i[create update destroy], PackageCategory
-    cannot :manage, Staff
-    cannot %i[update change_password], Shop
     cannot :manage, HardwareDevice
+    deny_admin_only_resources
   end
 
   def setup_staff_permissions(shop_id)
     can :manage, Membership, shop_id: shop_id
     can :manage, CheckIn, membership: { shop_id: shop_id }
-    can :read, Package, shop_id: shop_id
-    can :read, PackageCategory, shop_id: shop_id
+    can :read, [Package, PackageCategory], shop_id: shop_id
     can %i[read create update], Tag, shop_id: shop_id
     can :read, HardwareDevice, shop_id: shop_id
 
-    cannot %i[create update destroy], Package
-    cannot %i[create update destroy], PackageCategory
+    cannot %i[create update destroy], HardwareDevice
+    deny_admin_only_resources
+  end
+
+  def deny_admin_only_resources
+    cannot %i[create update destroy], [Package, PackageCategory]
     cannot :manage, Staff
     cannot %i[update change_password], Shop
-    cannot %i[create update destroy], HardwareDevice
   end
 end
