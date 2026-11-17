@@ -18,3 +18,10 @@
     timezone: "Asia/Ho_Chi_Minh"
     description: "Send Zalo reminders to expiring paid memberships daily at 8:00 AM VN time"
 
+  send_birthday_wishes_daily:
+    cron: "30 8 * * *"
+    class: "SendBirthdayWishesJob"
+    queue: default
+    timezone: "Asia/Ho_Chi_Minh"
+    description: "Send birthday greetings to members celebrating birthdays daily at 8:30 AM VN time"
+

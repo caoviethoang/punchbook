@@ -86,11 +86,13 @@ class HardwareCheckInService
   end
 
   def build_check_in_result(check_in, membership)
+    reloaded = membership.reload
     {
       check_in: check_in,
-      membership: membership.reload,
+      membership: reloaded,
       device_name: device_name,
-      message: success_message(membership)
+      message: success_message(reloaded),
+      milestone_reached: reloaded.check_in_milestone_reached
     }
   end
 

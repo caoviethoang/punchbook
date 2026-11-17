@@ -164,6 +164,7 @@
     "tab_not_checked_in": "Chưa CI",
     "tab_expiring": "Sắp hết vé",
     "tab_at_risk": "Có nguy cơ",
+    "tab_birthday_today": "Sinh nhật 🎂",
     "tab_expired": "Đã hết vé",
     "tab_all": "Tất cả",
     "recent_checkins": "Check-in gần đây",
@@ -213,7 +214,17 @@
     "already_checked_in_for_aria": "{{name}} đã check-in hôm nay",
     "frozen_for_aria": "{{name}} đang bảo lưu thẻ",
     "renew_and_ci_for_aria": "Gia hạn và check-in cho {{name}}",
-    "checkin_for_aria": "Check-in cho {{name}}"
+    "checkin_for_aria": "Check-in cho {{name}}",
+    "birthday_today_badge": "Sinh nhật hôm nay 🎂",
+    "todays_birthdays_aria": "Hội viên sinh nhật hôm nay",
+    "todays_birthdays_heading": "Hôm nay có {{count}} hội viên sinh nhật!",
+    "filter_birthdays_btn": "Lọc danh sách sinh nhật",
+    "milestone_badge": "Cột mốc {{count}} lần check-in",
+    "milestone_title": "Chúc mừng Cột mốc!",
+    "milestone_desc": "Chúc mừng {{name}} đã xuất sắc hoàn thành buổi tập thứ {{count}} tại {{shop}}!",
+    "milestone_cheer": "Sự kiên trì của bạn là nguồn cảm hứng lớn. Hãy tiếp tục giữ vững phong độ nhé!",
+    "print_milestone_receipt": "In phiếu kỷ niệm",
+    "milestone_continue": "Tuyệt vời, tiếp tục!"
   },
   "receipt": {
     "preview_title": "Xem trước phiếu in",
@@ -229,7 +240,9 @@
     "cashier": "Thu ngân:",
     "thank_you": "Cảm ơn quý khách!",
     "tagline": "PunchBook - Quản lý hội viên dễ dàng",
-    "close": "Đóng"
+    "close": "Đóng",
+    "milestone_title": "CỘT MỐC CHECK-IN!",
+    "milestone_message": "Chúc mừng lần check-in thứ {{count}}!"
   },
   "memberships": {
     "title": "Danh sách Hội viên",
@@ -243,6 +256,7 @@
     "tab_active": "Còn hạn",
     "tab_expiring": "Sắp hết",
     "tab_at_risk": "Có nguy cơ",
+    "tab_birthday_today": "Sinh nhật 🎂",
     "tab_expired": "Đã hết",
     "tab_frozen": "Bảo lưu",
     "tab_transferred": "Đã chuyển",
@@ -295,6 +309,7 @@
     "phone_label": "Số điện thoại",
     "email_label": "Email (tùy chọn - nhận biên lai & nhắc hạn)",
     "email_placeholder": "Ví dụ: hoang@example.com",
+    "date_of_birth_label": "Ngày sinh (tùy chọn)",
     "card_uid_label": "Mã thẻ từ / RFID / Mã định danh thiết bị",
     "card_uid_placeholder": "Ví dụ: RFID_123456",
     "package_label": "Gói dịch vụ",

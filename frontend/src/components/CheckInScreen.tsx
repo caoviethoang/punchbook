@@ -6,6 +6,8 @@ import { CheckInHeader } from "./checkin/CheckInHeader"
 import { CheckInSearchInput } from "./checkin/CheckInSearchInput"
 import { MembershipResultList } from "./checkin/CheckInSearchResults"
 import { GroupCheckInResultModal } from "./checkin/GroupCheckInResultModal"
+import { TodaysBirthdaysWidget } from "./checkin/TodaysBirthdaysWidget"
+import { MilestoneCelebrationModal } from "./checkin/MilestoneCelebrationModal"
 import { MembershipDetailModal } from "./MembershipDetailModal"
 import { QRScannerModal } from "./QRScannerModal"
 import { RenewalModal } from "./RenewalModal"
@@ -18,6 +20,7 @@ const CHECKIN_FILTER_TABS: { key: CheckInFilterType; label: string }[] = [
   { key: "not_checked_in", label: "Chưa CI" },
   { key: "expiring", label: "Sắp hết vé" },
   { key: "at_risk", label: "Có nguy cơ" },
+  { key: "birthday_today", label: "Sinh nhật 🎂" },
   { key: "expired", label: "Đã hết vé" },
   { key: "all", label: "Tất cả" },
 ]
@@ -88,6 +91,9 @@ export function CheckInScreen({
     batchResult,
     isBatchResultModalOpen,
     setIsBatchResultModalOpen,
+    todaysBirthdays,
+    milestoneCelebration,
+    setMilestoneCelebration,
   } = useCheckInScreen({
     currentStaff,
     currentStaffId,
@@ -110,6 +116,13 @@ export function CheckInScreen({
         loadingStaffs={loadingStaffs}
         isGroupMode={isGroupMode}
         onToggleGroupMode={toggleGroupMode}
+      />
+
+      {/* Today's Birthdays Widget */}
+      <TodaysBirthdaysWidget
+        birthdays={todaysBirthdays}
+        onFilterBirthdays={() => setFilter("birthday_today")}
+        onViewMember={(id) => setDetailMembershipId(id)}
       />
 
       {/* Search Input Box */}
@@ -415,6 +428,23 @@ export function CheckInScreen({
         onClose={() => setIsBatchResultModalOpen(false)}
         onPrintReceipt={handlePrintReceipt}
       />
+
+      {/* Milestone Celebration Modal */}
+      {milestoneCelebration && (
+        <MilestoneCelebrationModal
+          membership={milestoneCelebration.membership}
+          milestone={milestoneCelebration.milestone}
+          shopName={shopName}
+          onClose={() => setMilestoneCelebration(null)}
+          onPrintReceipt={() =>
+            handlePrintReceipt(
+              milestoneCelebration.membership,
+              undefined,
+              milestoneCelebration.milestone,
+            )
+          }
+        />
+      )}
 
       {/* QR Scanner Modal */}
       <QRScannerModal

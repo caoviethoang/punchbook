@@ -1,0 +1,30 @@
+<p>Xin chào <strong><%= @membership.customer_name %></strong>,</p>
+
+<p>Hôm nay là một ngày thật đặc biệt! Toàn thể đội ngũ <strong><%= @shop.name %></strong> xin chúc bạn một ngày sinh nhật tràn ngập niềm vui, hạnh phúc và dồi dào sức khỏe! 🎂🎉</p>
+
+<div class="card">
+  <div class="row">
+    <span>Hội viên:</span>
+    <strong><%= @membership.customer_name %></strong>
+  </div>
+  <div class="row">
+    <span>Gói dịch vụ:</span>
+    <strong><%= @package.name %></strong>
+  </div>
+  <% if @membership.sessions_left.present? %>
+    <div class="row">
+      <span>Số buổi còn lại:</span>
+      <strong><%= @membership.sessions_left %> buổi</strong>
+    </div>
+  <% end %>
+  <% if @membership.expires_at.present? %>
+    <div class="row">
+      <span>Hạn sử dụng:</span>
+      <strong><%= @membership.expires_at.strftime('%d/%m/%Y') %></strong>
+    </div>
+  <% end %>
+</div>
+
+<p>Cảm ơn bạn đã luôn là một phần tuyệt vời của cộng đồng <%= @shop.name %>. Chúc bạn tuổi mới tràn đầy năng lượng và đạt được mọi mục tiêu rèn luyện thể chất!</p>
+
+<p>Thân mến,<br><strong><%= @shop.name %></strong></p>

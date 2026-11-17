@@ -62,6 +62,9 @@ export interface Membership {
   tags?: MemberTag[]
   churn_risk_level?: "low" | "medium" | "high" | null
   last_reengagement_sent_at?: string | null
+  date_of_birth?: string | null
+  total_check_ins_count?: number
+  is_birthday_today?: boolean
 }
 
 export interface MembershipDetailCheckIn {
@@ -135,6 +138,7 @@ export interface CheckInRecord {
 export interface CheckInResult {
   membership: Membership
   check_in: CheckInRecord
+  milestone_reached?: number | null
 }
 
 export interface BatchCheckInItemResult {
@@ -143,6 +147,7 @@ export interface BatchCheckInItemResult {
   status: "success" | "failed"
   membership?: Membership
   check_in?: CheckInRecord
+  milestone_reached?: number | null
   error?: string
 }
 
@@ -245,6 +250,7 @@ export type StatusFilterType =
   | "expiring"
   | "expired"
   | "at_risk"
+  | "birthday_today"
   | "not_checked_in"
   | "deleted"
   | "frozen"
@@ -255,6 +261,7 @@ export type CheckInFilterType =
   | "expiring"
   | "expired"
   | "at_risk"
+  | "birthday_today"
   | "all"
 
 export type SortType = "name" | "checkin_priority"
@@ -332,6 +339,7 @@ export interface CreateMembershipPayload {
   card_number?: string | null
   assigned_staff_id?: string | null
   tag_ids?: string[]
+  date_of_birth?: string | null
 }
 
 export interface UpdateMembershipPayload {
@@ -345,6 +353,7 @@ export interface UpdateMembershipPayload {
   card_number?: string | null
   assigned_staff_id?: string | null
   tag_ids?: string[]
+  date_of_birth?: string | null
 }
 
 /** POST /memberships — create member; backend inits sessions_left / expires_at from package. */
@@ -448,6 +457,11 @@ export async function batchCheckIn(
 export async function getMembershipDetail(id: string): Promise<MembershipDetail> {
   const body = await apiGet<{ membership: MembershipDetail }>(`/memberships/${id}`)
   return body.membership
+}
+
+/** GET /memberships/birthdays_today — fetch members celebrating birthdays today. */
+export async function fetchTodaysBirthdays(): Promise<{ birthdays: Membership[]; count: number }> {
+  return apiGet<{ birthdays: Membership[]; count: number }>("/memberships/birthdays_today")
 }
 
 /** POST /memberships/:id/restore — restore a soft-deleted membership */

@@ -48,6 +48,7 @@ Rails.application.routes.draw do
         get :export
         get :import_template
         post :import
+        get :birthdays_today
       end
       member do
         post :check_in

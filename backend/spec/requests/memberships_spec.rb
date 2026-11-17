@@ -565,7 +565,22 @@ RSpec.describe 'Memberships', type: :request do
       expect(body.dig('membership', 'sessions_left')).to eq(2)
       expect(body.dig('check_in', 'id')).to be_present
       expect(body.dig('check_in', 'checked_in_at')).to be_present
+      expect(body['milestone_reached']).to be_nil
       expect(hoa.reload.sessions_left).to eq(2)
+    end
+
+    it 'returns milestone_reached when total_check_ins_count reaches a milestone' do
+      # rubocop:disable Rails/SkipsModelValidations
+      hoa.update_columns(total_check_ins_count: 9)
+      # rubocop:enable Rails/SkipsModelValidations
+
+      post "/api/v1/memberships/#{hoa.id}/check_in",
+           params: { staff_id: staff.id },
+           headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['milestone_reached']).to eq(10)
     end
 
     it 'returns 422 when out of sessions and does not create a CheckIn' do
@@ -870,6 +885,31 @@ RSpec.describe 'Memberships', type: :request do
 
       expect(response).to have_http_status(:unprocessable_entity)
       expect(response.parsed_body['error']).to be_present
+    end
+  end
+
+  describe 'GET /memberships/birthdays_today' do
+    let!(:bday_member) do
+      today = Time.zone.today
+      Membership.create!(
+        shop: shop,
+        package: package,
+        customer_name: 'Sinh Nhat Member',
+        phone: '0907777888',
+        date_of_birth: Date.new(1995, today.month, today.day)
+      )
+    end
+
+    it 'returns members celebrating birthdays today' do
+      get '/api/v1/memberships/birthdays_today', headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['count']).to be >= 1
+      found = body['birthdays'].find { |m| m['id'] == bday_member.id }
+      expect(found).to be_present
+      expect(found['customer_name']).to eq('Sinh Nhat Member')
+      expect(found['is_birthday_today']).to be true
     end
   end
 end
