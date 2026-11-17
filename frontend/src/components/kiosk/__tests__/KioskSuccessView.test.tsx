@@ -26,7 +26,10 @@ describe("KioskSuccessView", () => {
       id: "mem-1",
       customer_name: "Nguyen Van A",
       phone: "0901234567",
-      package_name: "Gói Gym 1 Tháng",
+      package: {
+        id: "pkg-1",
+        name: "Gói Gym 1 Tháng",
+      },
       sessions_left: 15,
       expires_at: "2026-12-31T23:59:59Z",
       status: "active",

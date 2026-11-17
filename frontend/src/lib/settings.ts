@@ -26,6 +26,7 @@ export interface ChangePasswordInput {
 export interface SettingsResponse {
   shop: Shop
   message?: string
+  kiosk_token?: string
 }
 
 export async function fetchSettings(): Promise<SettingsResponse> {

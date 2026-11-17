@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 
 interface KioskPinModalProps {
   isOpen: boolean
+  mode?: "unlock" | "exit"
   title?: string
   subtitle?: string
   onSubmit: (pin: string) => Promise<boolean | void>

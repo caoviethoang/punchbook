@@ -16,6 +16,7 @@ export interface KioskShopConfig {
 export interface KioskConfig {
   shop: KioskShopConfig
   kiosk: {
+    enabled?: boolean
     welcome_message: string
     audio_enabled: boolean
     camera_enabled: boolean
@@ -28,6 +29,7 @@ export interface KioskRenewalPayload {
   order_code?: number | null
   amount: number
   package_name: string
+  description?: string | null
   bank_name?: string | null
   bank_account_no?: string | null
   bank_account_name?: string | null
@@ -60,6 +62,7 @@ export interface KioskInvoiceStatusResponse {
   id: string
   status: "pending" | "paid" | "cancelled"
   membership_id: string
+  paid_at?: string | null
 }
 
 export function getStoredKioskToken(): string | null {

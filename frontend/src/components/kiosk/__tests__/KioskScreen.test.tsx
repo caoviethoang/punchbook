@@ -43,6 +43,7 @@ describe("KioskScreen", () => {
       welcome_message: "Chào mừng quý khách đến với PunchBook!",
       audio_enabled: true,
       camera_enabled: true,
+      auto_reset_seconds: 3,
     },
   }
 
@@ -77,7 +78,10 @@ describe("KioskScreen", () => {
         id: "mem-2",
         customer_name: "Tran Van B",
         phone: "0987654321",
-        package_name: "Gói 30 Ngày",
+        package: {
+          id: "pkg-2",
+          name: "Gói 30 Ngày",
+        },
         sessions_left: 8,
         expires_at: "2026-12-15T00:00:00Z",
         status: "active",

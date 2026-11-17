@@ -79,6 +79,7 @@ describe("KioskDeniedView", () => {
     const onPaidSuccess = vi.fn()
     vi.mocked(kioskApi.checkKioskInvoiceStatus).mockResolvedValue({
       id: "inv-123",
+      membership_id: "mem-123",
       status: "paid",
       paid_at: "2026-11-17T10:05:00Z",
     })

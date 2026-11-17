@@ -70,7 +70,7 @@ export function KioskSuccessView({
         {member && (
           <div className="w-full mt-6 p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60 text-left">
             <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-700/60 text-xs text-slate-400">
-              <span>{member.package?.name || member.package_name || ""}</span>
+              <span>{member.package?.name || ""}</span>
               <span className="font-mono text-slate-300">{member.phone}</span>
             </div>
 
