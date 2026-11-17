@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_16_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_17_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -265,6 +265,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_100000) do
     t.string "email", null: false
     t.boolean "email_notifications_enabled", default: true, null: false
     t.string "encrypted_password", default: "", null: false
+    t.boolean "kiosk_audio_enabled", default: true, null: false
+    t.boolean "kiosk_enabled", default: false, null: false
+    t.string "kiosk_pin", default: "1234"
+    t.string "kiosk_token"
+    t.string "kiosk_welcome_message", default: "Chào mừng bạn đến với phòng tập!"
     t.integer "max_freeze_days_per_year", default: 30, null: false
     t.string "name"
     t.string "phone"
@@ -275,6 +280,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_100000) do
     t.boolean "zalo_notifications_enabled", default: true, null: false
     t.index ["device_api_key"], name: "index_shops_on_device_api_key", unique: true
     t.index ["email"], name: "index_shops_on_email", unique: true
+    t.index ["kiosk_token"], name: "index_shops_on_kiosk_token", unique: true
   end
 
   create_table "staffs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

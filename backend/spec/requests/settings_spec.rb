@@ -89,6 +89,25 @@ RSpec.describe 'Settings API', type: :request do
       expect(shop.reload.sms_notifications_enabled).to be(true)
     end
 
+    it 'updates kiosk settings successfully' do
+      patch '/api/v1/settings/profile',
+            params: {
+              kiosk_enabled: true,
+              kiosk_pin: '8888',
+              kiosk_welcome_message: 'Kính chào quý khách!',
+              kiosk_audio_enabled: false
+            },
+            headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body.dig('shop', 'kiosk_enabled')).to be true
+      expect(body.dig('shop', 'kiosk_pin')).to eq('8888')
+      expect(body.dig('shop', 'kiosk_welcome_message')).to eq('Kính chào quý khách!')
+      expect(body.dig('shop', 'kiosk_audio_enabled')).to be false
+      expect(shop.reload.kiosk_pin).to eq('8888')
+    end
+
     it 'forbids non-admin staff from updating profile' do
       patch '/api/v1/settings/profile', params: { name: 'Unauthorized Gym' }, headers: staff_headers
 
@@ -160,6 +179,25 @@ RSpec.describe 'Settings API', type: :request do
 
       expect(response).to have_http_status(:forbidden)
       expect(response.parsed_body['code']).to eq('FORBIDDEN')
+    end
+  end
+
+  describe 'POST /api/v1/settings/regenerate_kiosk_token' do
+    it 'regenerates kiosk token for admin' do
+      old_token = shop.kiosk_token
+      post '/api/v1/settings/regenerate_kiosk_token', headers: auth_headers(shop)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['message']).to eq('Tạo mới Kiosk Token thành công')
+      expect(body.dig('shop', 'kiosk_token')).not_to eq(old_token)
+      expect(shop.reload.kiosk_token).not_to eq(old_token)
+    end
+
+    it 'forbids non-admin staff from regenerating kiosk token' do
+      post '/api/v1/settings/regenerate_kiosk_token', headers: staff_headers
+
+      expect(response).to have_http_status(:forbidden)
     end
   end
 end

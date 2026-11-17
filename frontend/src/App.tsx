@@ -40,6 +40,28 @@ const SettingsScreen = lazy(() =>
 const MemberPortalScreen = lazy(() =>
   import("./components/portal/MemberPortalScreen").then((m) => ({ default: m.MemberPortalScreen })),
 )
+const KioskScreen = lazy(() =>
+  import("./components/kiosk/KioskScreen").then((m) => ({ default: m.KioskScreen })),
+)
+
+function getKioskParams(): { isKiosk: boolean; token: string | null } {
+  if (typeof window === "undefined") return { isKiosk: false, token: null }
+  const hash = window.location.hash.toLowerCase()
+  const isHashKiosk = hash.startsWith("#/kiosk") || hash.startsWith("#kiosk")
+  const isPathKiosk = window.location.pathname.toLowerCase().startsWith("/kiosk")
+
+  if (!isHashKiosk && !isPathKiosk) {
+    return { isKiosk: false, token: null }
+  }
+
+  const queryPart = window.location.hash.includes("?")
+    ? window.location.hash.split("?")[1]
+    : window.location.search.replace(/^\?/, "")
+  const params = new URLSearchParams(queryPart)
+  const token = params.get("token") || params.get("kiosk_token")
+
+  return { isKiosk: true, token }
+}
 
 function getMemberPortalToken(): string | null {
   if (typeof window === "undefined") return null
@@ -60,12 +82,30 @@ function ScreenFallback() {
 
 function App() {
   const [portalToken, setPortalToken] = useState<string | null>(getMemberPortalToken)
+  const [kioskState, setKioskState] = useState<{ isKiosk: boolean; token: string | null }>(getKioskParams)
 
   useEffect(() => {
-    const syncPortalToken = () => setPortalToken(getMemberPortalToken())
-    window.addEventListener("hashchange", syncPortalToken)
-    return () => window.removeEventListener("hashchange", syncPortalToken)
+    const syncRoutes = () => {
+      setPortalToken(getMemberPortalToken())
+      setKioskState(getKioskParams())
+    }
+    window.addEventListener("hashchange", syncRoutes)
+    return () => window.removeEventListener("hashchange", syncRoutes)
   }, [])
+
+  if (kioskState.isKiosk) {
+    return (
+      <Suspense fallback={<ScreenFallback />}>
+        <KioskScreen
+          initialToken={kioskState.token}
+          onExit={() => {
+            window.location.hash = "#/dashboard"
+            setKioskState({ isKiosk: false, token: null })
+          }}
+        />
+      </Suspense>
+    )
+  }
 
   if (portalToken) {
     return (

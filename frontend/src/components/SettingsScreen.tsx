@@ -5,6 +5,7 @@ import { useShopSettings } from "../hooks/useShopSettings"
 import { AppearanceSection } from "./settings/AppearanceSection"
 import { SecuritySection } from "./settings/SecuritySection"
 import { DeviceIntegrationSection } from "./settings/DeviceIntegrationSection"
+import { KioskSettingsSection } from "./settings/KioskSettingsSection"
 import { NotificationSettingsSection } from "./settings/NotificationSettingsSection"
 import { ShopProfileSection } from "./settings/ShopProfileSection"
 import { SubscriptionSection } from "./settings/SubscriptionSection"
@@ -131,6 +132,14 @@ export function SettingsScreen({ shop, currentStaff, onShopUpdated }: SettingsSc
 
       {/* Section 2.8: Hardware Device Integration */}
       <DeviceIntegrationSection
+        shop={shop}
+        isAdmin={isAdmin}
+        onShopUpdated={onShopUpdated}
+        onToast={handleToast}
+      />
+
+      {/* Section 2.85: Dedicated Self-Service Kiosk Settings */}
+      <KioskSettingsSection
         shop={shop}
         isAdmin={isAdmin}
         onShopUpdated={onShopUpdated}

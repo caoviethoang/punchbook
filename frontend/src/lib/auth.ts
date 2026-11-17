@@ -24,6 +24,11 @@ export interface Shop {
   email_notifications_enabled?: boolean
   sms_notifications_enabled?: boolean
   zalo_notifications_enabled?: boolean
+  kiosk_enabled?: boolean
+  kiosk_pin?: string | null
+  kiosk_welcome_message?: string | null
+  kiosk_audio_enabled?: boolean
+  kiosk_token?: string | null
 }
 
 export interface AuthResponse {
