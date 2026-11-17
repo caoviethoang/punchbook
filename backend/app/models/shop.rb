@@ -20,6 +20,7 @@ class Shop < ApplicationRecord
   has_many :webhook_events, dependent: :nullify, inverse_of: :shop
   has_many :notification_logs, dependent: :destroy, inverse_of: :shop
   has_many :tags, dependent: :destroy, inverse_of: :shop
+  has_many :hardware_devices, dependent: :destroy, inverse_of: :shop
 
   validates :plan, presence: true, inclusion: { in: PLANS }
   validates :name, presence: true

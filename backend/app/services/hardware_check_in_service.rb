@@ -13,14 +13,15 @@ class HardwareCheckInService
 
   UUID_REGEX = /\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/i
 
-  def self.call(shop:, identifier:, device_name: nil)
-    new(shop: shop, identifier: identifier, device_name: device_name).call
+  def self.call(shop:, identifier:, device_name: nil, hardware_device: nil)
+    new(shop: shop, identifier: identifier, device_name: device_name, hardware_device: hardware_device).call
   end
 
-  def initialize(shop:, identifier:, device_name: nil)
+  def initialize(shop:, identifier:, device_name: nil, hardware_device: nil)
     @shop = shop
     @identifier = identifier.to_s.strip
-    @device_name = device_name.presence || 'Hardware Terminal'
+    @hardware_device = hardware_device
+    @device_name = device_name.presence || hardware_device&.name || 'Hardware Terminal'
   end
 
   def call
@@ -32,7 +33,7 @@ class HardwareCheckInService
 
   private
 
-  attr_reader :shop, :identifier, :device_name
+  attr_reader :shop, :identifier, :device_name, :hardware_device
 
   def find_membership!
     clean_id = identifier.sub(/\APUNCHBOOK:/i, '')
@@ -57,14 +58,8 @@ class HardwareCheckInService
     shop.memberships.where("regexp_replace(phone, '\\D', '', 'g') = ?", digits).first
   end
 
-  # rubocop:disable Metrics/MethodLength
   def execute_check_in!(membership)
-    check_in = CheckInMembership.call(
-      membership: membership,
-      staff: staff_for_check_in,
-      extra_audit_details: audit_details
-    )
-
+    check_in = perform_check_in(membership)
     build_check_in_result(check_in, membership)
   rescue CheckInMembership::InsufficientSessionsError => e
     raise Error.new(e.message, code: 'NO_SESSIONS_LEFT', membership: membership)
@@ -75,14 +70,27 @@ class HardwareCheckInService
   rescue CheckInMembership::MembershipTransferredError => e
     raise Error.new(e.message, code: 'MEMBERSHIP_TRANSFERRED', membership: membership)
   end
-  # rubocop:enable Metrics/MethodLength
+
+  def perform_check_in(membership)
+    CheckInMembership.call(
+      membership: membership,
+      staff: staff_for_check_in,
+      hardware_device: hardware_device,
+      extra_audit_details: audit_details
+    )
+  end
 
   def staff_for_check_in
     shop.staffs.find_by(role: 'admin') || shop.staffs.first
   end
 
   def audit_details
-    { source: 'hardware_device', device_name: device_name, identifier_used: identifier }
+    {
+      source: 'hardware_device',
+      device_name: device_name,
+      hardware_device_id: hardware_device&.id,
+      identifier_used: identifier
+    }.compact
   end
 
   def build_check_in_result(check_in, membership)
@@ -91,6 +99,7 @@ class HardwareCheckInService
       check_in: check_in,
       membership: reloaded,
       device_name: device_name,
+      hardware_device: hardware_device,
       message: success_message(reloaded),
       milestone_reached: reloaded.check_in_milestone_reached
     }

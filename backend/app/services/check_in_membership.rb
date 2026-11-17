@@ -7,13 +7,19 @@ class CheckInMembership
   class MembershipFrozenError < Error; end
   class MembershipTransferredError < Error; end
 
-  def self.call(membership:, staff:, extra_audit_details: {})
-    new(membership: membership, staff: staff, extra_audit_details: extra_audit_details).call
+  def self.call(membership:, staff:, hardware_device: nil, extra_audit_details: {})
+    new(
+      membership: membership,
+      staff: staff,
+      hardware_device: hardware_device,
+      extra_audit_details: extra_audit_details
+    ).call
   end
 
-  def initialize(membership:, staff:, extra_audit_details: {})
+  def initialize(membership:, staff:, hardware_device: nil, extra_audit_details: {})
     @membership = membership
     @staff = staff
+    @hardware_device = hardware_device
     @extra_audit_details = extra_audit_details
   end
 
@@ -26,7 +32,7 @@ class CheckInMembership
 
   private
 
-  attr_reader :membership, :staff, :extra_audit_details
+  attr_reader :membership, :staff, :hardware_device, :extra_audit_details
 
   def validate_eligibility!
     validate_frozen_status!
@@ -84,7 +90,13 @@ class CheckInMembership
 
   def create_check_in_record!
     trainer = membership.assigned_staff || (staff&.trainer? ? staff : nil)
-    CheckIn.create!(membership: membership, staff: staff, trainer: trainer, checked_in_at: Time.current)
+    CheckIn.create!(
+      membership: membership,
+      staff: staff,
+      trainer: trainer,
+      hardware_device: hardware_device,
+      checked_in_at: Time.current
+    )
   end
 
   def log_audit_event!(check_in)

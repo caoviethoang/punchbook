@@ -29,6 +29,7 @@ class Ability
     cannot %i[create update destroy], PackageCategory
     cannot :manage, Staff
     cannot %i[update change_password], Shop
+    cannot :manage, HardwareDevice
   end
 
   def setup_staff_permissions(shop_id)
@@ -37,10 +38,12 @@ class Ability
     can :read, Package, shop_id: shop_id
     can :read, PackageCategory, shop_id: shop_id
     can %i[read create update], Tag, shop_id: shop_id
+    can :read, HardwareDevice, shop_id: shop_id
 
     cannot %i[create update destroy], Package
     cannot %i[create update destroy], PackageCategory
     cannot :manage, Staff
     cannot %i[update change_password], Shop
+    cannot %i[create update destroy], HardwareDevice
   end
 end

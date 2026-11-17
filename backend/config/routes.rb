@@ -33,6 +33,11 @@ Rails.application.routes.draw do
     get '/kiosk/invoices/:id/status', to: 'kiosk#invoice_status'
 
     post '/hardware/check_in', to: 'hardware_check_ins#create'
+    post '/hardware/ping', to: 'hardware_check_ins#ping'
+    resources :hardware_devices, only: %i[index create update destroy] do
+      post :regenerate_token, on: :member
+      get :logs, on: :collection
+    end
 
     resources :class_types, only: %i[index show create update destroy]
     resources :class_schedules, only: %i[index show create update destroy] do
