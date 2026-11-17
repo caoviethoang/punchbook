@@ -11,6 +11,10 @@ export interface UpdateProfileInput {
   email_notifications_enabled?: boolean
   sms_notifications_enabled?: boolean
   zalo_notifications_enabled?: boolean
+  kiosk_enabled?: boolean
+  kiosk_pin?: string
+  kiosk_welcome_message?: string
+  kiosk_audio_enabled?: boolean
 }
 
 export interface ChangePasswordInput {
@@ -22,6 +26,7 @@ export interface ChangePasswordInput {
 export interface SettingsResponse {
   shop: Shop
   message?: string
+  kiosk_token?: string
 }
 
 export async function fetchSettings(): Promise<SettingsResponse> {
@@ -42,4 +47,8 @@ export async function upgradeShopPlan(months: number = 1): Promise<SettingsRespo
 
 export async function regenerateDeviceApiKey(): Promise<SettingsResponse> {
   return apiPost<SettingsResponse>("/settings/regenerate_device_api_key")
+}
+
+export async function regenerateKioskToken(): Promise<SettingsResponse> {
+  return apiPost<SettingsResponse>("/settings/regenerate_kiosk_token")
 }

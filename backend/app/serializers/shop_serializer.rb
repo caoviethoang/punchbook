@@ -5,6 +5,7 @@ class ShopSerializer
     id name phone address email plan plan_expires_at
     bank_name bank_account_no bank_account_name device_api_key
     email_notifications_enabled sms_notifications_enabled zalo_notifications_enabled
+    kiosk_enabled kiosk_pin kiosk_welcome_message kiosk_audio_enabled kiosk_token
   ].freeze
 
   def initialize(shop)

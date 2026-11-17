@@ -50,6 +50,37 @@ RSpec.describe Shop, type: :model do
     end
   end
 
+  describe 'kiosk configuration' do
+    it 'generates a kiosk_token on creation' do
+      shop = create_shop
+      expect(shop.kiosk_token).to be_present
+      expect(shop.kiosk_token).to start_with('pb_kiosk_')
+    end
+
+    it 'authenticates kiosk pin correctly when kiosk is enabled' do
+      shop = create_shop(kiosk_enabled: true, kiosk_pin: '5678')
+
+      expect(shop.authenticate_kiosk_pin('5678')).to be true
+      expect(shop.authenticate_kiosk_pin('0000')).to be false
+      expect(shop.authenticate_kiosk_pin('')).to be false
+    end
+
+    it 'rejects pin authentication when kiosk is disabled' do
+      shop = create_shop(kiosk_enabled: false, kiosk_pin: '5678')
+
+      expect(shop.authenticate_kiosk_pin('5678')).to be false
+    end
+
+    it 'regenerates kiosk_token' do
+      shop = create_shop
+      old_token = shop.kiosk_token
+      shop.regenerate_kiosk_token!
+
+      expect(shop.kiosk_token).not_to eq(old_token)
+      expect(shop.kiosk_token).to start_with('pb_kiosk_')
+    end
+  end
+
   def build_shop(**attrs)
     defaults = {
       name: 'Lan Spa',

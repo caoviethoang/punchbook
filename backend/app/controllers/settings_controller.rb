@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 class SettingsController < ApiController
-  before_action :authorize_shop_update!, only: %i[update_profile update_password upgrade_plan regenerate_device_api_key]
+  before_action :authorize_shop_update!,
+                only: %i[update_profile update_password upgrade_plan regenerate_device_api_key regenerate_kiosk_token]
   def show
     render json: { shop: ShopSerializer.new(current_shop).as_json }
   end
@@ -11,6 +12,14 @@ class SettingsController < ApiController
     render json: {
       shop: ShopSerializer.new(current_shop).as_json,
       message: 'Tạo mới Device API Key thành công'
+    }
+  end
+
+  def regenerate_kiosk_token
+    current_shop.regenerate_kiosk_token!
+    render json: {
+      shop: ShopSerializer.new(current_shop).as_json,
+      message: 'Tạo mới Kiosk Token thành công'
     }
   end
 
@@ -64,7 +73,8 @@ class SettingsController < ApiController
   def profile_params
     params.permit(
       :name, :phone, :address, :bank_name, :bank_account_no, :bank_account_name,
-      :email_notifications_enabled, :sms_notifications_enabled, :zalo_notifications_enabled
+      :email_notifications_enabled, :sms_notifications_enabled, :zalo_notifications_enabled,
+      :kiosk_enabled, :kiosk_pin, :kiosk_welcome_message, :kiosk_audio_enabled
     )
   end
 

@@ -25,6 +25,12 @@ Rails.application.routes.draw do
     patch '/settings/password', to: 'settings#update_password'
     post '/settings/upgrade_plan', to: 'settings#upgrade_plan'
     post '/settings/regenerate_device_api_key', to: 'settings#regenerate_device_api_key'
+    post '/settings/regenerate_kiosk_token', to: 'settings#regenerate_kiosk_token'
+
+    post '/kiosk/login', to: 'kiosk#login'
+    get '/kiosk/config', to: 'kiosk#show_config'
+    post '/kiosk/check_in', to: 'kiosk#check_in'
+    get '/kiosk/invoices/:id/status', to: 'kiosk#invoice_status'
 
     post '/hardware/check_in', to: 'hardware_check_ins#create'
 

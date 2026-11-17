@@ -24,8 +24,11 @@ class Shop < ApplicationRecord
   validates :plan, presence: true, inclusion: { in: PLANS }
   validates :name, presence: true
   validates :device_api_key, uniqueness: true, allow_nil: true
+  validates :kiosk_token, uniqueness: true, allow_nil: true
+  validates :kiosk_pin, length: { minimum: 4, maximum: 10 }, allow_nil: true
 
   before_validation :generate_device_api_key, on: :create
+  before_validation :generate_kiosk_token, on: :create
 
   scope :paid, -> { where(plan: 'paid') }
 
@@ -33,9 +36,24 @@ class Shop < ApplicationRecord
     update!(device_api_key: "pb_dev_#{SecureRandom.hex(24)}")
   end
 
+  def regenerate_kiosk_token!
+    update!(kiosk_token: "pb_kiosk_#{SecureRandom.hex(24)}")
+  end
+
+  def authenticate_kiosk_pin(pin)
+    return false unless kiosk_enabled?
+    return false if kiosk_pin.blank? || pin.blank?
+
+    ActiveSupport::SecurityUtils.secure_compare(kiosk_pin.to_s.strip, pin.to_s.strip)
+  end
+
   private
 
   def generate_device_api_key
     self.device_api_key ||= "pb_dev_#{SecureRandom.hex(24)}"
+  end
+
+  def generate_kiosk_token
+    self.kiosk_token ||= "pb_kiosk_#{SecureRandom.hex(24)}"
   end
 end
