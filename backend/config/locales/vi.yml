@@ -29,6 +29,8 @@ vi:
     hardware:
       api_key_missing: "Thiếu Device API Key."
       api_key_invalid: "Device API Key không hợp lệ."
+      token_invalid: "Device Token không hợp lệ."
+      device_disabled: "Thiết bị phần cứng đã bị vô hiệu hóa."
       identifier_missing: "Vui lòng cung cấp mã định danh hội viên."
       membership_not_found: "Không tìm thấy hội viên phù hợp."
     webhook:

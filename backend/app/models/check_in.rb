@@ -4,6 +4,7 @@ class CheckIn < ApplicationRecord
   belongs_to :membership, -> { with_discarded }, inverse_of: :check_ins, counter_cache: :total_check_ins_count
   belongs_to :staff, optional: true, inverse_of: :check_ins
   belongs_to :trainer, class_name: 'Staff', optional: true, inverse_of: :trainer_check_ins
+  belongs_to :hardware_device, optional: true, inverse_of: :check_ins
 
   has_paper_trail
 

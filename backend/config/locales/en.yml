@@ -29,6 +29,8 @@ en:
     hardware:
       api_key_missing: "Device API Key missing"
       api_key_invalid: "Invalid Device API Key"
+      token_invalid: "Invalid Device Token"
+      device_disabled: "Hardware device is disabled"
       identifier_missing: "Please provide member identifier"
       membership_not_found: "No matching membership found"
     webhook:

@@ -49,6 +49,44 @@ RSpec.describe 'HardwareCheckIns', type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['status']).to eq('success')
     end
+
+    it 'authenticates using X-Device-Token for a registered hardware device' do
+      _staff, _s_mem, _d_mem = create_members
+      device = HardwareDevice.create!(shop: shop, name: 'Cổng 1', device_type: 'turnstile', location: 'Sảnh chính')
+
+      post '/api/v1/hardware/check_in',
+           params: { identifier: 'RFID_1001' },
+           headers: { 'X-Device-Token' => device.device_token }
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['status']).to eq('success')
+      expect(body['device_name']).to eq('Cổng 1')
+      expect(body['device_id']).to eq(device.id)
+      expect(device.reload.last_ping_at).to be_within(2.seconds).of(Time.current)
+    end
+
+    it 'rejects requests with invalid X-Device-Token' do
+      post '/api/v1/hardware/check_in',
+           params: { identifier: 'RFID_1001' },
+           headers: { 'X-Device-Token' => 'invalid_device_token_xyz' }
+
+      expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body['code']).to eq('UNAUTHORIZED')
+      expect(response.parsed_body['error']).to eq('Invalid Device Token')
+    end
+
+    it 'rejects requests if hardware device is disabled' do
+      device = HardwareDevice.create!(shop: shop, name: 'Cổng 2', device_type: 'turnstile', is_active: false)
+
+      post '/api/v1/hardware/check_in',
+           params: { identifier: 'RFID_1001' },
+           headers: { 'X-Device-Token' => device.device_token }
+
+      expect(response).to have_http_status(:forbidden)
+      expect(response.parsed_body['code']).to eq('DEVICE_DISABLED')
+      expect(response.parsed_body['error']).to eq('Hardware device is disabled')
+    end
   end
 
   describe 'Identifier Resolution & Check-in' do
@@ -64,15 +102,39 @@ RSpec.describe 'HardwareCheckIns', type: :request do
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
       expect(body['status']).to eq('success')
+      expect(body['access_granted']).to be true
+      expect(body['hardware_action']).to eq(
+        { 'relay_trigger' => true, 'pulse_ms' => 1500, 'buzzer' => 'granted', 'led' => 'green' }
+      )
+      expect(body['audio_prompt']).to eq('Chào mừng Nguyen Van A vào tập')
       expect(body['device_name']).to eq('Cổng 1 - Turnstile')
       expect(body['message']).to include('Còn lại 4 buổi')
+      expect(body['check_in']['id']).to be_present
       expect(session_member.reload.sessions_left).to eq(4)
 
       last_log = AuditLog.last
       expect(last_log.action).to eq('check_in')
       expect(last_log.details['source']).to eq('hardware_device')
-      expect(last_log.details['device_name']).to eq('Cổng 1 - Turnstile')
       expect(last_log.details['identifier_used']).to eq('RFID_1001')
+    end
+
+    it 'links check-in to hardware_device and adjusts pulse_ms for magnetic_lock' do
+      create_members
+      device = HardwareDevice.create!(shop: shop, name: 'Cửa từ VIP', device_type: 'magnetic_lock')
+
+      post '/api/v1/hardware/check_in',
+           params: { identifier: 'RFID_1001' },
+           headers: { 'X-Device-Token' => device.device_token }
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['access_granted']).to be true
+      expect(body['hardware_action']['pulse_ms']).to eq(3000)
+      expect(body['device_id']).to eq(device.id)
+
+      check_in = CheckIn.last
+      expect(check_in.hardware_device_id).to eq(device.id)
+      expect(AuditLog.last.details['hardware_device_id']).to eq(device.id)
     end
 
     it 'checks in member using digital QR payload (PUNCHBOOK:UUID)' do
@@ -162,6 +224,11 @@ RSpec.describe 'HardwareCheckIns', type: :request do
 
       expect(response).to have_http_status(:unprocessable_content)
       body = response.parsed_body
+      expect(body['access_granted']).to be false
+      expect(body['hardware_action']).to eq(
+        { 'relay_trigger' => false, 'pulse_ms' => 0, 'buzzer' => 'denied', 'led' => 'red' }
+      )
+      expect(body['audio_prompt']).to eq('Membership has no sessions left')
       expect(body['code']).to eq('NO_SESSIONS_LEFT')
       expect(body['error']).to eq('Membership has no sessions left')
       expect(body['membership']['id']).to eq(session_member.id)
@@ -179,6 +246,47 @@ RSpec.describe 'HardwareCheckIns', type: :request do
       expect(body['code']).to eq('MEMBERSHIP_EXPIRED')
       expect(body['error']).to eq('Membership has expired')
       expect(body['membership']['id']).to eq(day_member.id)
+    end
+  end
+
+  describe 'Device Heartbeat Ping' do
+    it 'updates device last_ping_at and returns device info when pinged with X-Device-Token' do
+      device = HardwareDevice.create!(
+        shop: shop,
+        name: 'Cổng xoay 1',
+        device_type: 'turnstile',
+        location: 'Sảnh chính'
+      )
+
+      post '/api/v1/hardware/ping', headers: { 'X-Device-Token' => device.device_token }
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['status']).to eq('ok')
+      expect(body['device_id']).to eq(device.id)
+      expect(body['device_name']).to eq('Cổng xoay 1')
+      expect(body['device_type']).to eq('turnstile')
+      expect(body['location']).to eq('Sảnh chính')
+      expect(body['is_active']).to be true
+      expect(body['server_time']).to be_present
+      expect(device.reload.last_ping_at).to be_within(2.seconds).of(Time.current)
+    end
+
+    it 'returns shop info when pinged with legacy X-Device-Api-Key' do
+      post '/api/v1/hardware/ping', headers: { 'X-Device-Api-Key' => shop.device_api_key }
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['status']).to eq('ok')
+      expect(body['shop_id']).to eq(shop.id)
+      expect(body['shop_name']).to eq('Iron Gym')
+      expect(body['is_active']).to be true
+    end
+
+    it 'rejects ping with invalid token' do
+      post '/api/v1/hardware/ping', headers: { 'X-Device-Token' => 'invalid_tok' }
+
+      expect(response).to have_http_status(:unauthorized)
     end
   end
 

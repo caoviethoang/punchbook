@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_17_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_17_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -34,10 +34,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_100000) do
   create_table "check_ins", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "checked_in_at"
     t.datetime "created_at", null: false
+    t.uuid "hardware_device_id"
     t.uuid "membership_id", null: false
     t.uuid "staff_id"
     t.uuid "trainer_id"
     t.datetime "updated_at", null: false
+    t.index ["hardware_device_id"], name: "index_check_ins_on_hardware_device_id"
     t.index ["membership_id"], name: "index_check_ins_on_membership_id"
     t.index ["staff_id"], name: "index_check_ins_on_staff_id"
     t.index ["trainer_id"], name: "index_check_ins_on_trainer_id"
@@ -92,6 +94,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_100000) do
     t.datetime "updated_at", null: false
     t.index ["shop_id", "name"], name: "index_class_types_on_shop_id_and_name", unique: true
     t.index ["shop_id"], name: "index_class_types_on_shop_id"
+  end
+
+  create_table "hardware_devices", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "device_token", null: false
+    t.string "device_type", default: "turnstile", null: false
+    t.boolean "is_active", default: true, null: false
+    t.datetime "last_ping_at"
+    t.string "location"
+    t.string "name", null: false
+    t.uuid "shop_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["device_token"], name: "index_hardware_devices_on_device_token", unique: true
+    t.index ["shop_id", "device_type"], name: "index_hardware_devices_on_shop_id_and_device_type"
+    t.index ["shop_id", "last_ping_at"], name: "index_hardware_devices_on_shop_id_and_last_ping_at"
+    t.index ["shop_id"], name: "index_hardware_devices_on_shop_id"
   end
 
   create_table "invoices", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -339,6 +357,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_100000) do
 
   add_foreign_key "audit_logs", "shops", on_delete: :cascade
   add_foreign_key "audit_logs", "staffs", on_delete: :nullify
+  add_foreign_key "check_ins", "hardware_devices", on_delete: :nullify
   add_foreign_key "check_ins", "memberships"
   add_foreign_key "check_ins", "staffs"
   add_foreign_key "check_ins", "staffs", column: "trainer_id", on_delete: :nullify
@@ -348,6 +367,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_100000) do
   add_foreign_key "class_schedules", "shops"
   add_foreign_key "class_schedules", "staffs", column: "instructor_id", on_delete: :nullify
   add_foreign_key "class_types", "shops"
+  add_foreign_key "hardware_devices", "shops"
   add_foreign_key "invoices", "memberships"
   add_foreign_key "membership_reminders", "memberships"
   add_foreign_key "membership_tags", "memberships"
